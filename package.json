@@ -1,0 +1,65 @@
+{
+  "name": "solid-streamdown",
+  "version": "0.0.1",
+  "description": "Streaming Markdown renderer for SolidJS — port of Vercel's Streamdown",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "files": [
+    "dist",
+    "styles.css",
+    "ATTRIBUTION.md"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prepublishOnly": "bun run build"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.8.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.0.1",
+    "solid-js": "^1.9.5",
+    "tsup": "^8.4.0",
+    "tsup-preset-solid": "^2.2.0",
+    "typescript": "^5.8.2",
+    "vite-plugin-solid": "^2.11.6",
+    "vitest": "^3.1.1"
+  },
+  "dependencies": {
+    "unified": "^11.0.5",
+    "remark-parse": "^11.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-rehype": "^11.1.1",
+    "rehype-raw": "^7.0.0",
+    "hast-util-to-jsx-runtime": "^2.3.6",
+    "shiki": "^3.2.2"
+  },
+  "keywords": [
+    "solid",
+    "solidjs",
+    "markdown",
+    "streaming",
+    "ai",
+    "chat",
+    "llm"
+  ],
+  "license": "MIT",
+  "author": "vherbruck",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vherbruck/solid-streamdown"
+  }
+}
