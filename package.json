@@ -1,6 +1,6 @@
 {
   "name": "solid-streamdown",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Streaming Markdown renderer for SolidJS — port of Vercel's Streamdown",
   "type": "module",
   "main": "./dist/index.js",
