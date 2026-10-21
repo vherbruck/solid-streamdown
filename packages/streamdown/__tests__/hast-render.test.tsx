@@ -150,6 +150,27 @@ describe("HastNodes", () => {
     expect(container.innerHTML).toBe("<p>ok</p>");
   });
 
+  it.each(["script", "SCRIPT"])("renders nothing when a tag is mapped to %s", (tag) => {
+    const tree = hast("x");
+    const { container } = render(() => (
+      <RenderContext.Provider value={() => ({ p: tag })}>
+        <HastNodes nodes={tree.children} />
+      </RenderContext.Provider>
+    ));
+    expect(container.querySelector("script")).toBeNull();
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("treats an empty string mapping as unmapped", () => {
+    const tree = hast("x");
+    const { container } = render(() => (
+      <RenderContext.Provider value={() => ({ p: "" })}>
+        <HastNodes nodes={tree.children} />
+      </RenderContext.Provider>
+    ));
+    expect(container.innerHTML).toBe("<p>x</p>");
+  });
+
   it("applies the render guard to element props", () => {
     const tree = rawHast('<a href="javascript:alert(1)" onclick="alert(1)" title="t">x</a>');
     const { container } = render(() => <HastNodes nodes={tree.children} />);

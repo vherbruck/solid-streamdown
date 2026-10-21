@@ -100,9 +100,14 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
     // Read through the descriptor so a Proxy-backed map can supply fallbacks.
     // Entries must therefore be data properties, not getters.
     const mapped: unknown = Object.getOwnPropertyDescriptor(components(), tagName)?.value;
-    return typeof mapped === "function" || typeof mapped === "string"
-      ? (mapped as Components[string])
-      : tagName;
+    if (typeof mapped === "function") {
+      return mapped as Components[string];
+    }
+    // A replacement tag passes the same guard, and renders nothing when blocked.
+    if (typeof mapped === "string" && mapped !== "") {
+      return isBlockedElement(mapped) ? undefined : mapped;
+    }
+    return tagName;
   });
 
   return (
