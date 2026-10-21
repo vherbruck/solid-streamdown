@@ -22,4 +22,6 @@ jobs:
 
       - run: bun run build
 
+      - run: bun run --filter solid-streamdown test:hydration
+
       - run: bun run test

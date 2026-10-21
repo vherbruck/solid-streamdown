@@ -1,0 +1,279 @@
+// Hydration check for the built package (run `bun run build` first).
+//
+// The server half renders Streamdown under Node's default conditions, which
+// resolve the package to dist/server.js. The client half loads that markup
+// into jsdom under the "browser" condition (dist/index.js), hydrates it,
+// then streams updates into the hydrated tree. A second client pass adds the
+// "development" condition: Solid's dev build throws on a hydration key it
+// cannot find, where the production build silently creates a new node.
+//
+// Usage: node scripts/hydration-check.mjs
+// Exits non-zero on any failed check and prints "hydration ok" on success.
+
+import { spawnSync } from "node:child_process";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const SCRIPT = fileURLToPath(import.meta.url);
+const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
+
+const DOCUMENT = "# Hi\n\nSome **bold** text\n\n- a\n- b";
+const DOCUMENT_UPDATES = [
+  "# Hi\n\nSome **bold** text and more\n\n- a\n- b",
+  "# Hi\n\nSome **bold** text and more still\n\n- a\n- b",
+  "# Hi\n\nSome **bold** text and more still\n\n- a\n- b\n\nA new paragraph",
+];
+const TABLE = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
+const TABLE_THEN_PROSE = `${TABLE}\n\nText after the table`;
+const CARET_CLASS = "after:content-[var(--streamdown-caret)]";
+const CARET_HIDDEN = "data-sd-caret-hidden";
+
+// Each pass names the package entry and the solid-js/web build it must load.
+const CLIENT_PASSES = [
+  { conditions: ["browser"], entry: "index.js", solid: "web.js" },
+  { conditions: ["browser", "development"], entry: "dev.js", solid: "dev.js" },
+];
+
+// The client half captures console output, so failures report through this.
+const printError = console.error.bind(console);
+
+const failures = [];
+const check = (ok, message) => {
+  if (!ok) {
+    failures.push(message);
+  }
+};
+const finish = (label) => {
+  if (failures.length > 0) {
+    printError(`${label} failed:\n${failures.map((f) => `  - ${f}`).join("\n")}`);
+    process.exit(1);
+  }
+};
+
+// Imports the package after checking that this process's conditions resolve
+// it, and Solid, to the expected builds.
+const importPackage = async (entry, solid) => {
+  const resolved = fileURLToPath(import.meta.resolve("solid-streamdown"));
+  check(resolved === join(DIST, entry), `solid-streamdown resolved to ${resolved}, expected dist/${entry}`);
+  const solidWeb = fileURLToPath(import.meta.resolve("solid-js/web"));
+  check(solidWeb.endsWith(join("web", "dist", solid)), `solid-js/web resolved to ${solidWeb}, expected web/dist/${solid}`);
+  finish("module resolution");
+  return import("solid-streamdown");
+};
+
+// Both builds must be compiled with `hydratable: true` (tsup.config.ts). A
+// server entry built for the DOM, or a client entry without hydration
+// support, would make every check below meaningless.
+const checkBuildOutput = async () => {
+  const server = await readFile(join(DIST, "server.js"), "utf8");
+  check(server.includes("ssrHydrationKey"), "dist/server.js has no ssrHydrationKey: not hydratable SSR output");
+  check(/\bssr(Element)?\(/.test(server), "dist/server.js has no ssr()/ssrElement() calls: not SSR output");
+  check(!server.includes("getNextElement"), "dist/server.js uses getNextElement: it holds client output");
+  for (const { entry } of CLIENT_PASSES) {
+    const client = await readFile(join(DIST, entry), "utf8");
+    check(client.includes("getNextElement"), `dist/${entry} has no getNextElement: not hydratable client output`);
+    check(!client.includes("ssrHydrationKey"), `dist/${entry} uses ssrHydrationKey: it holds server output`);
+  }
+  finish("build output check (see tsup.config.ts)");
+};
+
+const runServer = async (dir) => {
+  const { generateHydrationScript, renderToString } = await import("solid-js/web");
+  const { Streamdown } = await importPackage("server.js", "server.js");
+  const documentHtml = renderToString(() => Streamdown({ children: DOCUMENT }), { renderId: "d" });
+  const caretHtml = renderToString(
+    () => Streamdown({ caret: "block", children: TABLE, isAnimating: true }),
+    { renderId: "c" }
+  );
+  const page =
+    `<!doctype html><html><head>${generateHydrationScript()}</head><body>` +
+    `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div></body></html>`;
+  await writeFile(join(dir, "server.html"), page);
+};
+
+const textNodes = (root) => {
+  const nodes = [];
+  const walker = root.ownerDocument.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+  while (walker.nextNode()) {
+    nodes.push(walker.currentNode);
+  }
+  return nodes;
+};
+
+const occurrences = (haystack, needle) => haystack.split(needle).length - 1;
+
+// Attribute values in a comparable form. Styles go through the CSSOM, since
+// the server writes `a:b` where the client's setProperty serializes `a: b;`.
+const attributeValue = (node, attribute) =>
+  attribute.name === "style" ? node.style.cssText : attribute.value.trim();
+
+// A comparable outline of a container's content: tags, attributes and text,
+// without comments and hydration keys. Server markup for a spread whose class
+// or style is undefined carries `class=""` or `style=""`; hydration leaves it
+// in place and the client never writes it. It has no effect, so an empty
+// class or style counts as absent.
+const outline = (container) => [...container.childNodes].map(outlineNode).join("");
+
+const outlineNode = (node) => {
+  if (node.nodeType === 3) {
+    return JSON.stringify(node.data);
+  }
+  if (node.nodeType !== 1) {
+    return "";
+  }
+  const attributes = [...node.attributes]
+    .filter((a) => a.name !== "data-hk")
+    .map((a) => [a.name, attributeValue(node, a)])
+    .filter(([name, value]) => !((name === "class" || name === "style") && value === ""))
+    .map(([name, value]) => ` ${name}=${JSON.stringify(value)}`)
+    .sort();
+  return `<${node.localName}${attributes.join("")}>${outline(node)}</${node.localName}>`;
+};
+
+const runClient = async (dir, entry, solid) => {
+  const { JSDOM } = await import("jsdom");
+  const dom = new JSDOM(await readFile(join(dir, "server.html"), "utf8"), { runScripts: "dangerously" });
+  const { window } = dom;
+  for (const name of ["window", "document", "Node", "Element", "HTMLElement", "SVGElement", "Text", "Comment", "DocumentFragment"]) {
+    globalThis[name] = window[name];
+  }
+  check(window._$HY !== undefined, "the hydration script did not run (no _$HY)");
+  globalThis._$HY = window._$HY;
+
+  const logged = [];
+  for (const level of ["error", "warn"]) {
+    console[level] = (...args) => logged.push(`console.${level}: ${args.join(" ")}`);
+  }
+
+  const { createSignal } = await import("solid-js");
+  const { hydrate, render } = await import("solid-js/web");
+  const { Streamdown } = await importPackage(entry, solid);
+
+  // What a client-only render of the same props produces.
+  const freshOutline = (props) => {
+    const container = document.createElement("div");
+    const dispose = render(() => Streamdown(props), container);
+    const result = outline(container);
+    dispose();
+    return result;
+  };
+  const matchesFresh = (root, props, step) => {
+    const expected = freshOutline(props);
+    const actual = outline(root);
+    check(actual === expected, `${step}: hydrated DOM differs from a client render\n    hydrated: ${actual}\n    client:   ${expected}`);
+  };
+
+  // A document streamed into after hydration.
+  const docRoot = document.getElementById("document");
+  const serverElements = [...docRoot.querySelectorAll("*")];
+  const serverText = textNodes(docRoot);
+  const serverParagraph = docRoot.querySelector("p");
+  const serverTail = serverParagraph?.lastChild;
+  check(serverTail?.nodeType === 3 && serverTail.data === " text", `server paragraph does not end in " text": ${serverParagraph?.outerHTML}`);
+
+  const [markdown, setMarkdown] = createSignal(DOCUMENT);
+  const disposeDocument = hydrate(
+    () => Streamdown({ get children() { return markdown(); } }),
+    docRoot,
+    { renderId: "d" }
+  );
+
+  const bodyText = document.body.textContent;
+  check(occurrences(bodyText, "Hi") === 1, `"Hi" appears ${occurrences(bodyText, "Hi")} times after hydration`);
+  check(occurrences(bodyText, "Some bold text") === 1, `"Some bold text" appears ${occurrences(bodyText, "Some bold text")} times after hydration`);
+  check(document.querySelectorAll("h1").length === 1, `${document.querySelectorAll("h1").length} h1 elements after hydration`);
+  check(document.querySelectorAll("li").length === 2, `${document.querySelectorAll("li").length} li elements after hydration`);
+  const strongCount = document.querySelectorAll('[data-streamdown="strong"]').length;
+  check(strongCount === 1, `${strongCount} strong elements after hydration`);
+
+  // Hydration adopts every server node instead of rendering its own.
+  const hydratedElements = [...docRoot.querySelectorAll("*")];
+  check(
+    hydratedElements.length === serverElements.length && hydratedElements.every((el, i) => el === serverElements[i]),
+    "hydration replaced server elements"
+  );
+  const hydratedText = textNodes(docRoot);
+  check(
+    hydratedText.length === serverText.length && hydratedText.every((node, i) => node === serverText[i]),
+    "hydration replaced server text nodes"
+  );
+  check(serverParagraph?.lastChild === serverTail, "the paragraph's server text node was not adopted");
+  matchesFresh(docRoot, { children: DOCUMENT }, "after hydration");
+
+  // The first update after hydration takes over the server's text node; from
+  // then on the paragraph's tail node must stay the same node.
+  const tails = [];
+  for (const [step, next] of DOCUMENT_UPDATES.entries()) {
+    setMarkdown(next);
+    const paragraph = docRoot.querySelector("p");
+    const expectedText = next.split("\n\n")[1].replaceAll("**", "");
+    check(paragraph === serverParagraph, `update ${step + 1}: the paragraph element was replaced`);
+    check(paragraph?.textContent === expectedText, `update ${step + 1}: paragraph reads ${JSON.stringify(paragraph?.textContent)}, expected ${JSON.stringify(expectedText)}`);
+    tails.push(paragraph?.lastChild);
+    matchesFresh(docRoot, { children: next }, `update ${step + 1}`);
+  }
+  check(tails.every((tail) => tail?.isConnected), "a paragraph tail text node is detached");
+  check(tails.every((tail) => tail === tails[0]), "the paragraph's tail text node changed after the first update");
+  const finalText = docRoot.textContent;
+  check(occurrences(finalText, "Some bold text and more still") === 1, "the streamed paragraph is duplicated or missing");
+  check(occurrences(finalText, "A new paragraph") === 1, "the paragraph added after hydration is duplicated or missing");
+
+  // Caret suppression across hydration (upstream caret-suppression "hydrates
+  // without a mismatch when the caret is suppressed").
+  const caretRoot = document.getElementById("caret");
+  const [caretMarkdown, setCaretMarkdown] = createSignal(TABLE);
+  const caretProps = (children) => ({ caret: "block", children, isAnimating: true });
+  const disposeCaret = hydrate(
+    () => Streamdown({ caret: "block", isAnimating: true, get children() { return caretMarkdown(); } }),
+    caretRoot,
+    { renderId: "c" }
+  );
+  const caretContainer = caretRoot.firstElementChild;
+  check(caretContainer?.lastElementChild?.hasAttribute(CARET_HIDDEN) === true, "the table is not caret-suppressed after hydration");
+  matchesFresh(caretRoot, caretProps(TABLE), "caret after hydration");
+
+  setCaretMarkdown(TABLE_THEN_PROSE);
+  check(caretContainer?.className.includes(CARET_CLASS) === true, "the caret classes are missing once prose follows the table");
+  check(caretRoot.querySelector(`[${CARET_HIDDEN}]`) === null, "an element is still caret-suppressed once prose follows the table");
+  matchesFresh(caretRoot, caretProps(TABLE_THEN_PROSE), "caret after prose");
+
+  disposeDocument();
+  disposeCaret();
+  window.close();
+  check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
+  finish(`hydration (dist/${entry})`);
+};
+
+const runChild = (args) => {
+  const result = spawnSync(process.execPath, args, { stdio: "inherit" });
+  if (result.status !== 0) {
+    printError(`hydration check failed: ${args.join(" ")} exited with ${result.status ?? result.signal}`);
+  }
+  return result.status === 0;
+};
+
+const [role, ...args] = process.argv.slice(2);
+if (role === "server") {
+  await runServer(...args);
+} else if (role === "client") {
+  await runClient(...args);
+} else {
+  await checkBuildOutput();
+  const work = await mkdtemp(join(tmpdir(), "solid-streamdown-hydration-"));
+  let ok;
+  try {
+    ok =
+      runChild([SCRIPT, "server", work]) &&
+      CLIENT_PASSES.every(({ conditions, entry, solid }) =>
+        runChild([...conditions.map((c) => `--conditions=${c}`), SCRIPT, "client", work, entry, solid])
+      );
+  } finally {
+    await rm(work, { force: true, recursive: true });
+  }
+  if (!ok) {
+    process.exit(1);
+  }
+  console.log("hydration ok");
+}

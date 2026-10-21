@@ -52,7 +52,8 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:hydration": "node scripts/hydration-check.mjs"
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"
