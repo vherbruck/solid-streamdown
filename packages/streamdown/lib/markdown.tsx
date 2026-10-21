@@ -60,56 +60,102 @@ export interface Options {
 const EMPTY_PLUGINS: PluggableList = [];
 const DEFAULT_REMARK_REHYPE_OPTIONS = { allowDangerousHtml: true };
 
-// Identity keys: each function or object gets a stable number, so two
+// Plugin functions are keyed by identity: each gets a stable number, so two
 // different plugins that share a name never share a processor.
 const identityIds = new WeakMap<object, number>();
 let nextIdentityId = 0;
 
-const identityKey = (value: unknown): string => {
-  if (
-    (typeof value === "object" && value !== null) ||
-    typeof value === "function"
-  ) {
-    let id = identityIds.get(value);
-    if (id === undefined) {
-      nextIdentityId += 1;
-      id = nextIdentityId;
-      identityIds.set(value, id);
+const identityKey = (value: object): string => {
+  let id = identityIds.get(value);
+  if (id === undefined) {
+    nextIdentityId += 1;
+    id = nextIdentityId;
+    identityIds.set(value, id);
+  }
+  return `#${id}`;
+};
+
+const isPlainObject = (value: object): boolean => {
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+};
+
+class CyclicValueError extends Error {}
+
+// Deterministic serialization with sorted keys. Functions and non-plain
+// objects (class instances, RegExp, Map, ...) serialize by identity.
+const structuralKey = (value: unknown, ancestors: object[]): string => {
+  if (typeof value === "function") {
+    return identityKey(value);
+  }
+  if (typeof value !== "object" || value === null) {
+    return `${typeof value}:${String(value)}`;
+  }
+  if (!(Array.isArray(value) || isPlainObject(value))) {
+    return identityKey(value);
+  }
+  if (ancestors.includes(value)) {
+    throw new CyclicValueError();
+  }
+  ancestors.push(value);
+  const key = Array.isArray(value)
+    ? `[${value.map((item) => structuralKey(item, ancestors)).join(",")}]`
+    : `{${Object.keys(value)
+        .sort()
+        .map(
+          (name) =>
+            `${JSON.stringify(name)}:${structuralKey((value as Record<string, unknown>)[name], ancestors)}`
+        )
+        .join(",")}}`;
+  ancestors.pop();
+  return key;
+};
+
+const optionsKey = (value: unknown): string => {
+  try {
+    return structuralKey(value, []);
+  } catch (error) {
+    if (error instanceof CyclicValueError && typeof value === "object") {
+      return identityKey(value as object);
     }
-    return `#${id}`;
+    throw error;
   }
-  // Primitives (and undefined, which JSON.stringify skips) serialize by value
-  return `${typeof value}:${String(value)}`;
 };
 
-const serializePlugins = (plugins: PluggableList | undefined): string => {
-  if (!plugins || plugins.length === 0) {
-    return "";
+const pluginKey = (plugin: unknown): string => {
+  if (Array.isArray(plugin)) {
+    const [attacher, ...rest] = plugin;
+    return `${pluginKey(attacher)}:${rest.map(optionsKey).join(":")}`;
   }
-  return plugins
-    .map((plugin) =>
-      Array.isArray(plugin)
-        ? `${identityKey(plugin[0])}:${plugin
-            .slice(1)
-            .map(identityKey)
-            .join(":")}`
-        : identityKey(plugin)
-    )
-    .join(",");
+  if (typeof plugin === "function" || (typeof plugin === "object" && plugin !== null)) {
+    // Presets and attachers are keyed by identity
+    return identityKey(plugin);
+  }
+  return `${typeof plugin}:${String(plugin)}`;
 };
 
-const generateCacheKey = (options: Readonly<Options>): string => {
-  const { rehypePlugins, remarkPlugins, remarkRehypeOptions } = options;
+const serializePlugins = (plugins: PluggableList | undefined): string =>
+  plugins ? plugins.map(pluginKey).join(",") : "";
 
+// The props that decide which processor is built, read once per parse so the
+// cache key and the processor are always made from the same values.
+type ProcessorConfig = Pick<
+  Options,
+  "rehypePlugins" | "remarkPlugins" | "remarkRehypeOptions"
+>;
+
+const generateCacheKey = ({
+  rehypePlugins,
+  remarkPlugins,
+  remarkRehypeOptions,
+}: ProcessorConfig): string => {
   // Fast path for no plugins (most common case)
   if (!(rehypePlugins || remarkPlugins || remarkRehypeOptions)) {
     return "default";
   }
-
-  const optionsKey = remarkRehypeOptions
-    ? identityKey(remarkRehypeOptions)
-    : "";
-  return `${serializePlugins(remarkPlugins)}::${serializePlugins(rehypePlugins)}::${optionsKey}`;
+  return `${serializePlugins(remarkPlugins)}::${serializePlugins(rehypePlugins)}::${
+    remarkRehypeOptions ? optionsKey(remarkRehypeOptions) : ""
+  }`;
 };
 
 // LRU Cache for unified processors
@@ -118,8 +164,7 @@ class ProcessorCache {
   private readonly cache = new Map<string, any>();
   private readonly maxSize = 100;
 
-  get(options: Readonly<Options>) {
-    const key = generateCacheKey(options);
+  get(key: string) {
     const processor = this.cache.get(key);
 
     if (processor) {
@@ -132,9 +177,7 @@ class ProcessorCache {
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: Processor type is complex and varies with plugins
-  set(options: Readonly<Options>, processor: any): void {
-    const key = generateCacheKey(options);
-
+  set(key: string, processor: any): void {
     // Remove oldest entry if cache is full
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
@@ -151,15 +194,22 @@ class ProcessorCache {
 const processorCache = new ProcessorCache();
 
 const getCachedProcessor = (options: Readonly<Options>) => {
+  const config: ProcessorConfig = {
+    rehypePlugins: options.rehypePlugins,
+    remarkPlugins: options.remarkPlugins,
+    remarkRehypeOptions: options.remarkRehypeOptions,
+  };
+  const key = generateCacheKey(config);
+
   // Try to get from cache first
-  const cached = processorCache.get(options);
+  const cached = processorCache.get(key);
   if (cached) {
     return cached;
   }
 
   // Create new processor and cache it
-  const processor = createProcessor(options);
-  processorCache.set(options, processor);
+  const processor = createProcessor(config);
+  processorCache.set(key, processor);
   return processor;
 };
 
@@ -168,7 +218,7 @@ const hasRehypeRaw = (plugins: PluggableList): boolean =>
     Array.isArray(plugin) ? plugin[0] === rehypeRaw : plugin === rehypeRaw
   );
 
-const createProcessor = (options: Readonly<Options>) => {
+const createProcessor = (options: ProcessorConfig) => {
   const rehypePlugins = options.rehypePlugins || EMPTY_PLUGINS;
   const remarkPlugins = options.remarkPlugins || EMPTY_PLUGINS;
 

@@ -731,6 +731,60 @@ code block
     });
   });
 
+  describe("Processor reuse", () => {
+    const countCreations = (opt: () => number, updates: number) => {
+      let attacherCalls = 0;
+      const plugin = () => {
+        attacherCalls += 1;
+      };
+      const [text, setText] = createSignal("Text 0");
+      const options: Options = {
+        get children() {
+          return text();
+        },
+        // Fresh arrays and objects on every read
+        get rehypePlugins() {
+          return [[plugin, { opt: opt() }]] as Options["rehypePlugins"];
+        },
+        get remarkRehypeOptions() {
+          return { ...{ allowDangerousHtml: true } };
+        },
+      };
+      const { container } = render(() => <Markdown {...options} />);
+      for (let i = 1; i <= updates; i += 1) {
+        setText(`Text ${i}`);
+      }
+      expect(container.textContent).toBe(`Text ${updates}`);
+      return attacherCalls;
+    };
+
+    it("creates one processor across updates when props yield fresh equal objects", () => {
+      expect(countCreations(() => 1, 5)).toBe(1);
+    });
+
+    it("creates a new processor when an option value changes", () => {
+      let value = 1;
+      let calls = 0;
+      const plugin = () => {
+        calls += 1;
+      };
+      const [text, setText] = createSignal("a");
+      const options: Options = {
+        get children() {
+          return text();
+        },
+        get rehypePlugins() {
+          return [[plugin, { opt: value }]] as Options["rehypePlugins"];
+        },
+      };
+      render(() => <Markdown {...options} />);
+      expect(calls).toBe(1);
+      value = 2;
+      setText("b");
+      expect(calls).toBe(2);
+    });
+  });
+
   describe("Reactive components", () => {
     it("swapping components re-renders with the new components", () => {
       const [components, setComponents] = createSignal<Components>({
