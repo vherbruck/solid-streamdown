@@ -14,6 +14,9 @@ export default defineConfig({
           setupFiles: ["__tests__/setup.ts"],
           include: ["__tests__/**/*.test.{ts,tsx}"],
           exclude: ["__tests__/**/*.ssr.test.tsx", "**/node_modules/**"],
+          // Externalized, these packages import Solid through Node's resolver,
+          // which picks the server build instead of the browser build used here.
+          server: { deps: { inline: [/solid-js/, /@solidjs\/testing-library/] } },
         },
       },
       {
