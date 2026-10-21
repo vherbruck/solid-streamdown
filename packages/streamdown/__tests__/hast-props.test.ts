@@ -84,6 +84,36 @@ describe("toSolidProps", () => {
     });
   });
 
+  it("drops javascript: URLs in formAction and itemId, keeps safe ones", () => {
+    expect(
+      toSolidProps(el("button", { formAction: "javascript:alert(1)" }), "html")
+    ).toEqual({});
+    expect(toSolidProps(el("div", { itemId: "javascript:alert(1)" }), "html")).toEqual({});
+    expect(
+      toSolidProps(el("button", { formAction: "https://ok.example/" }), "html")
+    ).toEqual({ formaction: "https://ok.example/" });
+  });
+
+  it("drops kebab-case names that Solid maps to reserved properties on custom elements", () => {
+    expect(
+      toSolidProps(
+        el("x-a", {
+          "inner-h-t-m-l": "<img src=x onerror=alert(1)>",
+          "outer-h-t-m-l": "x",
+          "on-click": "x",
+          id: "ok",
+        }),
+        "html"
+      )
+    ).toEqual({ id: "ok" });
+  });
+
+  it("keeps data-* attributes whose names contain reserved-looking words", () => {
+    expect(toSolidProps(el("div", { dataOnline: "1" }), "html")).toEqual({
+      "data-online": "1",
+    });
+  });
+
   it("uses the SVG schema in svg space", () => {
     expect(toSolidProps(el("path", { strokeWidth: 2, viewBox: "0 0 1 1" }), "svg")).toEqual({
       "stroke-width": 2,

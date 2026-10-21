@@ -30,15 +30,27 @@ const isBlockedElement = (tagName: string): boolean => tagName.toLowerCase() ===
 
 const isBlockedName = (name: string): boolean => {
   const lower = name.toLowerCase();
-  return lower.startsWith("on") || lower.includes(":") || RESERVED_NAMES.has(lower);
+  // Solid turns kebab-case names on custom elements into camelCase properties
+  // (inner-h-t-m-l -> innerHTML), so compare with dashes removed as well.
+  const squashed = lower.replaceAll("-", "");
+  return (
+    lower.startsWith("on") ||
+    squashed.startsWith("on") ||
+    lower.includes(":") ||
+    RESERVED_NAMES.has(lower) ||
+    RESERVED_NAMES.has(squashed)
+  );
 };
 
+// urlAttributes is keyed by HAST property name (formAction); we look up by
+// lower-cased attribute name (formaction), so index it that way once.
+const URL_ATTRIBUTES = new Map(
+  Object.entries(urlAttributes).map(([key, elements]) => [key.toLowerCase(), elements])
+);
+
 const isUrlAttribute = (name: string, tagName: string): boolean => {
-  if (!Object.hasOwn(urlAttributes, name)) {
-    return false;
-  }
-  const elements = urlAttributes[name];
-  return elements === null || elements.includes(tagName);
+  const elements = URL_ATTRIBUTES.get(name.toLowerCase());
+  return elements !== undefined && (elements === null || elements.includes(tagName));
 };
 
 const hasDangerousScheme = (value: string): boolean =>
