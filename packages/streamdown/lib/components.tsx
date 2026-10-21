@@ -50,7 +50,7 @@ const Ul = styled(
   "list-inside list-disc whitespace-normal [li_&]:ps-6",
   "unordered-list"
 );
-const Strong = styled("strong", "font-semibold", "strong");
+const Strong = styled("span", "font-semibold", "strong");
 const H1 = styled("h1", "mt-6 mb-2 font-semibold text-3xl", "heading-1");
 const H2 = styled("h2", "mt-6 mb-2 font-semibold text-2xl", "heading-2");
 const H3 = styled("h3", "mt-6 mb-2 font-semibold text-xl", "heading-3");
@@ -102,8 +102,11 @@ const Li: Component<ElementProps> = (props) => {
 const P: Component<ElementProps> = (props) => {
   const [local, rest] = splitProps(props, ["node", "children", "class"]);
   // An image or block code renders as a <div>, which cannot sit inside a <p>.
+  // Upstream's valid-children filter drops only null, undefined and "", so
+  // whitespace-only text counts as a child and keeps the <p>; HAST has no
+  // empty children, so the filter is a no-op here.
   const unwrapped = createMemo(() => {
-    const content = contentChildren(props.node);
+    const content = props.node?.children ?? [];
     const [only] = content;
     return (
       content.length === 1 &&
@@ -191,26 +194,27 @@ const Section: Component<ElementProps> = (props) => {
   const [local, rest] = splitProps(props, ["node", "children", "class"]);
   const isFootnotes = () => "data-footnotes" in props;
   // Footnote items that hold only the backref appear while a definition is
-  // still streaming in. Drop them, and the whole section if none remain.
+  // still streaming in. Drop them, and drop the list if no real item remains.
+  // Mapping from React children: upstream sees "\n" strings as children of the
+  // section and the list, which HAST also has as text nodes. At section level
+  // they count as content, as in upstream, so the section survives with its
+  // heading. In the list they are not items (the ruling R14 mapping), so a list
+  // of only empty footnotes and "\n" is removed. The section itself goes only
+  // when no child at all remains.
   const footnoteChildren = createMemo((): RootContent[] | undefined => {
     if (!(isFootnotes() && props.node)) {
       return undefined;
     }
-    let hadList = false;
-    let hasItems = false;
-    const filtered = props.node.children.flatMap((child): RootContent[] => {
+    return props.node.children.flatMap((child): RootContent[] => {
       if (!(isElement(child) && child.tagName === "ol")) {
         return [child];
       }
-      hadList = true;
       const items = child.children.filter((item) => !isEmptyFootnote(item));
-      if (items.length === 0) {
+      if (items.every(isWhitespaceText)) {
         return [];
       }
-      hasItems = true;
       return [{ ...child, children: items }];
     });
-    return hadList && !hasItems ? [] : filtered;
   });
   return (
     <Show when={footnoteChildren()} fallback={

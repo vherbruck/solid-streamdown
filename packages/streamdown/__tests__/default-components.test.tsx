@@ -26,7 +26,7 @@ describe("simple element components", () => {
     ["ol", "1. a", "ol", "list-inside list-decimal whitespace-normal [li_&]:ps-6"],
     ["ul", "- a", "ul", "list-inside list-disc whitespace-normal [li_&]:ps-6"],
     ["hr", "---", "hr", "my-6 border-border"],
-    ["strong", "**a**", "strong", "font-semibold"],
+    ["strong", "**a**", "span[data-streamdown=strong]", "font-semibold"],
     ["h1", "# a", "h1", "mt-6 mb-2 font-semibold text-3xl"],
     ["h2", "## a", "h2", "mt-6 mb-2 font-semibold text-2xl"],
     ["h3", "### a", "h3", "mt-6 mb-2 font-semibold text-xl"],
@@ -82,12 +82,12 @@ describe("simple element components", () => {
 
   it("merges a consumer class after the defaults", () => {
     const c = html('<strong class="text-red-500">a</strong>');
-    expect(c.querySelector("strong")?.getAttribute("class")).toBe("font-semibold text-red-500");
+    expect(c.querySelector("[data-streamdown=strong]")?.getAttribute("class")).toBe("font-semibold text-red-500");
   });
 
   it("puts fixed props after spread props", () => {
     const c = html('<strong data-streamdown="evil">a</strong>');
-    expect(c.querySelector("strong")?.getAttribute("data-streamdown")).toBe("strong");
+    expect(c.querySelector("[data-streamdown=strong]")?.tagName).toBe("SPAN");
   });
 
   it("does not register a, img or table", () => {
@@ -110,10 +110,9 @@ describe("p", () => {
     expect(c.querySelector("img")).toBeTruthy();
   });
 
-  it("ignores whitespace text around the image", () => {
+  it("keeps the wrapper when whitespace text surrounds the image, as upstream does", () => {
     const c = html("<p>\n<img src=\"https://example.com/a.png\" alt=\"a\">\n</p>");
-    expect(c.querySelector("p")).toBeNull();
-    expect(c.querySelector("img")).toBeTruthy();
+    expect(c.querySelector("p img")).toBeTruthy();
   });
 
   it("keeps the wrapper when text accompanies the image", () => {
@@ -222,15 +221,29 @@ describe("section", () => {
     expect(c.querySelector("section")?.getAttribute("class")).toBe("footnotes");
   });
 
-  it("renders nothing when no footnote items remain", () => {
+  it("drops the list but keeps the section and heading when all items are empty", () => {
     const c = html(footnotes(`<li id="f1">\n${backref}</li><li id="f2"> ${backref}</li>`));
+    expect(c.querySelector("ol")).toBeNull();
+    expect(c.querySelector("section h2")?.textContent).toBe("Footnotes");
+  });
+
+  it("keeps the heading for the real remark-gfm footnote shape with newlines", () => {
+    const c = html(
+      `<section data-footnotes class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>\n<ol>\n<li id="user-content-fn-1">\n${backref}</li>\n</ol>\n</section>`
+    );
+    expect(c.querySelector("ol")).toBeNull();
+    expect(c.querySelector("li")).toBeNull();
+    expect(c.querySelector("section h2")?.textContent).toBe("Footnotes");
+  });
+
+  it("removes the section when nothing but an emptied list was in it", () => {
+    const c = html(`<section data-footnotes class="footnotes"><ol><li id="f1">${backref}</li></ol></section>`);
     expect(c.querySelector("section")).toBeNull();
-    expect(c.innerHTML).toBe("");
   });
 
   it("keeps an item whose content is an element other than the backref", () => {
     const c = html(footnotes(`<li id="f1"><p><strong>bold</strong>${backref}</p></li>`));
-    expect(c.querySelector("li strong")?.textContent).toBe("bold");
+    expect(c.querySelector("li [data-streamdown=strong]")?.textContent).toBe("bold");
   });
 
   it("renders footnotes from the real remark pipeline", () => {
@@ -260,7 +273,7 @@ describe("prefix context", () => {
         <Markdown components={components}>**a**</Markdown>
       </PrefixContext.Provider>
     ));
-    expect(container.querySelector("strong")?.getAttribute("class")).toBe("tw:font-semibold");
+    expect(container.querySelector("[data-streamdown=strong]")?.getAttribute("class")).toBe("tw:font-semibold");
   });
 
   it("falls back to the unprefixed cn without a provider", () => {

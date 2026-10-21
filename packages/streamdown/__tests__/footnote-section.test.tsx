@@ -56,11 +56,19 @@ describe("MemoSection footnote filtering", () => {
     expect(container.querySelector("li")).toBeTruthy();
   });
 
-  it("should return nothing when all footnotes are empty", () => {
+  it("should remove the section only when nothing else is in it", () => {
     const container = renderHtml(
-      `<section class="footnotes" data-footnotes=""><ol><li id="user-content-fn-1">\n${BACKREF}</li></ol></section>`
+      `<section class="footnotes" data-footnotes=""><ol><li id="user-content-fn-1">${BACKREF}</li></ol></section>`
     );
     expect(container.querySelector("section")).toBeFalsy();
+  });
+
+  it("should keep the section and heading when all footnotes are empty", () => {
+    const container = renderHtml(
+      `<section class="footnotes" data-footnotes=""><h2 class="sr-only">Footnotes</h2>\n<ol>\n<li id="user-content-fn-1">\n${BACKREF}</li>\n</ol>\n</section>`
+    );
+    expect(container.querySelector("ol")).toBeNull();
+    expect(container.querySelector("section h2")?.textContent).toBe("Footnotes");
   });
 
   it("should handle section with non-list children", () => {
