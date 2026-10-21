@@ -48,8 +48,16 @@ const URL_ATTRIBUTES = new Map(
   Object.entries(urlAttributes).map(([key, elements]) => [key.toLowerCase(), elements])
 );
 
+// React 19 checks these for a javascript: URL on every element, whatever the
+// tag (xlink:href is already dropped for its `:`).
+const URL_ATTRIBUTES_ON_ANY_TAG = new Set(["href", "src", "action", "formaction"]);
+
 const isUrlAttribute = (name: string, tagName: string): boolean => {
-  const elements = URL_ATTRIBUTES.get(name.toLowerCase());
+  const lower = name.toLowerCase();
+  if (URL_ATTRIBUTES_ON_ANY_TAG.has(lower)) {
+    return true;
+  }
+  const elements = URL_ATTRIBUTES.get(lower);
   return elements !== undefined && (elements === null || elements.includes(tagName));
 };
 

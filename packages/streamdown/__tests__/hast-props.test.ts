@@ -94,6 +94,16 @@ describe("toSolidProps", () => {
     ).toEqual({ formaction: "https://ok.example/" });
   });
 
+  it("drops javascript: URLs in href, src, action and formaction on any tag", () => {
+    expect(toSolidProps(el("mi", { href: "javascript:x" }), "html")).toEqual({});
+    expect(toSolidProps(el("a", { href: "javascript:x" }), "svg")).toEqual({});
+    expect(toSolidProps(el("div", { href: "javascript:x" }), "html")).toEqual({});
+    expect(toSolidProps(el("x-widget", { src: "javascript:x" }), "html")).toEqual({});
+    expect(toSolidProps(el("div", { action: "javascript:x" }), "html")).toEqual({});
+    expect(toSolidProps(el("div", { formAction: "javascript:x" }), "html")).toEqual({});
+    expect(toSolidProps(el("div", { href: "https://ok" }), "html")).toEqual({ href: "https://ok" });
+  });
+
   it("drops kebab-case names that Solid maps to reserved properties on custom elements", () => {
     expect(
       toSolidProps(

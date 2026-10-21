@@ -15,7 +15,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
-import { Dynamic, isServer } from "solid-js/web";
+import { Dynamic, escape, isServer } from "solid-js/web";
 import { isBlockedElement, type Space, toSolidProps } from "./hast-props";
 import type { Components } from "./markdown";
 
@@ -43,12 +43,47 @@ const RenderContext = createContext<Accessor<Components>>(() => ({}));
 
 const SpaceContext = createContext<Accessor<Space>>((): Space => "html");
 
+// React's server renderer escapes `<style` and `</style` in style text this
+// way (escapeStyleTextContent in react-dom): the `s` becomes a CSS escape for
+// the same letter, so the CSS is unchanged.
+const STYLE_TAG = /(<\/|<)(s)(tyle)/gi;
+const escapeStyleText = (text: string): string =>
+  text.replace(
+    STYLE_TAG,
+    (_, prefix: string, s: string, suffix: string) =>
+      `${prefix}${s === "s" ? "\\73 " : "\\53 "}${suffix}`
+  );
+
+/**
+ * Server only: how the text directly inside an element is escaped. Solid's
+ * server renderer writes a `style` element's children unescaped, so style
+ * text reading `</style>` would close the element and the rest would render
+ * as markup. In HTML, style content is raw text and gets React's escape.
+ * Inside svg or math, the browser parses style content as markup and decodes
+ * entities, so it is escaped as ordinary text.
+ */
+type ServerTextScope = { foreign: boolean; escape?: (text: string) => string };
+
+const ServerTextContext = createContext<ServerTextScope>({ foreign: false });
+
+const FOREIGN_ROOTS = new Set(["svg", "math"]);
+
+const serverTextScope = (parent: ServerTextScope, tagName: string): ServerTextScope => {
+  const tag = tagName.toLowerCase();
+  const foreign = parent.foreign || FOREIGN_ROOTS.has(tag);
+  if (tag !== "style") {
+    return { foreign };
+  }
+  return { foreign, escape: foreign ? (text) => escape(text) : escapeStyleText };
+};
+
 // A text node of our own, updated through `.data`, keeps its DOM identity as
 // text streams in. Solid's own text insertion replaces the node whenever an
 // array child's string changes.
 const HastText: Component<{ node: Text }> = (props) => {
   if (isServer) {
-    return props.node.value;
+    const scope = useContext(ServerTextContext);
+    return scope.escape ? scope.escape(props.node.value) : props.node.value;
   }
   if (sharedConfig.context) {
     return hydratingText(props);
@@ -148,6 +183,25 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
     )
   );
 
+  // On the server, tell the text inside how to escape itself; a component
+  // target is judged by the element's own tag. The provider is called as a
+  // function, not through JSX: as a component it would take a hydration key
+  // that the client, which renders no provider, never takes.
+  const textScope = isServer ? useContext(ServerTextContext) : undefined;
+  const children = (): JSX.Element => {
+    if (!textScope) {
+      return <HastNodes nodes={props.node.children} />;
+    }
+    const rendered = target();
+    const tag = typeof rendered === "string" ? rendered : props.node.tagName;
+    return ServerTextContext.Provider({
+      value: serverTextScope(textScope, tag),
+      get children() {
+        return <HastNodes nodes={props.node.children} />;
+      },
+    });
+  };
+
   return (
     <SpaceContext.Provider value={space}>
       <MappedElement
@@ -156,7 +210,7 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
         node={props.node}
         component={target()}
       >
-        <HastNodes nodes={props.node.children} />
+        {children()}
       </MappedElement>
     </SpaceContext.Provider>
   );
