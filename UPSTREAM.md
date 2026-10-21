@@ -24,6 +24,8 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `lib/plugin-context.tsx`, `lib/translations-context.tsx` | `.tsx` | Renamed `.ts` (no JSX) |
 | `CSVSeparator` | Imported from `lib/table/utils` | Declared in `lib/streamdown-context.ts` until the table utilities are ported (plan 2) |
 | Processor cache | Keyed by plugin name and serialized options | Keys plugin functions by identity (upstream: by name) and options structurally (as upstream) |
+| Streaming blocks | `memo` comparators on `Block` and `Streamdown`; blocks keyed by index | `<Index>` over the blocks; a custom `BlockComponent` receives reactive props (read `props.content`, don't destructure) |
+| `PluginContext` value inside `Streamdown` | `plugins ?? null` | A getter object over `props.plugins`, so `usePlugins()` is never `null` under `Streamdown`; its fields are `undefined` when no plugins are passed |
 
 ## Known upstream risks kept for parity
 

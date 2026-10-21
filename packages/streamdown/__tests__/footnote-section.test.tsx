@@ -5,14 +5,15 @@
  */
 import { render } from "@solidjs/testing-library";
 import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 import { describe, expect, it } from "vitest";
 import { components } from "../lib/components";
 import { Markdown } from "../lib/markdown";
 
 // Upstream builds React elements by hand and feeds them to the section
 // component. Here the same HTML goes through the full pipeline, so the
-// components receive real HAST nodes. Raw HTML stands in for footnote syntax
-// because remark-gfm is not part of this package yet.
+// components receive real HAST nodes. Raw HTML builds the exact section
+// shapes under test; one test uses real `[^1]` syntax through remark-gfm.
 const renderHtml = (source: string) =>
   render(() => (
     <Markdown components={components} rehypePlugins={[rehypeRaw]}>
@@ -31,8 +32,18 @@ describe("MemoSection footnote filtering", () => {
     expect(container.textContent).toContain("This is the footnote definition.");
   });
 
-  // needs remark-gfm, which arrives with the default plugins in Task 9, not plan 2
-  it.skip("should render footnotes written as [^1] markdown", () => {});
+  it("should render footnotes written as [^1] markdown", () => {
+    const { container } = render(() => (
+      <Markdown components={components} remarkPlugins={[remarkGfm]}>
+        {"Text with footnote[^1].\n\n[^1]: This is the footnote definition."}
+      </Markdown>
+    ));
+    expect(container.textContent).toContain("Text with footnote");
+    expect(container.querySelector("sup a[data-footnote-ref]")?.textContent).toBe("1");
+    expect(
+      container.querySelector("section[data-footnotes] li")?.textContent
+    ).toContain("This is the footnote definition.");
+  });
 
   it("should filter out empty footnote list items", () => {
     const container = renderHtml(
