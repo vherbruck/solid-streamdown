@@ -1,0 +1,100 @@
+import type { Element } from "hast";
+import { describe, expect, it } from "vitest";
+import { isBlockedElement, toSolidProps } from "../lib/hast-props";
+
+const el = (tagName: string, properties: Record<string, unknown>) =>
+  ({ type: "element", tagName, properties, children: [] }) as Element;
+
+describe("toSolidProps", () => {
+  it("maps HAST names to DOM attribute names", () => {
+    expect(
+      toSolidProps(
+        el("label", { className: ["a", "b"], htmlFor: "x", dataFoo: "1", ariaLabel: "L" }),
+        "html"
+      )
+    ).toEqual({ class: "a b", for: "x", "data-foo": "1", "aria-label": "L" });
+  });
+
+  it("keeps true booleans and omits false ones", () => {
+    expect(
+      toSolidProps(el("input", { type: "checkbox", checked: false, disabled: true }), "html")
+    ).toEqual({ type: "checkbox", disabled: true });
+  });
+
+  it("parses style strings into objects", () => {
+    expect(
+      toSolidProps(el("span", { style: "height:1.2em;vertical-align:-0.25em" }), "html")
+    ).toEqual({ style: { height: "1.2em", "vertical-align": "-0.25em" } });
+  });
+
+  it("omits style that fails to parse", () => {
+    expect(toSolidProps(el("span", { style: "a{b:c", id: "k" }), "html")).toEqual({ id: "k" });
+  });
+
+  it("turns a valid td/th align into text-align", () => {
+    expect(toSolidProps(el("td", { align: "center" }), "html")).toEqual({
+      style: { "text-align": "center" },
+    });
+    expect(toSolidProps(el("th", { align: "RIGHT" }), "html")).toEqual({
+      style: { "text-align": "right" },
+    });
+  });
+
+  it("merges text-align into an existing style object", () => {
+    expect(toSolidProps(el("td", { align: "left", style: "color:red" }), "html")).toEqual({
+      style: { color: "red", "text-align": "left" },
+    });
+  });
+
+  it("drops an align value that is not an allowed keyword", () => {
+    expect(
+      toSolidProps(el("td", { align: "center;color:red;position:fixed" }), "html")
+    ).toEqual({});
+  });
+
+  it("drops event handlers, namespaced and reserved names", () => {
+    expect(
+      toSolidProps(
+        el("div", {
+          onClick: "x",
+          onerror: "x",
+          "on:click": "x",
+          "prop:value": "x",
+          innerHTML: "<b>x</b>",
+          innerhtml: "x",
+          textContent: "x",
+          ref: "x",
+          classList: "x",
+          component: "script",
+          children: "x",
+          is: "x",
+          id: "ok",
+        }),
+        "html"
+      )
+    ).toEqual({ id: "ok" });
+  });
+
+  it("drops javascript: and vbscript: URLs, even obfuscated", () => {
+    expect(toSolidProps(el("a", { href: " JaVa\tScRiPt:alert(1)" }), "html")).toEqual({});
+    expect(toSolidProps(el("a", { href: "java\u0000script:alert(1)" }), "html")).toEqual({});
+    expect(toSolidProps(el("img", { src: "vbscript:x" }), "html")).toEqual({});
+    expect(toSolidProps(el("a", { href: "https://ok.example/" }), "html")).toEqual({
+      href: "https://ok.example/",
+    });
+  });
+
+  it("uses the SVG schema in svg space", () => {
+    expect(toSolidProps(el("path", { strokeWidth: 2, viewBox: "0 0 1 1" }), "svg")).toEqual({
+      "stroke-width": 2,
+      viewBox: "0 0 1 1",
+    });
+  });
+});
+
+describe("isBlockedElement", () => {
+  it("blocks script elements only", () => {
+    expect(isBlockedElement("SCRIPT")).toBe(true);
+    expect(isBlockedElement("style")).toBe(false);
+  });
+});

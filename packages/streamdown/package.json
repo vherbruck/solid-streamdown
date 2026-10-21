@@ -59,7 +59,12 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "comma-separated-tokens": "^2.0.3",
+    "html-url-attributes": "^3.0.1",
     "marked": "^18",
+    "property-information": "^7.2.0",
+    "space-separated-tokens": "^2.0.2",
+    "style-to-object": "^2.0.2",
     "tailwind-merge": "^3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
