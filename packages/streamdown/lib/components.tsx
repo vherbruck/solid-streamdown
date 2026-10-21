@@ -4,9 +4,9 @@
  * Modified for SolidJS by the solid-streamdown authors.
  */
 import type { Element, ElementContent, RootContent } from "hast";
-import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createMemo, type JSX, Show, splitProps, useContext } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { HastNode, HastNodes } from "./hast-render";
+import { HastNode, HastNodes, RenderContext } from "./hast-render";
 import type { Components, ExtraProps } from "./markdown";
 import { useCn } from "./prefix-context";
 
@@ -80,13 +80,22 @@ const Hr: Component<ElementProps> = (props) => {
   return <hr {...(rest as JSX.HTMLAttributes<HTMLHRElement>)} class={cn("my-6 border-border", local.class)} data-streamdown="horizontal-rule" />;
 };
 
+// Upstream drops only "\n" and "" children before looking for a lone paragraph.
+const isLineBreakText = (node: RootContent): boolean =>
+  node.type === "text" && (node.value === "\n" || node.value === "");
+
 const Li: Component<ElementProps> = (props) => {
   const cn = useCn();
+  const components = useContext(RenderContext);
   const [local, rest] = splitProps(props, ["node", "children", "class"]);
   // A list item whose only content is a paragraph renders that paragraph's
-  // children directly, so tight and loose lists look alike.
+  // children directly, so tight and loose lists look alike. As upstream, only
+  // the built-in paragraph is unwrapped; a consumer's own `p` is kept.
   const onlyParagraph = createMemo(() => {
-    const content = contentChildren(props.node);
+    if (Object.getOwnPropertyDescriptor(components(), "p")?.value !== P) {
+      return undefined;
+    }
+    const content = props.node?.children.filter((child) => !isLineBreakText(child)) ?? [];
     const [only] = content;
     return content.length === 1 && isElement(only) && only.tagName === "p" ? only : undefined;
   });
