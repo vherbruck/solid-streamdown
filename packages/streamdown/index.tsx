@@ -824,7 +824,10 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     return hasIncompleteCodeFence(lastBlock) || hasTable(lastBlock);
   });
 
-  const { ref: caretHostRef, showCaret } = createCaretHost(shouldHideCaret);
+  const { ref: caretHostRef, showCaret } = createCaretHost(
+    shouldHideCaret,
+    () => blocks()
+  );
 
   return (
     <TranslationsContext.Provider value={translationsValue}>

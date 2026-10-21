@@ -18,14 +18,20 @@ interface CaretHost {
  * `data-sd-caret-hidden`, and report whether the container should keep its
  * caret classes.
  */
-export const createCaretHost = (shouldHide: Accessor<boolean>): CaretHost => {
+export const createCaretHost = (
+  shouldHide: Accessor<boolean>,
+  track: Accessor<unknown>
+): CaretHost => {
   let container: HTMLDivElement | undefined;
   let marked: Element | null = null;
 
   // Only the client can mark the caret's host, so server markup leaves the
   // caret off the container whenever it should be hidden. Solid's
   // createEffect runs after the DOM updates, like upstream's useLayoutEffect.
+  // `track` is any accessor whose change means the container may have a new
+  // last element, standing in for upstream's run-on-every-commit effect.
   createEffect(() => {
+    track();
     const host = shouldHide() ? (container?.lastElementChild ?? null) : null;
     if (marked === host) {
       return;

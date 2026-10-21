@@ -138,6 +138,46 @@ describe("caret suppression", () => {
     );
   });
 
+  it("moves the mark to a second table appended in one update", () => {
+    const table = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
+    const [text, setText] = createSignal(table);
+    const { container } = render(() => (
+      <Streamdown caret="block" isAnimating={true}>
+        {text()}
+      </Streamdown>
+    ));
+    const attribute = suppressionAttribute(container);
+    const first = streamdownContainer(container)?.lastElementChild;
+    expect(first?.hasAttribute(attribute)).toBe(true);
+
+    setText(`${table}\n\nprose\n\n| A | B |\n| --- | --- |\n| 1 | 2 |`);
+
+    const last = streamdownContainer(container)?.lastElementChild;
+    expect(last).not.toBe(first);
+    expect(last?.hasAttribute(attribute)).toBe(true);
+    expect(first?.hasAttribute(attribute)).toBe(false);
+  });
+
+  it("moves the mark from a table to an open fence appended in one update", () => {
+    const closed = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
+    const [text, setText] = createSignal(closed);
+    const { container } = render(() => (
+      <Streamdown caret="block" isAnimating={true}>
+        {text()}
+      </Streamdown>
+    ));
+    const attribute = suppressionAttribute(container);
+    const first = streamdownContainer(container)?.lastElementChild;
+    expect(first?.hasAttribute(attribute)).toBe(true);
+
+    setText(`${closed}\n\n\`\`\`js\nconst b = 2;`);
+
+    const last = streamdownContainer(container)?.lastElementChild;
+    expect(last).not.toBe(first);
+    expect(last?.hasAttribute(attribute)).toBe(true);
+    expect(first?.hasAttribute(attribute)).toBe(false);
+  });
+
   it("does not mark anything when the caret is not animating", () => {
     const { container } = render(() => (
       <Streamdown caret="block" isAnimating={false}>
