@@ -3,7 +3,7 @@ import type { Element, Root, RootContent } from "hast";
 import rehypeParse from "rehype-parse";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import { type Component, createSignal } from "solid-js";
+import { type Accessor, type Component, createSignal } from "solid-js";
 import { unified } from "unified";
 import { describe, expect, it } from "vitest";
 import { createHastTree, HastNode, HastNodes, RenderContext } from "../lib/hast-render";
@@ -21,16 +21,27 @@ const hastWith = (md: string, edit: (root: Root) => void): Root => {
 
 const rawHast = (source: string): Root => html.parse(source);
 
+// Builds the store tree once, outside any JSX prop getter, so updates go
+// through reconcile, and returns it so tests can check node identity.
+const renderHastTree = (source: Accessor<Root>) => {
+  let tree!: Root;
+  const result = render(() => {
+    tree = createHastTree(source);
+    return <HastNodes nodes={tree.children} />;
+  });
+  return { ...result, tree };
+};
+
 describe("HastNodes", () => {
   it("renders elements and text", () => {
     const [t] = createSignal(hast("Hello **world**"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container } = renderHastTree(t);
     expect(container.innerHTML).toBe("<p>Hello <strong>world</strong></p>");
   });
 
   it("keeps elements and text nodes when text is appended", () => {
     const [t, set] = createSignal(hast("Hello **world** and"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container } = renderHastTree(t);
     const p = container.querySelector("p")!;
     const strong = container.querySelector("strong")!;
     const tail = p.lastChild!;
@@ -43,10 +54,12 @@ describe("HastNodes", () => {
 
   it("keeps earlier blocks when a block is added", () => {
     const [t, set] = createSignal(hast("First"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container, tree } = renderHastTree(t);
+    const firstNode = tree.children[0];
     const first = container.querySelector("p")!;
     const text = first.firstChild!;
     set(hast("First\n\nSecond"));
+    expect(tree.children[0]).toBe(firstNode);
     expect(container.innerHTML).toBe("<p>First</p>\n<p>Second</p>");
     expect(container.querySelector("p")).toBe(first);
     expect(first.firstChild).toBe(text);
@@ -54,14 +67,14 @@ describe("HastNodes", () => {
 
   it("swaps the element when the tag changes", () => {
     const [t, set] = createSignal(hast("Hello"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container } = renderHastTree(t);
     set(hast("# Hello"));
     expect(container.innerHTML).toBe("<h1>Hello</h1>");
   });
 
   it("switches between text and element at the same position", () => {
     const [t, set] = createSignal(hast("a"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container } = renderHastTree(t);
     set(hast("*a*"));
     expect(container.innerHTML).toBe("<p><em>a</em></p>");
     set(hast("a"));
@@ -70,14 +83,17 @@ describe("HastNodes", () => {
 
   it("removes nodes when content shrinks", () => {
     const [t, set] = createSignal(hast("a **b**\n\nc"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container, tree } = renderHastTree(t);
+    const firstNode = tree.children[0];
     set(hast("a"));
+    expect(tree.children[0]).toBe(firstNode);
+    expect(tree.children).toHaveLength(1);
     expect(container.innerHTML).toBe("<p>a</p>");
   });
 
   it("updates attributes in place", () => {
     const [t, set] = createSignal(hast("[x](https://a.example)"));
-    const { container } = render(() => <HastNodes nodes={createHastTree(t).children} />);
+    const { container } = renderHastTree(t);
     const link = container.querySelector("a")!;
     set(hast("[x](https://b.example)"));
     expect(container.querySelector("a")).toBe(link);
@@ -104,11 +120,14 @@ describe("HastNodes", () => {
   it("gives mapped components the live store node", () => {
     const P: Component<any> = (p) => <p>{p.node.children.length}</p>;
     const [t, set] = createSignal(hast("a"));
-    const { container } = render(() => (
-      <RenderContext.Provider value={() => ({ p: P })}>
-        <HastNodes nodes={createHastTree(t).children} />
-      </RenderContext.Provider>
-    ));
+    const { container } = render(() => {
+      const tree = createHastTree(t);
+      return (
+        <RenderContext.Provider value={() => ({ p: P })}>
+          <HastNodes nodes={tree.children} />
+        </RenderContext.Provider>
+      );
+    });
     expect(container.innerHTML).toBe("<p>1</p>");
     set(hast("a *b* c"));
     expect(container.innerHTML).toBe("<p>3</p>");

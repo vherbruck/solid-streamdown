@@ -1,3 +1,8 @@
+/**
+ * Ported from vercel/streamdown packages/streamdown/__tests__/rehype-literal-tag-content.test.ts @ c5e44d8
+ * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
+ * Modified for SolidJS by the solid-streamdown authors.
+ */
 import rehypeParse from "rehype-parse";
 import rehypeStringify from "rehype-stringify";
 import { unified } from "unified";

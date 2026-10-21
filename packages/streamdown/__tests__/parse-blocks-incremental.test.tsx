@@ -1,3 +1,8 @@
+/**
+ * Ported from vercel/streamdown packages/streamdown/__tests__/parse-blocks-incremental.test.tsx @ c5e44d8
+ * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
+ * Modified for SolidJS by the solid-streamdown authors.
+ */
 import { Lexer } from "marked";
 import { describe, expect, it } from "vitest";
 import { parseMarkdownIntoBlocks } from "../lib/parse-blocks";

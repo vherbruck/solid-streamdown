@@ -14,7 +14,12 @@ const withoutHydrationKeys = (html: string): string =>
   html.replace(/ data-hk="[^"]*"/g, "").replaceAll(" >", ">");
 
 const renderTree = (tree: Root): string =>
-  withoutHydrationKeys(renderToString(() => <HastNodes nodes={createHastTree(() => tree).children} />));
+  withoutHydrationKeys(
+    renderToString(() => {
+      const store = createHastTree(() => tree);
+      return <HastNodes nodes={store.children} />;
+    })
+  );
 
 it("server-renders elements and text", () => {
   expect(renderTree(hast("Hello **world**"))).toContain("<p>Hello <strong>world</strong></p>");

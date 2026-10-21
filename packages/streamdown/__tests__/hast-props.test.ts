@@ -21,6 +21,16 @@ describe("toSolidProps", () => {
     ).toEqual({ type: "checkbox", disabled: true });
   });
 
+  it("joins comma-separated list values with commas", () => {
+    expect(toSolidProps(el("input", { accept: ["a", "b"] }), "html")).toEqual({ accept: "a, b" });
+  });
+
+  it("omits null, undefined and NaN values", () => {
+    expect(
+      toSolidProps(el("div", { id: null, title: undefined, tabIndex: Number.NaN, lang: "en" }), "html")
+    ).toEqual({ lang: "en" });
+  });
+
   it("parses style strings into objects", () => {
     expect(
       toSolidProps(el("span", { style: "height:1.2em;vertical-align:-0.25em" }), "html")
@@ -72,6 +82,18 @@ describe("toSolidProps", () => {
         }),
         "html"
       )
+    ).toEqual({ id: "ok" });
+  });
+
+  it("drops the reserved names innerText and outerHTML", () => {
+    expect(toSolidProps(el("div", { innerText: "x", outerHTML: "<b>x</b>", id: "ok" }), "html")).toEqual({
+      id: "ok",
+    });
+  });
+
+  it("drops Solid's attr:, use: and bool: prefixed names", () => {
+    expect(
+      toSolidProps(el("div", { "attr:title": "x", "use:tooltip": "x", "bool:hidden": "x", id: "ok" }), "html")
     ).toEqual({ id: "ok" });
   });
 

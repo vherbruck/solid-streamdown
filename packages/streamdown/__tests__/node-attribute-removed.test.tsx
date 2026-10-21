@@ -316,6 +316,7 @@ describe("Node Attribute Fix", () => {
       expect(table?.tagName.toLowerCase()).toBe("table");
     });
 
+    // plan 2: table component
     it.skip("should NOT have table-wrapper attribute on table element", () => {
       const Table = (components as Record<string, any>).table;
       const { container } = render(() => (
