@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm";
 import remend, { type RemendOptions } from "remend";
 import {
   type Component,
+  createEffect,
   createMemo,
   Index,
   type JSX,
@@ -22,7 +23,8 @@ import type { Pluggable, PluggableList } from "unified";
 import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
 import { MappedElement, resolveTarget } from "./lib/hast-render";
-import { hasIncompleteCodeFence } from "./lib/incomplete-code-utils";
+import { detectTextDirection } from "./lib/detect-direction";
+import { hasIncompleteCodeFence, hasTable } from "./lib/incomplete-code-utils";
 import {
   type Components,
   type ExtraProps,
@@ -35,6 +37,7 @@ import type { PluginConfig, ThemeInput } from "./lib/plugin-types";
 import { PrefixContext } from "./lib/prefix-context";
 import { preprocessCustomTags } from "./lib/preprocess-custom-tags";
 import { preprocessLiteralTagContent } from "./lib/preprocess-literal-tag-content";
+import { rehypeBlockDirection } from "./lib/rehype/block-direction";
 import { rehypeLiteralTagContent } from "./lib/rehype/literal-tag-content";
 import { remarkCodeMeta } from "./lib/remark/code-meta";
 import { remarkDisableAutolinkProtocols } from "./lib/remark/disable-autolink-protocols";
@@ -48,6 +51,7 @@ import {
   StreamdownContext,
   type StreamdownContextType,
 } from "./lib/streamdown-context";
+import { createCaretHost } from "./lib/use-caret-host";
 import {
   defaultTranslations,
   type StreamdownTranslations,
@@ -192,7 +196,6 @@ export interface AnimateOptions {
   stagger?: number;
 }
 
-// Task 10 renders these as the streaming caret.
 const carets = {
   block: " ▋",
   circle: " ●",
@@ -421,6 +424,9 @@ const ROOT_CLASSES =
   // Use [&>*] arbitrary variant syntax for Tailwind v3 + v4 compat (v3 lacks the *: variant)
   "space-y-4 whitespace-normal [&>*:first-child]:mt-0 [&>*:last-child]:mb-0";
 
+const CARET_CLASSES =
+  "[&>*:last-child:not([data-sd-caret-hidden])]:after:inline [&>*:last-child:not([data-sd-caret-hidden])]:after:align-baseline [&>*:last-child:not([data-sd-caret-hidden])]:after:content-[var(--streamdown-caret)]";
+
 const STREAMDOWN_DEFAULTS = {
   mode: "streaming",
   parseIncompleteMarkdown: true,
@@ -491,6 +497,30 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
       }
     }
     return attributes;
+  });
+
+  // null on the first run, so start can fire on mount when isAnimating is true
+  // without end firing on mount when it is false. The callbacks are read from
+  // props when firing, so changing them does not re-run the effect.
+  let prevIsAnimating: boolean | null = null;
+  createEffect(() => {
+    const isAnimating = props.isAnimating;
+    if (props.mode === "static") {
+      return;
+    }
+    const prev = prevIsAnimating;
+    prevIsAnimating = isAnimating;
+    if (prev === null) {
+      if (isAnimating) {
+        props.onAnimationStart?.();
+      }
+      return;
+    }
+    if (isAnimating && !prev) {
+      props.onAnimationStart?.();
+    } else if (!isAnimating && prev) {
+      props.onAnimationEnd?.();
+    }
   });
 
   const prefixedCn = createMemo(() => createCn(props.prefix));
@@ -766,26 +796,81 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
       result = [...result, math.rehypePlugin];
     }
 
+    if (props.dir === "auto" && props.mode === "static") {
+      result = [...result, rehypeBlockDirection];
+    }
+
     return result;
   });
+
+  // Per-block directions when dir="auto", so detection only re-runs when the
+  // blocks or dir change.
+  const blockDirections = createMemo(() =>
+    props.dir === "auto" ? blocks().map(detectTextDirection) : undefined
+  );
+
+  const caretStyle = createMemo(() =>
+    props.caret && props.isAnimating
+      ? ({ "--streamdown-caret": `"${carets[props.caret]}"` } as JSX.CSSProperties)
+      : undefined
+  );
+
+  const shouldHideCaret = createMemo(() => {
+    const all = blocks();
+    if (!props.isAnimating || all.length === 0) {
+      return false;
+    }
+    const lastBlock = all[all.length - 1] as string;
+    return hasIncompleteCodeFence(lastBlock) || hasTable(lastBlock);
+  });
+
+  const { ref: caretHostRef, showCaret } = createCaretHost(shouldHideCaret);
 
   return (
     <TranslationsContext.Provider value={translationsValue}>
       <PluginContext.Provider value={pluginsValue}>
         <StreamdownContext.Provider value={contextValue}>
           <PrefixContext.Provider value={cn}>
-            <div {...rootAttributes()} class={cn(ROOT_CLASSES, props.class)}>
+            <div
+              {...rootAttributes()}
+              class={cn(
+                ROOT_CLASSES,
+                props.mode !== "static" && props.caret && showCaret()
+                  ? CARET_CLASSES
+                  : null,
+                props.class
+              )}
+              dir={
+                props.mode === "static" && props.dir !== "auto"
+                  ? props.dir
+                  : undefined
+              }
+              ref={caretHostRef}
+              style={props.mode === "static" ? undefined : caretStyle()}
+            >
               <Show
                 when={props.mode === "static"}
                 fallback={
                   // Streaming mode: one block per parsed chunk. Index keeps each
                   // position's block, so a settled block's content never changes.
+                  <>
+                  <Show
+                    when={
+                      blocks().length === 0 && props.caret && props.isAnimating
+                    }
+                  >
+                    <span />
+                  </Show>
                   <Index each={blocks()}>
                     {(block, index) => (
                       <Dynamic
                         component={props.BlockComponent}
                         components={mergedComponents()}
                         content={block()}
+                        dir={
+                          blockDirections()?.[index] ??
+                          (props.dir !== "auto" ? props.dir : undefined)
+                        }
                         index={index}
                         isIncomplete={
                           props.isAnimating &&
@@ -804,6 +889,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
                       />
                     )}
                   </Index>
+                  </>
                 }
               >
                 {/* Static mode: simple rendering without streaming features */}

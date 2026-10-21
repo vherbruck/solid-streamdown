@@ -282,9 +282,8 @@ And an incomplete [link
   });
 });
 
-// Task 10: animation callbacks (onAnimationStart / onAnimationEnd)
 describe("animation callbacks", () => {
-  it.skip("fires onAnimationStart when isAnimating transitions false → true", () => {
+  it("fires onAnimationStart when isAnimating transitions false → true", () => {
     const onAnimationStart = vi.fn();
     const [animating, setAnimating] = createSignal(false);
     render(() => (
@@ -298,7 +297,7 @@ describe("animation callbacks", () => {
     expect(onAnimationStart).toHaveBeenCalledTimes(1);
   });
 
-  it.skip("fires onAnimationEnd when isAnimating transitions true → false", () => {
+  it("fires onAnimationEnd when isAnimating transitions true → false", () => {
     const onAnimationEnd = vi.fn();
     const [animating, setAnimating] = createSignal(true);
     render(() => (
@@ -312,7 +311,7 @@ describe("animation callbacks", () => {
     expect(onAnimationEnd).toHaveBeenCalledTimes(1);
   });
 
-  it.skip("fires onAnimationStart on initial mount when isAnimating={true}", () => {
+  it("fires onAnimationStart on initial mount when isAnimating={true}", () => {
     const onAnimationStart = vi.fn();
     render(() => (
       <Streamdown isAnimating={true} onAnimationStart={onAnimationStart}>
@@ -322,7 +321,7 @@ describe("animation callbacks", () => {
     expect(onAnimationStart).toHaveBeenCalledTimes(1);
   });
 
-  it.skip("does NOT fire onAnimationEnd on initial mount when isAnimating={false}", () => {
+  it("does NOT fire onAnimationEnd on initial mount when isAnimating={false}", () => {
     const onAnimationEnd = vi.fn();
     render(() => (
       <Streamdown isAnimating={false} onAnimationEnd={onAnimationEnd}>
@@ -332,7 +331,7 @@ describe("animation callbacks", () => {
     expect(onAnimationEnd).not.toHaveBeenCalled();
   });
 
-  it.skip("does not fire callbacks when isAnimating is unchanged across re-renders", () => {
+  it("does not fire callbacks when isAnimating is unchanged across re-renders", () => {
     const onAnimationStart = vi.fn();
     const onAnimationEnd = vi.fn();
     const [children, setChildren] = createSignal("content");
@@ -352,7 +351,7 @@ describe("animation callbacks", () => {
     expect(onAnimationEnd).not.toHaveBeenCalled();
   });
 
-  it.skip("fires callbacks correctly across multiple animation cycles", () => {
+  it("fires callbacks correctly across multiple animation cycles", () => {
     const onAnimationStart = vi.fn();
     const onAnimationEnd = vi.fn();
     const [animating, setAnimating] = createSignal(false);
@@ -375,7 +374,7 @@ describe("animation callbacks", () => {
     expect(onAnimationEnd).toHaveBeenCalledTimes(2);
   });
 
-  it.skip("does not throw when callbacks are not provided and isAnimating toggles", () => {
+  it("does not throw when callbacks are not provided and isAnimating toggles", () => {
     const [animating, setAnimating] = createSignal(false);
     render(() => <Streamdown isAnimating={animating()}>content</Streamdown>);
     expect(() => {
@@ -384,7 +383,7 @@ describe("animation callbacks", () => {
     }).not.toThrow();
   });
 
-  it.skip('suppresses callbacks in mode="static"', () => {
+  it('suppresses callbacks in mode="static"', () => {
     const onAnimationStart = vi.fn();
     const onAnimationEnd = vi.fn();
     const [animating, setAnimating] = createSignal(false);
@@ -404,5 +403,26 @@ describe("animation callbacks", () => {
 
     expect(onAnimationStart).not.toHaveBeenCalled();
     expect(onAnimationEnd).not.toHaveBeenCalled();
+  });
+
+  it("fires animation callbacks on isAnimating transitions only", () => {
+    const start = vi.fn();
+    const end = vi.fn();
+    const [on, setOn] = createSignal(true);
+    render(() => (
+      <Streamdown
+        isAnimating={on()}
+        onAnimationEnd={end}
+        onAnimationStart={start}
+      >
+        {"x"}
+      </Streamdown>
+    ));
+    expect(start).toHaveBeenCalledTimes(1);
+    expect(end).not.toHaveBeenCalled();
+    setOn(false);
+    expect(end).toHaveBeenCalledTimes(1);
+    setOn(true);
+    expect(start).toHaveBeenCalledTimes(2);
   });
 });
