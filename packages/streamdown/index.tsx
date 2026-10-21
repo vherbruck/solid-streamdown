@@ -21,6 +21,7 @@ import { Dynamic } from "solid-js/web";
 import type { Pluggable, PluggableList } from "unified";
 import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
+import { MappedElement, resolveTarget } from "./lib/hast-render";
 import { hasIncompleteCodeFence } from "./lib/incomplete-code-utils";
 import {
   type Components,
@@ -619,14 +620,17 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     };
 
     if (inlineCode) {
-      const BlockCode = merged.code as Component<CodeProps> | undefined;
+      const BlockCode = merged.code;
+      // Both targets resolve as the renderer resolves map entries, so a
+      // string target passes the render guard and never receives `node`.
       merged.code = (codeProps: CodeProps) => (
-        <Show
-          when={"data-block" in codeProps}
-          fallback={<Dynamic component={inlineCode} {...codeProps} />}
-        >
-          <Dynamic component={BlockCode} {...codeProps} />
-        </Show>
+        <MappedElement
+          {...codeProps}
+          component={resolveTarget(
+            "code",
+            "data-block" in codeProps ? BlockCode : inlineCode
+          )}
+        />
       );
     }
 

@@ -11,6 +11,7 @@ import {
   Match,
   Switch,
   sharedConfig,
+  splitProps,
   useContext,
 } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
@@ -81,6 +82,55 @@ const hydratingText = (props: { node: Text }): JSX.Element => {
   return read as unknown as JSX.Element;
 };
 
+/** What an element renders as: a component, a tag name, or nothing. */
+type RenderTarget = Component<any> | string | undefined;
+
+/**
+ * Resolves what `tagName` renders as, given its components-map entry. The tag
+ * and any replacement tag pass the render guard, and resolve to `undefined`
+ * (render nothing) when blocked. A missing or empty-string entry renders the
+ * tag itself.
+ */
+const resolveTarget = (tagName: string, mapped: unknown): RenderTarget => {
+  if (isBlockedElement(tagName)) {
+    return undefined;
+  }
+  if (typeof mapped === "function") {
+    return mapped as Components[string];
+  }
+  // A replacement tag passes the same guard, and renders nothing when blocked.
+  if (typeof mapped === "string" && mapped !== "") {
+    return isBlockedElement(mapped) ? undefined : mapped;
+  }
+  return tagName;
+};
+
+// `component` is safe as the target's prop name: the render guard drops it
+// from every element's props.
+type MappedElementProps = Record<string, unknown> & {
+  component: RenderTarget;
+  node?: Element;
+};
+
+/**
+ * Renders a target from `resolveTarget` with the given props. A component
+ * receives `node`; a tag name never does, so the HAST node cannot reach the
+ * DOM as an attribute. An `undefined` target renders nothing.
+ */
+const MappedElement: Component<MappedElementProps> = (props) => {
+  const [, tagProps] = splitProps(props, ["node"]);
+  return (
+    <Switch>
+      <Match when={typeof props.component === "function"}>
+        <Dynamic {...props} component={props.component} />
+      </Match>
+      <Match when={typeof props.component === "string"}>
+        <Dynamic {...tagProps} component={props.component} />
+      </Match>
+    </Switch>
+  );
+};
+
 const HastElement: Component<{ node: Element; extraProps?: Record<string, unknown> }> = (
   props
 ) => {
@@ -89,43 +139,25 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
   const space = createMemo<Space>(() =>
     parentSpace() === "svg" || props.node.tagName.toLowerCase() === "svg" ? "svg" : "html"
   );
-  const target = createMemo(() => {
-    const { tagName } = props.node;
-    if (isBlockedElement(tagName)) {
-      return undefined;
-    }
-    // Read through the descriptor so a Proxy-backed map can supply fallbacks.
-    // Entries must therefore be data properties, not getters.
-    const mapped: unknown = Object.getOwnPropertyDescriptor(components(), tagName)?.value;
-    if (typeof mapped === "function") {
-      return mapped as Components[string];
-    }
-    // A replacement tag passes the same guard, and renders nothing when blocked.
-    if (typeof mapped === "string" && mapped !== "") {
-      return isBlockedElement(mapped) ? undefined : mapped;
-    }
-    return tagName;
-  });
+  // Read through the descriptor so a Proxy-backed map can supply fallbacks.
+  // Entries must therefore be data properties, not getters.
+  const target = createMemo(() =>
+    resolveTarget(
+      props.node.tagName,
+      Object.getOwnPropertyDescriptor(components(), props.node.tagName)?.value
+    )
+  );
 
   return (
     <SpaceContext.Provider value={space}>
-      <Switch>
-        <Match when={typeof target() === "function"}>
-          <Dynamic
-            {...toSolidProps(props.node, space())}
-            {...props.extraProps}
-            node={props.node}
-            component={target()}
-          >
-            <HastNodes nodes={props.node.children} />
-          </Dynamic>
-        </Match>
-        <Match when={typeof target() === "string"}>
-          <Dynamic {...toSolidProps(props.node, space())} {...props.extraProps} component={target()}>
-            <HastNodes nodes={props.node.children} />
-          </Dynamic>
-        </Match>
-      </Switch>
+      <MappedElement
+        {...toSolidProps(props.node, space())}
+        {...props.extraProps}
+        node={props.node}
+        component={target()}
+      >
+        <HastNodes nodes={props.node.children} />
+      </MappedElement>
     </SpaceContext.Provider>
   );
 };
@@ -147,4 +179,4 @@ const HastNodes: Component<{ nodes: readonly RootContent[] }> = (props) => (
   <Index each={props.nodes}>{(node) => <HastNode node={node()} />}</Index>
 );
 
-export { createHastTree, HastNode, HastNodes, RenderContext };
+export { createHastTree, HastNode, HastNodes, MappedElement, RenderContext, resolveTarget };
