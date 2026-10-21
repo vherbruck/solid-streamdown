@@ -1,5 +1,22 @@
 import { createSignal } from "solid-js";
-import type { MarkdownStream, MarkdownStreamOptions } from "./types";
+
+export interface MarkdownStreamOptions {
+  /** Initial content before streaming begins */
+  initialContent?: string;
+}
+
+export interface MarkdownStream {
+  /** Append a chunk of markdown text */
+  write(chunk: string): void;
+  /** Signal that the stream is complete */
+  end(): void;
+  /** Current accumulated content (reactive signal) */
+  content: () => string;
+  /** Whether the stream is still active (reactive signal) */
+  isStreaming: () => boolean;
+  /** Reset the stream for reuse */
+  reset(): void;
+}
 
 export function createMarkdownStream(
   options?: MarkdownStreamOptions,

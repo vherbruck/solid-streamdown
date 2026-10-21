@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { createMarkdownStream } from "../src/create-markdown-stream";
+import { createMarkdownStream } from "../lib/create-markdown-stream";
 
 describe("createMarkdownStream", () => {
   it("starts with empty content", () => {

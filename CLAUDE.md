@@ -17,7 +17,7 @@ See `docs/spec.md` for full design spec and open questions.
 | Test | Vitest |
 | Markdown | unified + remark + rehype |
 | Syntax Highlighting | Shiki |
-| JSX Bridge | hast-util-to-jsx-runtime |
+| Reactive HAST renderer | `lib/hast-render.tsx` |
 | Runtime | Bun |
 
 ## Naming Conventions
@@ -37,13 +37,20 @@ See `docs/spec.md` for full design spec and open questions.
 - Pass accessors `() => value` for reactive props
 - No `useState`, `useEffect`, `useCallback`
 
+## Layout
+
+Bun-workspace monorepo. The main package is `packages/streamdown` (`solid-streamdown`):
+`index.tsx`, `lib/…` and `__tests__/…` mirror upstream's paths. Upstream tracking and
+deviations are in `UPSTREAM.md`. Licensed Apache-2.0 (see `LICENSE`, `NOTICE`).
+
 ## Commands
 
+Run from the repo root (each runs the script in every package):
+
 - `bun install` — install deps
-- `bun run build` — build library
-- `bun run dev` — build with watch
+- `bun run build` — build packages (tsup)
 - `bun run typecheck` — type check
-- `bun test` — run tests
+- `bun run test` — run tests (Vitest `dom` and `ssr` projects)
 
 ## What NOT To Do
 
