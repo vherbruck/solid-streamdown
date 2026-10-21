@@ -63,6 +63,7 @@
     "html-url-attributes": "^3.0.1",
     "marked": "^18",
     "property-information": "^7.2.0",
+    "rehype-raw": "^7.0.0",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "space-separated-tokens": "^2.0.2",

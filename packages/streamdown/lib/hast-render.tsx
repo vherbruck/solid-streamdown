@@ -16,10 +16,7 @@ import {
 import { createStore, reconcile } from "solid-js/store";
 import { Dynamic, isServer } from "solid-js/web";
 import { isBlockedElement, type Space, toSolidProps } from "./hast-props";
-
-// Minimal structural stand-in until the public `Components` type exists.
-// biome-ignore lint/suspicious/noExplicitAny: components accept arbitrary props
-type Components = Record<string, Component<any> | string | undefined>;
+import type { Components } from "./markdown";
 
 type HastNodeProps = {
   node: RootContent;

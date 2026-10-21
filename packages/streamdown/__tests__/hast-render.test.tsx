@@ -153,7 +153,7 @@ describe("HastNodes", () => {
   it.each(["script", "SCRIPT"])("renders nothing when a tag is mapped to %s", (tag) => {
     const tree = hast("x");
     const { container } = render(() => (
-      <RenderContext.Provider value={() => ({ p: tag })}>
+      <RenderContext.Provider value={() => ({ p: tag as never })}>
         <HastNodes nodes={tree.children} />
       </RenderContext.Provider>
     ));
@@ -164,7 +164,7 @@ describe("HastNodes", () => {
   it("treats an empty string mapping as unmapped", () => {
     const tree = hast("x");
     const { container } = render(() => (
-      <RenderContext.Provider value={() => ({ p: "" })}>
+      <RenderContext.Provider value={() => ({ p: "" as never })}>
         <HastNodes nodes={tree.children} />
       </RenderContext.Provider>
     ));

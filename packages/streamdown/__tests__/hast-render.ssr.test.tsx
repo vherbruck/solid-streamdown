@@ -27,7 +27,7 @@ it("escapes text on the server", () => {
 it.each(["script", "SCRIPT"])("server-renders nothing when a tag is mapped to %s", (tag) => {
   const tree = hast("x");
   const html = renderToString(() => (
-    <RenderContext.Provider value={() => ({ p: tag })}>
+    <RenderContext.Provider value={() => ({ p: tag as never })}>
       <HastNodes nodes={tree.children} />
     </RenderContext.Provider>
   ));
