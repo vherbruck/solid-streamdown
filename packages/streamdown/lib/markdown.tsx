@@ -83,10 +83,14 @@ const isPlainObject = (value: object): boolean => {
 class CyclicValueError extends Error {}
 
 // Deterministic serialization with sorted keys. Functions and non-plain
-// objects (class instances, RegExp, Map, ...) serialize by identity.
+// objects (class instances, RegExp, Map, ...) serialize by identity. Strings
+// are quoted, so no string can read as several joined values.
 const structuralKey = (value: unknown, ancestors: object[]): string => {
   if (typeof value === "function") {
     return identityKey(value);
+  }
+  if (typeof value === "string") {
+    return JSON.stringify(value);
   }
   if (typeof value !== "object" || value === null) {
     return `${typeof value}:${String(value)}`;

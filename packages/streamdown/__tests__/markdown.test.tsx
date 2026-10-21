@@ -729,6 +729,52 @@ code block
       expect(p2?.hasAttribute("data-b")).toBe(true);
       expect(p2?.hasAttribute("data-a")).toBe(false);
     });
+
+    // Renders once per option value with one plugin, and returns the options
+    // each new processor's attacher received.
+    const processorOptions = (...values: unknown[]): unknown[] => {
+      const received: unknown[] = [];
+      const plugin = (options: unknown) => {
+        received.push(options);
+      };
+      for (const value of values) {
+        render(() => (
+          <Markdown children="Hi" rehypePlugins={[[plugin, value]] as Options["rehypePlugins"]} />
+        ));
+      }
+      return received;
+    };
+
+    it("never shares a processor between option strings that join alike", () => {
+      expect(processorOptions(["a,string:b"], ["a", "b"])).toEqual([["a,string:b"], ["a", "b"]]);
+      expect(processorOptions({ j: 'b,"k":string:a' }, { j: "b", k: "a" })).toEqual([
+        { j: 'b,"k":string:a' },
+        { j: "b", k: "a" },
+      ]);
+    });
+
+    it("keys a cyclic option value by identity", () => {
+      const makeCyclic = () => {
+        const value: Record<string, unknown> = { a: 1 };
+        value.self = value;
+        return value;
+      };
+      const cyclic = makeCyclic();
+      const other = makeCyclic();
+      expect(processorOptions(cyclic, cyclic, other)).toEqual([cyclic, other]);
+    });
+
+    it("keys a class-instance option value by identity", () => {
+      class Settings {
+        constructor(readonly level: number) {}
+      }
+      const settings = new Settings(1);
+      const equal = new Settings(1);
+      const received = processorOptions(settings, settings, equal);
+      expect(received).toHaveLength(2);
+      expect(received[0]).toBe(settings);
+      expect(received[1]).toBe(equal);
+    });
   });
 
   describe("Processor reuse", () => {
