@@ -109,7 +109,9 @@ const Li: Component<ElementProps> = (props) => {
 };
 
 const P: Component<ElementProps> = (props) => {
-  const [local, rest] = splitProps(props, ["node", "children", "class"]);
+  // `class` stays in the spread, so the server writes no `class=""` when the
+  // paragraph has none.
+  const [local, rest] = splitProps(props, ["node", "children"]);
   // An image or block code renders as a <div>, which cannot sit inside a <p>.
   // Upstream's valid-children filter drops only null, undefined and "", so
   // whitespace-only text counts as a child and keeps the <p>; HAST has no
@@ -125,7 +127,7 @@ const P: Component<ElementProps> = (props) => {
   });
   return (
     <Show when={!unwrapped()} fallback={local.children}>
-      <p {...(rest as JSX.HTMLAttributes<HTMLParagraphElement>)} class={local.class}>
+      <p {...(rest as JSX.HTMLAttributes<HTMLParagraphElement>)}>
         {local.children}
       </p>
     </Show>
@@ -200,7 +202,8 @@ const isEmptyFootnote = (item: ElementContent): boolean => {
 };
 
 const Section: Component<ElementProps> = (props) => {
-  const [local, rest] = splitProps(props, ["node", "children", "class"]);
+  // `class` stays in the spread, as in `P`.
+  const [local, rest] = splitProps(props, ["node", "children"]);
   const isFootnotes = () => "data-footnotes" in props;
   // Footnote items that hold only the backref appear while a definition is
   // still streaming in. Drop them, and drop the list if no real item remains.
@@ -228,12 +231,12 @@ const Section: Component<ElementProps> = (props) => {
   return (
     <Show when={footnoteChildren()} fallback={
       <Show when={!isFootnotes()}>
-        <section {...(rest as JSX.HTMLAttributes<HTMLElement>)} class={local.class}>{local.children}</section>
+        <section {...(rest as JSX.HTMLAttributes<HTMLElement>)}>{local.children}</section>
       </Show>
     }>
       {(nodes) => (
         <Show when={nodes().length > 0}>
-          <section {...(rest as JSX.HTMLAttributes<HTMLElement>)} class={local.class}>
+          <section {...(rest as JSX.HTMLAttributes<HTMLElement>)}>
             <HastNodes nodes={nodes()} />
           </section>
         </Show>

@@ -110,10 +110,7 @@ const attributeValue = (node, attribute) =>
   attribute.name === "style" ? node.style.cssText : attribute.value.trim();
 
 // A comparable outline of a container's content: tags, attributes and text,
-// without comments and hydration keys. Server markup for a spread whose class
-// or style is undefined carries `class=""` or `style=""`; hydration leaves it
-// in place and the client never writes it. It has no effect, so an empty
-// class or style counts as absent.
+// without comments and hydration keys.
 const outline = (container) => [...container.childNodes].map(outlineNode).join("");
 
 const outlineNode = (node) => {
@@ -125,9 +122,7 @@ const outlineNode = (node) => {
   }
   const attributes = [...node.attributes]
     .filter((a) => a.name !== "data-hk")
-    .map((a) => [a.name, attributeValue(node, a)])
-    .filter(([name, value]) => !((name === "class" || name === "style") && value === ""))
-    .map(([name, value]) => ` ${name}=${JSON.stringify(value)}`)
+    .map((a) => ` ${a.name}=${JSON.stringify(attributeValue(node, a))}`)
     .sort();
   return `<${node.localName}${attributes.join("")}>${outline(node)}</${node.localName}>`;
 };

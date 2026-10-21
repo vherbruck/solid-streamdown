@@ -815,6 +815,13 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
       : undefined
   );
 
+  // A `style` key holding undefined still reaches server markup as
+  // `style=""`, so the root gets the key only while the caret sets a style.
+  const rootStyle = createMemo(() => {
+    const style = props.mode === "static" ? undefined : caretStyle();
+    return style ? { style } : {};
+  });
+
   const shouldHideCaret = createMemo(() => {
     const all = blocks();
     if (!props.isAnimating || all.length === 0) {
@@ -849,7 +856,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
                   : undefined
               }
               ref={caretHostRef}
-              style={props.mode === "static" ? undefined : caretStyle()}
+              {...rootStyle()}
             >
               <Show
                 when={props.mode === "static"}
