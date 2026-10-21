@@ -24,6 +24,21 @@ describe("Incomplete streaming links (#551)", () => {
     expect(container.textContent).not.toContain("[blocked]");
   });
 
+  it("should render incomplete markdown links via MarkdownA instead of harden [blocked] (plain element)", () => {
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see [the docs"}</Streamdown>
+    ));
+
+    expect(
+      container.querySelector('[title="Blocked URL: undefined"]')
+    ).toBeNull();
+    expect(container.textContent).not.toContain("[blocked]");
+
+    const link = container.querySelector('a[href="streamdown:incomplete-link"]');
+    expect(link).toBeTruthy();
+    expect(link?.textContent).toBe("the docs");
+  });
+
   // plan 2: link component (data-streamdown="link")
   it.skip("should render incomplete markdown links via MarkdownA instead of harden [blocked]", () => {
     const { container } = render(() => <Streamdown mode="streaming">{"see [the docs"}</Streamdown>
@@ -36,6 +51,21 @@ describe("Incomplete streaming links (#551)", () => {
     const link = container.querySelector('[data-streamdown="link"]');
     expect(link).toBeTruthy();
     expect(link?.getAttribute("data-incomplete")).toBe("true");
+    expect(link?.textContent).toBe("the docs");
+  });
+
+  it("should render incomplete URL tails via MarkdownA instead of harden [blocked] (plain element)", () => {
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see [the docs](https://exam"}</Streamdown>
+    ));
+
+    expect(
+      container.querySelector('[title="Blocked URL: undefined"]')
+    ).toBeNull();
+    expect(container.textContent).not.toContain("[blocked]");
+
+    const link = container.querySelector('a[href="streamdown:incomplete-link"]');
+    expect(link).toBeTruthy();
     expect(link?.textContent).toBe("the docs");
   });
 

@@ -286,7 +286,54 @@ describe("Node Attribute Fix", () => {
   });
 
   // plan 2: table component (table-wrapper, table controls)
+  // (upstream imports Table from ../lib/table; the tests use components.table until plan 2)
   describe.skip("Table Component - Correct data-streamdown attributes", () => {
+    it.skip("should have table-wrapper on div and table on table element", () => {
+      const Table = (components as Record<string, any>).table;
+      const { container } = render(() => (
+        <Table>
+          <thead>
+            <tr>
+              <th>Header</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cell</td>
+            </tr>
+          </tbody>
+        </Table>
+      ));
+
+      const wrapper = container.querySelector(
+        '[data-streamdown="table-wrapper"]'
+      );
+      expect(wrapper).toBeTruthy();
+      expect(wrapper?.tagName.toLowerCase()).toBe("div");
+
+      const table = container.querySelector('[data-streamdown="table"]');
+      expect(table).toBeTruthy();
+      expect(table?.tagName.toLowerCase()).toBe("table");
+    });
+
+    it.skip("should NOT have table-wrapper attribute on table element", () => {
+      const Table = (components as Record<string, any>).table;
+      const { container } = render(() => (
+        <Table>
+          <tbody>
+            <tr>
+              <td>Cell</td>
+            </tr>
+          </tbody>
+        </Table>
+      ));
+
+      const table = container.querySelector("table");
+      expect(table).toBeTruthy();
+      expect(table?.getAttribute("data-streamdown")).toBe("table");
+      expect(table?.getAttribute("data-streamdown")).not.toBe("table-wrapper");
+    });
+
     it("MemoTable should NOT pass table-wrapper to inner table element", () => {
       const MemoTable = (components as Record<string, any>).table;
       const { container } = render(() => (

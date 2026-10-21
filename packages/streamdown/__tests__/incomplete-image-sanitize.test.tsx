@@ -27,6 +27,19 @@ describe("Incomplete streaming images", () => {
     expect(container.textContent).not.toContain("[Image blocked");
   });
 
+  it("should render incomplete markdown images via ImageComponent instead of harden [blocked] (plain element)", () => {
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see ![the diag"}</Streamdown>
+    ));
+
+    expect(container.textContent).not.toContain("[Image blocked");
+    expect(container.querySelector('[title^="Blocked URL"]')).toBeNull();
+
+    const img = container.querySelector('img[src="streamdown:incomplete-image"]');
+    expect(img).toBeTruthy();
+    expect(img?.getAttribute("alt")).toBe("the diag");
+  });
+
   // plan 2: image component (image-wrapper, image-placeholder)
   it.skip("should render incomplete markdown images via ImageComponent instead of harden [blocked]", () => {
     const { container } = render(() => <Streamdown mode="streaming">{"see ![the diag"}</Streamdown>
@@ -46,6 +59,19 @@ describe("Incomplete streaming images", () => {
     expect(wrapper?.getAttribute("data-incomplete")).toBe("true");
   });
 
+  it("should render incomplete image URL tails via ImageComponent instead of harden [blocked] (plain element)", () => {
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see ![logo](https://exam"}</Streamdown>
+    ));
+
+    expect(container.textContent).not.toContain("[Image blocked");
+    expect(container.querySelector('[title^="Blocked URL"]')).toBeNull();
+
+    const img = container.querySelector('img[src="streamdown:incomplete-image"]');
+    expect(img).toBeTruthy();
+    expect(img?.getAttribute("alt")).toBe("logo");
+  });
+
   // plan 2: image component (image-wrapper, image-placeholder)
   it.skip("should render incomplete image URL tails via ImageComponent instead of harden [blocked]", () => {
     const { container } = render(() => <Streamdown mode="streaming">{"see ![logo](https://exam"}</Streamdown>
@@ -58,6 +84,19 @@ describe("Incomplete streaming images", () => {
       '[data-streamdown="image-placeholder"]'
     );
     expect(placeholder).toBeTruthy();
+  });
+
+  it("should not treat a normal https image as incomplete (plain element)", () => {
+    const { container } = render(() => (
+      <Streamdown mode="static">
+        {"![pixel](https://example.com/a.png)"}
+      </Streamdown>
+    ));
+
+    expect(
+      container.querySelector('[data-streamdown="image-placeholder"]')
+    ).toBeNull();
+    expect(container.querySelector("img")).toBeTruthy();
   });
 
   // plan 2: image component (image-wrapper, image-placeholder)

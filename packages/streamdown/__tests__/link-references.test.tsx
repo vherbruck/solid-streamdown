@@ -15,6 +15,26 @@ const parseFresh = (markdown: string): string[] => {
 };
 
 describe("link reference definitions", () => {
+  it("resolves a reference link whose definition is in a later block (plain element)", () => {
+    const markdown =
+      "See [the docs][1] for details.\n\nMore text here.\n\n[1]: https://example.com/docs\n";
+
+    const { container } = render(() => <Streamdown
+        linkSafety={{ enabled: false }}
+        parseIncompleteMarkdown={false}
+      >
+        {markdown}
+      </Streamdown>
+    );
+
+    const link = container.querySelector("a");
+    expect(link?.getAttribute("href")).toBe("https://example.com/docs");
+    expect(link?.textContent).toBe("the docs");
+    expect(container.textContent).not.toContain("[the docs][1]");
+    expect(container.textContent).not.toContain("[1]:");
+    expect(container.textContent).toContain("More text here.");
+  });
+
   // plan 2: link component (data-streamdown="link")
   it.skip("resolves a reference link whose definition is in a later block", () => {
     const markdown =
@@ -34,6 +54,25 @@ describe("link reference definitions", () => {
     expect(container.textContent).not.toContain("[the docs][1]");
     expect(container.textContent).not.toContain("[1]:");
     expect(container.textContent).toContain("More text here.");
+  });
+
+  it("resolves collapsed and shortcut references to an earlier definition (plain element)", () => {
+    const markdown =
+      "[docs]: https://example.com/docs\n\nRead [docs][] or [docs].\n";
+
+    const { container } = render(() => <Streamdown
+        linkSafety={{ enabled: false }}
+        parseIncompleteMarkdown={false}
+      >
+        {markdown}
+      </Streamdown>
+    );
+
+    const links = container.querySelectorAll("a");
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link.getAttribute("href")).toBe("https://example.com/docs");
+    }
   });
 
   // plan 2: link component (data-streamdown="link")
