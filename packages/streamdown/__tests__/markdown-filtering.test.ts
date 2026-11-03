@@ -5,7 +5,7 @@
  */
 import { render } from "@solidjs/testing-library";
 import { describe, expect, it, vi } from "vitest";
-import { defaultUrlTransform, Markdown } from "../lib/markdown";
+import { defaultUrlTransform, Markdown, parseMarkdownToHast } from "../lib/markdown";
 
 describe("Markdown post-processing", () => {
   describe("defaultUrlTransform", () => {
@@ -116,5 +116,29 @@ describe("Markdown post-processing", () => {
       // Raw HTML should be removed
       expect(container.innerHTML).not.toContain("<b>");
     });
+  });
+});
+
+describe("processor cache key", () => {
+  it("serializes a plugin entry's options once, not on every parse", () => {
+    let reads = 0;
+    const options = new Proxy(
+      { mode: "test" },
+      {
+        ownKeys(target) {
+          reads += 1;
+          return Reflect.ownKeys(target);
+        },
+      }
+    );
+    const noop = () => () => undefined;
+    const entry: [typeof noop, typeof options] = [noop, options];
+    parseMarkdownToHast({ children: "first", rehypePlugins: [entry] });
+    const afterFirst = reads;
+    expect(afterFirst).toBeGreaterThan(0);
+    parseMarkdownToHast({ children: "second", rehypePlugins: [entry] });
+    parseMarkdownToHast({ children: "third", rehypePlugins: [[...entry] as typeof entry] });
+    // The same entry is not walked again; an equal new entry is walked once.
+    expect(reads).toBe(afterFirst * 2);
   });
 });

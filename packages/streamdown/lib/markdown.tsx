@@ -127,10 +127,23 @@ const optionsKey = (value: unknown): string => {
   }
 };
 
+// Each plugin entry's key, by entry identity. Entries are usually stable
+// references (the default sanitize and harden tuples are module constants),
+// so their option objects are walked once instead of on every parse of every
+// streamed token. Mutating an entry's options in place after it has been
+// used therefore keeps the processor built from the earlier options.
+const entryKeys = new WeakMap<readonly unknown[], string>();
+
 const pluginKey = (plugin: unknown): string => {
   if (Array.isArray(plugin)) {
+    const known = entryKeys.get(plugin);
+    if (known !== undefined) {
+      return known;
+    }
     const [attacher, ...rest] = plugin;
-    return `${pluginKey(attacher)}:${rest.map(optionsKey).join(":")}`;
+    const key = `${pluginKey(attacher)}:${rest.map(optionsKey).join(":")}`;
+    entryKeys.set(plugin, key);
+    return key;
   }
   if (typeof plugin === "function" || (typeof plugin === "object" && plugin !== null)) {
     // Presets and attachers are keyed by identity
