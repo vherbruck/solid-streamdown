@@ -16,7 +16,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
-import { Dynamic, escape, getNextElement, isServer, spread } from "solid-js/web";
+import { Dynamic, escape, getNextElement, isServer, spread, ssrElement } from "solid-js/web";
 import { isBlockedElement, type Space, toSolidProps } from "./hast-props";
 import type { Components } from "./markdown";
 
@@ -221,14 +221,20 @@ const childSpace = (space: Space, node: Element): Space => {
 /**
  * Creates an SVG or MathML element in its namespace. Solid's Dynamic picks a
  * namespace from a fixed list of SVG tag names, so it would create MathML,
- * and SVG's `a`, `title` and `style`, as HTML elements. Client only: the
- * server writes markup, which the browser parses into the right namespace.
- * Props are set as attributes (Solid's SVG path) for MathML too.
+ * and SVG's `a`, `title` and `style`, as HTML elements. Props are set as
+ * attributes (Solid's SVG path) for MathML too.
+ *
+ * The server and client must build the same component tree, or hydration
+ * keys shift: on the server this writes markup exactly as Solid's server
+ * Dynamic does (the browser parses it into the right namespace).
  */
 const NamespacedElement: Component<
   Record<string, unknown> & { tag: string; namespace: "svg" | "math" }
 > = (props) => {
   const [local, others] = splitProps(props, ["tag", "namespace", "component"]);
+  if (isServer) {
+    return ssrElement(local.tag, others, undefined, true) as unknown as JSX.Element;
+  }
   const element = sharedConfig.context
     ? getNextElement()
     : document.createElementNS(NAMESPACE_URIS[local.namespace], local.tag);
@@ -254,9 +260,7 @@ const MappedElement: Component<MappedElementProps> = (props) => {
   const [, componentProps] = splitProps(props, ["namespace"]);
   const [, tagProps] = splitProps(props, ["node", "namespace"]);
   const foreignNamespace = () =>
-    !isServer && (props.namespace === "svg" || props.namespace === "math")
-      ? props.namespace
-      : undefined;
+    props.namespace === "svg" || props.namespace === "math" ? props.namespace : undefined;
   return (
     <Switch>
       <Match when={typeof props.component === "function"}>
