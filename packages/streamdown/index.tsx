@@ -32,7 +32,8 @@ import {
 } from "./lib/animate";
 import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
-import { MappedElement, resolveTarget } from "./lib/hast-render";
+import type { Root } from "hast";
+import { hastTextContent, MappedElement, resolveTarget } from "./lib/hast-render";
 import { detectTextDirection } from "./lib/detect-direction";
 import { type IconMap, IconProvider } from "./lib/icon-context";
 import { hasIncompleteCodeFence, hasTable } from "./lib/incomplete-code-utils";
@@ -415,6 +416,23 @@ export type BlockProps = Options & {
   /** Animate plugin instance for tracking previous content length */
   animatePlugin?: AnimatePlugin | null;
 };
+
+/**
+ * A rehype step run just before a block's animate plugin. Plugins live per
+ * block index, so a Streamdown reused for a new message would otherwise treat
+ * the new text as already revealed. Rendered text that is shorter than what
+ * the plugin last revealed is new content, so the plugin starts over. This
+ * counts all text, including subtrees the plugin skips, so text that only
+ * grows never triggers it. (Upstream resets only when `animated` changes.)
+ */
+const createAnimateReset =
+  (plugin: AnimatePlugin): Pluggable =>
+  () =>
+  (tree: Root) => {
+    if (hastTextContent(tree.children).length < plugin.getLastRenderCharCount()) {
+      plugin.setPrevContentLength(0);
+    }
+  };
 
 /**
  * Wraps a timeline for Solid, which has no render pass to begin one in.
@@ -920,11 +938,16 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     const { maxBacklogMs, ...pluginOptions } = options;
     const timeline = createPassTimeline(createAnimateTimeline({ maxBacklogMs }));
     const plugins: AnimatePlugin[] = [];
+    const resets: Pluggable[] = [];
     return {
       timeline,
       pluginFor: (index: number): AnimatePlugin => {
         plugins[index] ??= createRenderAnimatePlugin({ ...pluginOptions, timeline });
         return plugins[index];
+      },
+      resetFor: (index: number): Pluggable => {
+        resets[index] ??= createAnimateReset(plugins[index] as AnimatePlugin);
+        return resets[index];
       },
     };
   });
@@ -939,7 +962,8 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
   const blockRehypePlugins = (index: number): PluggableList => {
     const plugin = blockAnimatePlugin(index);
     const base = mergedRehypePlugins();
-    return plugin ? [...base, plugin.rehypePlugin] : base;
+    const current = animation();
+    return plugin && current ? [...base, current.resetFor(index), plugin.rehypePlugin] : base;
   };
 
   // Close the timeline pass once the DOM has updated (upstream: a layout

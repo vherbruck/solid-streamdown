@@ -102,3 +102,27 @@ describe("animate plugin commits", () => {
     expect(commits.length).toBeGreaterThan(afterFirst);
   });
 });
+
+describe("a reused Streamdown animating a new message", () => {
+  it("animates the new message after the content was cleared", () => {
+    const view = renderStreamdown({ animated, isAnimating: true, children: "one two three four five six" });
+    view.rerender({ animated, isAnimating: false, children: "one two three four five six" });
+    view.rerender({ animated, isAnimating: true, children: "" });
+    view.rerender({ animated, isAnimating: true, children: "seven eight" });
+    expect(spans(view.container).map(duration)).toEqual(["150ms", "150ms"]);
+  });
+
+  it("animates the new message when the content is swapped directly", () => {
+    const view = renderStreamdown({ animated, isAnimating: true, children: "one two three four five six" });
+    view.rerender({ animated, isAnimating: true, children: "seven eight" });
+    expect(spans(view.container).map(duration)).toEqual(["150ms", "150ms"]);
+  });
+
+  it("does not re-animate revealed words while the message grows", () => {
+    const view = renderStreamdown({ animated, isAnimating: true, children: "see [docs" });
+    view.rerender({ animated, isAnimating: true, children: "see [docs](https://example.com/a" });
+    view.rerender({ animated, isAnimating: true, children: "see [docs](https://example.com/a) now" });
+    const all = spans(view.container);
+    expect(all.slice(0, 2).map(duration)).toEqual(["0ms", "0ms"]);
+  });
+});
