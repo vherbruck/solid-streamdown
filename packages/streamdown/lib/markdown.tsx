@@ -9,11 +9,12 @@ import rehypeRaw from "rehype-raw";
 import remarkParse from "remark-parse";
 import type { Options as RemarkRehypeOptions } from "remark-rehype";
 import remarkRehype from "remark-rehype";
-import type { Component, JSX } from "solid-js";
+import { type Component, type JSX, useContext } from "solid-js";
 import type { PluggableList } from "unified";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { createHastTree, HastNodes, RenderContext } from "./hast-render";
+import { ParseObserverContext } from "./parse-observer-context";
 import { remarkEscapeHtml } from "./remark/escape-html";
 
 export interface ExtraProps {
@@ -363,7 +364,12 @@ export const parseMarkdownToHast = (options: Readonly<Options>): Root => {
 };
 
 export const Markdown: Component<Options> = (props) => {
-  const tree = createHastTree(() => parseMarkdownToHast(props));
+  const onParsed = useContext(ParseObserverContext);
+  const tree = createHastTree(() => {
+    const parsed = parseMarkdownToHast(props);
+    onParsed?.();
+    return parsed;
+  });
   return (
     <RenderContext.Provider value={() => props.components ?? {}}>
       <HastNodes nodes={tree.children} />

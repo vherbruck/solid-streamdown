@@ -12,6 +12,7 @@ import {
   type Component,
   createEffect,
   createMemo,
+  createSignal,
   Index,
   on,
   untrack,
@@ -41,6 +42,7 @@ import {
   Markdown,
   type Options,
 } from "./lib/markdown";
+import { ParseObserverContext } from "./lib/parse-observer-context";
 import { parseMarkdownIntoBlocks } from "./lib/parse-blocks";
 import { PluginContext } from "./lib/plugin-context";
 import type { PluginConfig, ThemeInput } from "./lib/plugin-types";
@@ -462,15 +464,15 @@ export const Block: Component<BlockProps> = (props) => {
     "animatePlugin",
   ]);
 
-  // After the block's tree updates, commit the new char count so the next
-  // parse treats already-visible text as settled (upstream: useLayoutEffect).
-  // Effects run after the parse, which is a computation, so this always
-  // follows the parse it commits.
+  // After each parse of this block, whatever caused it, commit the new char
+  // count so the next parse treats already-visible text as settled (upstream:
+  // a useLayoutEffect on every render). Markdown reports each parse; the
+  // effect runs after the DOM updates.
+  const [parses, setParses] = createSignal(0);
+  const onParsed = () => setParses((count) => count + 1);
   createEffect(() => {
-    local.content;
-    rest.rehypePlugins;
-    const plugin = local.animatePlugin;
-    untrack(() => plugin?.commit());
+    parses();
+    untrack(() => local.animatePlugin?.commit());
   });
 
   // Note: remend is already applied to the entire markdown before parsing into blocks
@@ -483,6 +485,7 @@ export const Block: Component<BlockProps> = (props) => {
   const inner = () => <Markdown {...rest}>{normalizedContent()}</Markdown>;
 
   return (
+    <ParseObserverContext.Provider value={onParsed}>
     <BlockIncompleteContext.Provider value={() => local.isIncomplete}>
       <Show when={local.dir} fallback={inner()}>
         {(dir) => (
@@ -492,6 +495,7 @@ export const Block: Component<BlockProps> = (props) => {
         )}
       </Show>
     </BlockIncompleteContext.Provider>
+    </ParseObserverContext.Provider>
   );
 };
 
