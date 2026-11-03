@@ -13,6 +13,8 @@ import {
   createEffect,
   createMemo,
   Index,
+  on,
+  untrack,
   type JSX,
   mergeProps,
   Show,
@@ -20,7 +22,13 @@ import {
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import type { Pluggable, PluggableList } from "unified";
-import type { AnimateOptions } from "./lib/animate";
+import {
+  type AnimateOptions,
+  type AnimatePlugin,
+  type AnimateTimeline,
+  createAnimateTimeline,
+  createRenderAnimatePlugin,
+} from "./lib/animate";
 import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
 import { MappedElement, resolveTarget } from "./lib/hast-render";
@@ -402,6 +410,44 @@ export type BlockProps = Options & {
   isIncomplete: boolean;
   /** Resolved text direction for this block */
   dir?: "ltr" | "rtl";
+  /** Animate plugin instance for tracking previous content length */
+  animatePlugin?: AnimatePlugin | null;
+};
+
+/**
+ * Wraps a timeline for Solid, which has no render pass to begin one in.
+ * A pass opens at the first mark/rewind/take after the last commit, so every
+ * block parsed in one update shares it; commitPass closes it.
+ */
+const createPassTimeline = (timeline: AnimateTimeline): AnimateTimeline => {
+  let open = false;
+  const ensureOpen = () => {
+    if (!open) {
+      timeline.beginPass(timeline.now());
+      open = true;
+    }
+  };
+  return {
+    ...timeline,
+    mark: () => {
+      ensureOpen();
+      return timeline.mark();
+    },
+    rewind: (mark) => {
+      ensureOpen();
+      timeline.rewind(mark);
+    },
+    take: (wordCount, stagger, now) => {
+      ensureOpen();
+      return timeline.take(wordCount, stagger, now);
+    },
+    commitPass: () => {
+      if (open) {
+        timeline.commitPass();
+        open = false;
+      }
+    },
+  };
 };
 
 export const Block: Component<BlockProps> = (props) => {
@@ -413,7 +459,19 @@ export const Block: Component<BlockProps> = (props) => {
     "index",
     "isIncomplete",
     "dir",
+    "animatePlugin",
   ]);
+
+  // After the block's tree updates, commit the new char count so the next
+  // parse treats already-visible text as settled (upstream: useLayoutEffect).
+  // Effects run after the parse, which is a computation, so this always
+  // follows the parse it commits.
+  createEffect(() => {
+    local.content;
+    rest.rehypePlugins;
+    const plugin = local.animatePlugin;
+    untrack(() => plugin?.commit());
+  });
 
   // Note: remend is already applied to the entire markdown before parsing into blocks
   // in the Streamdown component, so we don't need to apply it again here
@@ -836,6 +894,57 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     return result;
   });
 
+  // Animation: one shared timeline per distinct `animated` value (compared by
+  // value, so an inline object literal does not reset it), and one plugin per
+  // block index so each block tracks its own already-visible length.
+  const animatedKey = createMemo(() => {
+    const animated = props.animated;
+    if (animated === true) {
+      return "true";
+    }
+    return animated ? JSON.stringify(animated) : "";
+  });
+
+  const animation = createMemo(() => {
+    const key = animatedKey();
+    if (!key) {
+      return null;
+    }
+    const options = key === "true" ? {} : (untrack(() => props.animated) as AnimateOptions);
+    // maxBacklogMs is consumed by the timeline factory, not the plugin.
+    const { maxBacklogMs, ...pluginOptions } = options;
+    const timeline = createPassTimeline(createAnimateTimeline({ maxBacklogMs }));
+    const plugins: AnimatePlugin[] = [];
+    return {
+      timeline,
+      pluginFor: (index: number): AnimatePlugin => {
+        plugins[index] ??= createRenderAnimatePlugin({ ...pluginOptions, timeline });
+        return plugins[index];
+      },
+    };
+  });
+
+  // The animate plugin is attached only while streaming, so when isAnimating
+  // goes false every block re-parses without spans (#570).
+  const blockAnimatePlugin = (index: number): AnimatePlugin | null => {
+    const current = animation();
+    return current && props.isAnimating ? current.pluginFor(index) : null;
+  };
+
+  const blockRehypePlugins = (index: number): PluggableList => {
+    const plugin = blockAnimatePlugin(index);
+    const base = mergedRehypePlugins();
+    return plugin ? [...base, plugin.rehypePlugin] : base;
+  };
+
+  // Close the timeline pass once the DOM has updated (upstream: a layout
+  // effect). The pass opened lazily at the first block's take() this update.
+  createEffect(
+    on([blocks, () => props.isAnimating], () => {
+      untrack(() => animation())?.timeline.commitPass();
+    })
+  );
+
   // Per-block directions when dir="auto", so detection only re-runs when the
   // blocks or dir change.
   const blockDirections = createMemo(() =>
@@ -921,7 +1030,8 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
                           index === blocks().length - 1 &&
                           hasIncompleteCodeFence(block())
                         }
-                        rehypePlugins={mergedRehypePlugins()}
+                        animatePlugin={blockAnimatePlugin(index)}
+                        rehypePlugins={blockRehypePlugins(index)}
                         remarkPlugins={mergedRemarkPlugins()}
                         shouldNormalizeHtmlIndentation={
                           props.normalizeHtmlIndentation

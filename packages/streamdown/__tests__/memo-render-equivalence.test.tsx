@@ -83,8 +83,7 @@ describe("memoized components re-render when their output changes", () => {
     });
   });
 
-  // plan 3: animate plugin
-  it.skip("drops animation spans once the stream settles (issue #570)", async () => {
+  it("drops animation spans once the stream settles (issue #570)", async () => {
     // The animate plugin is excluded from the pipeline when isAnimating goes
     // false, so the block re-parses without the per-word spans. The source text
     // is identical, so every element keeps its position — which is why a
