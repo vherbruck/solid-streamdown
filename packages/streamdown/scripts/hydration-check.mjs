@@ -37,6 +37,8 @@ const VOIDS = [
   "a<wbr>b and <kbd>key</kbd> [after wbr](https://example.com)",
   "| a | b |\n| --- | --- |\n| 1 | 2 |",
 ].join("\n\n");
+// Code highlighted by the real plugin after hydration.
+const HIGHLIGHTED = "```ts\nconst answer: number = 42;\n```\n\n[after code](https://example.com)";
 // Animated streaming: word spans revealed while streaming, removed on settle.
 const ANIMATED = { animation: "fadeIn", duration: 150, stagger: 0 };
 const ANIMATED_STEPS = ["one two", "one two three", "one two three\n\n- four"];
@@ -107,6 +109,11 @@ const runServer = async (dir) => {
     { renderId: "c" }
   );
   const uiHtml = renderToString(() => Streamdown({ children: UI, mode: "static" }), { renderId: "u" });
+  const { code } = await import("@solid-streamdown/code");
+  const highlightedHtml = renderToString(
+    () => Streamdown({ children: HIGHLIGHTED, mode: "static", plugins: { code } }),
+    { renderId: "h" }
+  );
   const voidsHtml = renderToString(() => Streamdown({ children: VOIDS, mode: "static" }), { renderId: "v" });
   const animatedHtml = renderToString(
     () => Streamdown({ animated: ANIMATED, children: ANIMATED_STEPS[0], isAnimating: true }),
@@ -116,7 +123,7 @@ const runServer = async (dir) => {
     `<!doctype html><html><head>${generateHydrationScript()}</head><body>` +
     `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div>` +
     `<div id="ui">${uiHtml}</div><div id="animated">${animatedHtml}</div>` +
-    `<div id="voids">${voidsHtml}</div></body></html>`;
+    `<div id="voids">${voidsHtml}</div><div id="highlighted">${highlightedHtml}</div></body></html>`;
   await writeFile(join(dir, "server.html"), page);
 };
 
@@ -317,6 +324,31 @@ const runClient = async (dir, entry, solid) => {
     "the hydrated link did not open the link-safety modal"
   );
 
+  // The code plugin highlights after hydration without a mismatch.
+  const { code } = await import("@solid-streamdown/code");
+  const highlightedRoot = document.getElementById("highlighted");
+  const highlightedProps = { children: HIGHLIGHTED, mode: "static", plugins: { code } };
+  const disposeHighlighted = hydrate(() => Streamdown(highlightedProps), highlightedRoot, { renderId: "h" });
+  // Highlighting resolves asynchronously, so right after hydration both this
+  // tree and a fresh client render still show the unhighlighted body.
+  matchesFresh(highlightedRoot, highlightedProps, "highlighted code after hydration");
+  const colored = () =>
+    [...highlightedRoot.querySelectorAll('[data-streamdown="code-block-body"] code span span')].filter(
+      (token) => /^#/.test(token.style.getPropertyValue("--sdm-c"))
+    ).length;
+  for (let waited = 0; colored() === 0 && waited < 15_000; waited += 50) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  check(colored() > 1, "the hydrated code block was never highlighted");
+  check(
+    occurrences(highlightedRoot.textContent, "const answer: number = 42;") === 1,
+    "the highlighted code is duplicated or missing"
+  );
+  check(
+    highlightedRoot.querySelector('button[data-streamdown="link"]') !== null,
+    "the link after the code block did not hydrate"
+  );
+
   // Void elements hydrate without shifting later keys.
   const voidsRoot = document.getElementById("voids");
   const voidsProps = { children: VOIDS, mode: "static" };
@@ -369,6 +401,7 @@ const runClient = async (dir, entry, solid) => {
   disposeUi();
   disposeAnimated();
   disposeVoids();
+  disposeHighlighted();
   window.close();
   check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
   finish(`hydration (dist/${entry})`);

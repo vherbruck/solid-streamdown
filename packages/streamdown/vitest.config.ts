@@ -1,12 +1,19 @@
+import { fileURLToPath } from "node:url";
 import solidPlugin from "vite-plugin-solid";
 import { defineConfig } from "vitest/config";
 
+// Tests use the plugin packages' sources, so they need no prior build.
+const alias = {
+  "@solid-streamdown/code": fileURLToPath(new URL("../streamdown-code/index.ts", import.meta.url)),
+};
+
 export default defineConfig({
+  resolve: { alias },
   test: {
     projects: [
       {
         plugins: [solidPlugin()],
-        resolve: { conditions: ["development", "browser"] },
+        resolve: { alias, conditions: ["development", "browser"] },
         test: {
           name: "dom",
           globals: true,
@@ -21,6 +28,7 @@ export default defineConfig({
       },
       {
         plugins: [solidPlugin({ ssr: true })],
+        resolve: { alias },
         test: {
           name: "ssr",
           globals: true,
