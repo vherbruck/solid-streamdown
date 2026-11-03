@@ -5,6 +5,7 @@ import { defineConfig } from "vitest/config";
 // Tests use the plugin packages' sources, so they need no prior build.
 const alias = {
   "@solid-streamdown/code": fileURLToPath(new URL("../streamdown-code/index.ts", import.meta.url)),
+  "@solid-streamdown/mermaid": fileURLToPath(new URL("../streamdown-mermaid/index.ts", import.meta.url)),
 };
 
 export default defineConfig({
