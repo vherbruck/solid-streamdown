@@ -192,8 +192,7 @@ describe("Markdown Components", () => {
       expect(link?.textContent).toBe("Incomplete link text");
     });
 
-    // plan 2: image component
-    it.skip("should render incomplete image placeholder when src is the incomplete-image placeholder", () => {
+    it("should render incomplete image placeholder when src is the incomplete-image placeholder", () => {
       const Img = components.img;
       if (!Img) {
         throw new Error("Img component not found");

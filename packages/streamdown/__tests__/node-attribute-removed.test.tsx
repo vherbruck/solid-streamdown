@@ -184,8 +184,7 @@ describe("Node Attribute Fix", () => {
     });
   });
 
-  // plan 2: image component
-  describe.skip("Image Component - No node attribute in HTML", () => {
+  describe("Image Component - No node attribute in HTML", () => {
     it("should NOT render node attribute in IMG element", () => {
       const IMG = (components as Record<string, any>).img;
       const { container } = render(() => (
@@ -268,8 +267,7 @@ describe("Node Attribute Fix", () => {
       }
     });
 
-    // plan 2: link and image components (upstream also covers `a` and `img`)
-    it.skip("should verify the link and image components render no node attribute", () => {
+    it("should verify the link and image components render no node attribute", () => {
       const extra = components as Record<string, any>;
       for (const { name, props, element } of [
         { name: "a", props: { href: "https://example.com" }, element: "a" },
@@ -277,7 +275,9 @@ describe("Node Attribute Fix", () => {
       ]) {
         const Component = extra[name];
         const { container } = render(() => (
-          <Component node={mockHastNode as any} {...props} />
+          <StreamdownContext.Provider value={noLinkSafety}>
+            <Component node={mockHastNode as any} {...props} />
+          </StreamdownContext.Provider>
         ));
         const domElement = container.querySelector(element);
         expect(domElement?.hasAttribute("node")).toBe(false);

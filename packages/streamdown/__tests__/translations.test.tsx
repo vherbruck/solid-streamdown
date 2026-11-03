@@ -3,8 +3,9 @@
  * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
  * Modified for SolidJS by the solid-streamdown authors.
  */
-import { render } from "@solidjs/testing-library";
+import { fireEvent, render, waitFor } from "@solidjs/testing-library";
 import { describe, expect, it, vi } from "vitest";
+import { ImageComponent } from "../lib/image";
 import { LinkSafetyModal } from "../lib/link-modal";
 import {
   defaultTranslations,
@@ -57,6 +58,54 @@ describe("defaultTranslations", () => {
     expect(defaultTranslations.copyLink).toBe("Copy link");
     expect(defaultTranslations.copied).toBe("Copied");
     expect(defaultTranslations.openLink).toBe("Open link");
+  });
+});
+
+describe("ImageComponent translations", () => {
+  it("should show default 'Image not available' text when image fails to load", async () => {
+    const { container } = render(() => (
+      <ImageComponent alt="test" src="https://example.invalid/image.png" />
+    ));
+
+    const img = container.querySelector("img");
+    expect(img).toBeTruthy();
+
+    if (img) {
+      fireEvent.error(img);
+    }
+
+    await waitFor(() => {
+      const fallback = container.querySelector(
+        '[data-streamdown="image-fallback"]'
+      );
+      expect(fallback).toBeTruthy();
+      expect(fallback?.textContent).toBe("Image not available");
+    });
+  });
+
+  it("should use custom translation for image not available text", async () => {
+    const { container } = render(() => (
+      <TranslationsContext.Provider
+        value={{
+          ...defaultTranslations,
+          imageNotAvailable: "Bild nicht verfügbar",
+        }}
+      >
+        <ImageComponent alt="test" src="https://example.invalid/image.png" />
+      </TranslationsContext.Provider>
+    ));
+
+    const img = container.querySelector("img");
+    if (img) {
+      fireEvent.error(img);
+    }
+
+    await waitFor(() => {
+      const fallback = container.querySelector(
+        '[data-streamdown="image-fallback"]'
+      );
+      expect(fallback?.textContent).toBe("Bild nicht verfügbar");
+    });
   });
 });
 

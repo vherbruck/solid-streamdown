@@ -15,10 +15,15 @@ import {
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { HastNode, HastNodes, RenderContext } from "./hast-render";
+import { ImageComponent } from "./image";
 import { LinkSafetyModal } from "./link-modal";
 import type { Components, ExtraProps } from "./markdown";
 import { useCn } from "./prefix-context";
-import { type LinkSafetyModalProps, StreamdownContext } from "./streamdown-context";
+import {
+  type ControlsConfig,
+  type LinkSafetyModalProps,
+  StreamdownContext,
+} from "./streamdown-context";
 import { useUi } from "./ui-context";
 
 type ElementProps = Omit<JSX.HTMLAttributes<HTMLElement>, "ref"> & ExtraProps;
@@ -92,6 +97,49 @@ const Hr: Component<ElementProps> = (props) => {
 };
 
 // Upstream drops only "\n" and "" children before looking for a lone paragraph.
+const shouldShowControls = (
+  config: ControlsConfig,
+  type: "table" | "code" | "mermaid" | "image"
+) => {
+  if (typeof config === "boolean") {
+    return config;
+  }
+
+  return config[type] !== false;
+};
+
+const shouldShowImageControl = (config: ControlsConfig, controlType: "download"): boolean => {
+  if (typeof config === "boolean") {
+    return config;
+  }
+
+  const imageConfig = config.image;
+
+  if (imageConfig === false) {
+    return false;
+  }
+
+  if (imageConfig === true || imageConfig === undefined) {
+    return true;
+  }
+
+  return imageConfig[controlType] !== false;
+};
+
+const Img: Component<ElementProps> = (props) => {
+  const context = useContext(StreamdownContext);
+  const showImageControls = () => shouldShowControls(context.controls, "image");
+  return (
+    <ImageComponent
+      {...(props as Parameters<typeof ImageComponent>[0])}
+      showControls={showImageControls()}
+      showDownloadControl={
+        showImageControls() && shouldShowImageControl(context.controls, "download")
+      }
+    />
+  );
+};
+
 const INCOMPLETE_LINK = "streamdown:incomplete-link";
 
 const openInNewTab = (href: string) => {
@@ -367,6 +415,7 @@ export const components = {
   blockquote: Blockquote,
   code: Code,
   pre: Pre,
+  img: Img,
   sup: Sup,
   sub: Sub,
   p: P,

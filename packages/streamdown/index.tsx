@@ -131,7 +131,7 @@ type DefaultElementComponent<K extends keyof JSX.IntrinsicElements> =
  * Prefer composing these inside custom `components` overrides instead of
  * re-applying default styles by hand.
  */
-// plan 2: img and table join this map with their components
+// plan 2: table joins this map with its component
 export interface DefaultComponents {
   a: DefaultElementComponent<"a">;
   blockquote: DefaultElementComponent<"blockquote">;
@@ -143,6 +143,7 @@ export interface DefaultComponents {
   h5: DefaultElementComponent<"h5">;
   h6: DefaultElementComponent<"h6">;
   hr: DefaultElementComponent<"hr">;
+  img: DefaultElementComponent<"img">;
   li: DefaultElementComponent<"li">;
   ol: DefaultElementComponent<"ol">;
   p: DefaultElementComponent<"p">;
