@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task, in order. Steps use checkbox (`- [ ]`) syntax for tracking. Each task ends green (`bun run typecheck && bun run test`) and with one commit.
 
-**Status:** Draft, 2026-11-03. Waiting for owner review (see "Decisions for the owner").
+**Status:** Approved by owner 2026-11-03, with both recommendations in "Decisions for the owner" accepted.
 
 **Goal:** Port the interactive parts that upstream keeps in core: link safety, images, tables with copy/download/fullscreen, and the code-block chrome (header, body, line numbers, copy and download, raw languages, custom renderers and the highlighter contract). Add the icon set and `icons` prop, and put the translations to use. Afterwards the 31 `// plan 2` skips run, and the components map has `a`, `img` and `table`.
 
@@ -36,10 +36,10 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 
 ## Decisions for the owner
 
-1. **Override points for plan 8 (Kobalte adapter).** Upstream has none; its controls hard-code `<button>` and hand-rolled menus and overlays.
+1. **Override points for plan 8 (Kobalte adapter).** _Accepted 2026-11-03._ Upstream has none; its controls hard-code `<button>` and hand-rolled menus and overlays.
    - **Recommendation:** an internal, unexported `lib/ui-context.ts` with three primitives: `Button`, `Menu` (trigger plus items) and `Overlay` (portal, backdrop, Escape, scroll lock, focus return). The defaults render exactly upstream's DOM. Every control in plan 2 uses them. Plan 8 then designs the public API (likely a `ui` prop or a separate `@solid-streamdown/kobalte` provider) without touching each control again.
    - Keeping it unexported means no API commitment before plan 8's brainstorm.
-2. **Image download scope.** The spec says image download must do nothing upstream doesn't.
+2. **Image download scope.** _Accepted 2026-11-03._ The spec says image download must do nothing upstream doesn't.
    - **Recommendation:** port it exactly: `fetch(src)` with no options, and `window.open(src, "_blank")` on failure.
    - Add a test that asserts no `credentials` option is passed. Nothing else changes.
 
@@ -97,8 +97,6 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 ---
 
 ### Task 3: UI primitives (override points for plan 8)
-
-_Only if the owner accepts decision 1; otherwise each control renders its own elements, as upstream does._
 
 **Files:**
 - Create: `lib/ui-context.tsx` (not ported; no upstream header)

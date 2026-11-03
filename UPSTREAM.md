@@ -22,7 +22,6 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `lib/markdown.ts` | `lib/markdown.ts` | Renamed `lib/markdown.tsx` |
 | `use*Plugin()` hooks | Return the plugin or `null` | Return `Accessor<plugin \| null>`; `useCustomRenderer(language: Accessor<string>)` returns `Accessor<CustomRenderer \| undefined>` |
 | `lib/plugin-context.tsx`, `lib/translations-context.tsx` | `.tsx` | Renamed `.ts` (no JSX) |
-| `CSVSeparator` | Imported from `lib/table/utils` | Declared in `lib/streamdown-context.ts` until the table utilities are ported (plan 2) |
 | Processor cache | Keyed by plugin name and serialized options | Keys plugin functions by identity (upstream: by name) and options structurally (as upstream) |
 | Streaming blocks | `memo` comparators on `Block` and `Streamdown`; blocks keyed by index | `<Index>` over the blocks; a custom `BlockComponent` receives reactive props (read `props.content`, don't destructure) |
 | `PluginContext` value inside `Streamdown` | `plugins ?? null` | A getter object over `props.plugins`, so `usePlugins()` is never `null` under `Streamdown`; its fields are `undefined` when no plugins are passed |
@@ -32,6 +31,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Namespaced attributes | React renders `xlink:href`, `xml:lang` and similar | The render guard drops every attribute name containing `:` |
 | Text in a server-rendered `<style>` | React's server renderer escapes `<style` and `</style` as `<\73 tyle` and `</\73 tyle` | Same escape for an HTML `style`. Inside `svg` or `math`, where the browser parses style content as markup, the text is HTML-escaped instead; React applies only its style escape there, which leaves markup after it live |
 | Raw-text elements | Element children render inside `iframe`, `noembed`, `noframes`, `noscript`, `style`, `textarea`, `title` and `xmp` (for example `components={{ p: "style" }}`) | Those elements render only their text content, on client and server. Solid's server renderer escapes only `"` and `&` in attribute values, so a child's attribute could otherwise close the element and inject markup |
+| `usePinnedScroll` | Hook returning a ref object | `createPinnedScroll(isActive, enabled, contentKey)` takes accessors and returns a ref setter |
 
 ## Known upstream risks kept for parity
 

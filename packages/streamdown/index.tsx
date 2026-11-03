@@ -95,7 +95,6 @@ export type {
   AllowedTags,
   ControlsConfig,
   CopyControlConfig,
-  CSVSeparator,
   DownloadControlConfig,
   LinkSafetyConfig,
   LinkSafetyModalProps,
@@ -105,6 +104,15 @@ export type {
   StreamdownContextType,
 } from "./lib/streamdown-context";
 export { StreamdownContext } from "./lib/streamdown-context";
+export {
+  type CSVSeparator,
+  escapeMarkdownTableCell,
+  extractTableDataFromElement,
+  type TableData,
+  tableDataToCSV,
+  tableDataToMarkdown,
+  tableDataToTSV,
+} from "./lib/table/utils";
 export type { StreamdownTranslations } from "./lib/translations-context";
 export { defaultTranslations } from "./lib/translations-context";
 

@@ -5,9 +5,7 @@
  */
 import { type Component, createContext, type JSX } from "solid-js";
 import type { MermaidConfig, ThemeInput } from "./plugin-types";
-
-// TODO(plan 2): import from "./table/utils" once that module is ported.
-export type CSVSeparator = "," | ";" | "\t" | "auto";
+import type { CSVSeparator } from "./table/utils";
 
 export type DownloadControlConfig = boolean | { filename: string };
 
