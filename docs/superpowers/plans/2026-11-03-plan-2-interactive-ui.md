@@ -31,13 +31,13 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 1. **Streaming into a code block.** A fence that grows token by token keeps the same `[data-streamdown="code-block"]` element, its earlier line `<span>`s and the copy button's DOM node. "Copied" state survives an append. Test in Task 7.
 2. **Streaming into a table.** Appending rows keeps the wrapper, the controls and an open dropdown. Test in Task 6.
 3. **Link-safety toggled at runtime.** Switching `linkSafety.enabled` swaps `<a>` and `<button>` without leaving a modal mounted. Test in Task 4.
-4. **Overlays and scroll lock.** The link modal opened inside a fullscreen table unlocks the body only after both close (reference count). Escape closes the topmost one. Test in Task 6.
+4. **Overlays and scroll lock.** The link modal opened inside a fullscreen table unlocks the body only after both close (reference count). Escape reaches every open overlay, as upstream's document listeners do. Test in Task 6.
 5. **SSR then hydrate.** Code block, table and image hydrate without mismatch. Extend `scripts/hydration-check.mjs` in Task 8.
 
 ## Decisions for the owner
 
 1. **Override points for plan 8 (Kobalte adapter).** _Accepted 2026-11-03._ Upstream has none; its controls hard-code `<button>` and hand-rolled menus and overlays.
-   - **Recommendation:** an internal, unexported `lib/ui-context.ts` with three primitives: `Button`, `Menu` (trigger plus items) and `Overlay` (portal, backdrop, Escape, scroll lock, focus return). The defaults render exactly upstream's DOM. Every control in plan 2 uses them. Plan 8 then designs the public API (likely a `ui` prop or a separate `@solid-streamdown/kobalte` provider) without touching each control again.
+   - **Recommendation:** an internal, unexported `lib/ui-context.ts` with three primitives: `Button`, `Menu` (trigger plus items) and `Overlay` (portal, Escape, scroll lock). The defaults render exactly upstream's DOM. Every control in plan 2 uses them. Plan 8 then designs the public API (likely a `ui` prop or a separate `@solid-streamdown/kobalte` provider) without touching each control again.
    - Keeping it unexported means no API commitment before plan 8's brainstorm.
 2. **Image download scope.** _Accepted 2026-11-03._ The spec says image download must do nothing upstream doesn't.
    - **Recommendation:** port it exactly: `fetch(src)` with no options, and `window.open(src, "_blank")` on failure.
@@ -111,7 +111,7 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
   - exposes `close` to its items through context.
 - `Overlay(props: { open: boolean; onClose: () => void; children: JSX.Element })`:
   - renders a `<Portal mount={resolvePortalTarget(portal)}>`;
-  - locks body scroll and adds an Escape listener while open, removing both in `onCleanup`;
+  - locks body scroll and adds an Escape listener while open, removing both in `onCleanup` (no focus management: upstream has none);
   - renders nothing on the server.
 - `UiContext`, whose default value holds the three primitives above.
 
