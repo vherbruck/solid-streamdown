@@ -10,3 +10,5 @@ examples/*/.output
 examples/*/.vinxi
 examples/*/test-results
 examples/*/playwright-report
+test-results
+playwright-report

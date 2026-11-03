@@ -8,10 +8,12 @@
     "typecheck": "bun run --filter './packages/*' typecheck",
     "test": "bun run --filter './packages/*' test && bun test ./scripts",
     "docs:check": "node scripts/check-docs.mjs",
+    "test:e2e": "playwright test",
     "docs:sync": "node scripts/check-docs.mjs --write"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",
+    "@playwright/test": "1.64.1",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/node": "^22",

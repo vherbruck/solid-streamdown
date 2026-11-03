@@ -2,14 +2,16 @@ import { type Component, For } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
 // Every snippet the guide shows is a module here exporting a default
-// component. Rendering them all keeps each one built and smoke-tested.
-const modules = import.meta.glob<{ default: Component }>("./snippets/**/*.tsx", {
-  eager: true,
-});
+// component, as is every smoke-test fixture. Rendering them all keeps each
+// one built and smoke-tested.
+const modules = import.meta.glob<{ default: Component }>(
+  ["./snippets/**/*.tsx", "./fixtures/*.tsx"],
+  { eager: true }
+);
 
 const snippets = Object.entries(modules)
   .map(([path, module]) => ({
-    id: path.replace("./snippets/", "").replace(/\.tsx$/, ""),
+    id: path.replace(/^\.\/(snippets\/)?/, "").replace(/\.tsx$/, ""),
     component: module.default,
   }))
   .sort((a, b) => a.id.localeCompare(b.id));
