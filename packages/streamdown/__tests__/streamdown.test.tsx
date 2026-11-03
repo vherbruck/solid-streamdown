@@ -426,3 +426,35 @@ describe("animation callbacks", () => {
     expect(start).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("animation callbacks", () => {
+  it("does not track signals the callbacks read", () => {
+    const [count, setCount] = createSignal(0);
+    const [isAnimating, setIsAnimating] = createSignal(false);
+    let starts = 0;
+    let effectRuns = 0;
+    render(() => (
+      <Streamdown
+        isAnimating={isAnimating()}
+        onAnimationStart={() => {
+          starts += 1;
+          count();
+        }}
+        onAnimationEnd={() => {
+          effectRuns += 1;
+          count();
+        }}
+      >
+        {"x"}
+      </Streamdown>
+    ));
+    setIsAnimating(true);
+    expect(starts).toBe(1);
+    setCount(1);
+    setIsAnimating(false);
+    expect(effectRuns).toBe(1);
+    setCount(2);
+    expect(starts).toBe(1);
+    expect(effectRuns).toBe(1);
+  });
+});

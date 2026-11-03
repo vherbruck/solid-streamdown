@@ -601,16 +601,17 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     }
     const prev = prevIsAnimating;
     prevIsAnimating = isAnimating;
+    // untrack: signals the callbacks read must not re-run this effect.
     if (prev === null) {
       if (isAnimating) {
-        props.onAnimationStart?.();
+        untrack(() => props.onAnimationStart?.());
       }
       return;
     }
     if (isAnimating && !prev) {
-      props.onAnimationStart?.();
+      untrack(() => props.onAnimationStart?.());
     } else if (!isAnimating && prev) {
-      props.onAnimationEnd?.();
+      untrack(() => props.onAnimationEnd?.());
     }
   });
 
@@ -973,10 +974,13 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     return hasIncompleteCodeFence(lastBlock) || hasTable(lastBlock);
   });
 
-  const { ref: caretHostRef, showCaret } = createCaretHost(
-    shouldHideCaret,
-    () => blocks()
-  );
+  // Re-mark whenever the last element may have been replaced: new blocks, or
+  // a components / BlockComponent swap that re-renders the same blocks.
+  const { ref: caretHostRef, showCaret } = createCaretHost(shouldHideCaret, () => [
+    blocks(),
+    mergedComponents(),
+    props.BlockComponent,
+  ]);
 
   return (
     <TranslationsContext.Provider value={translationsValue}>

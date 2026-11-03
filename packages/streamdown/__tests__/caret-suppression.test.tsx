@@ -6,7 +6,7 @@
 import { render } from "@solidjs/testing-library";
 import { createSignal, type JSX } from "solid-js";
 import { describe, expect, it } from "vitest";
-import { Streamdown } from "../index";
+import { Streamdown, type StreamdownProps } from "../index";
 import type { CustomRendererProps } from "../lib/plugin-types";
 
 const SUPPRESSION_ATTRIBUTE = /:not\(\[([a-z-]+)\]\)/;
@@ -311,5 +311,27 @@ describe("caret suppression", () => {
       expect(next?.className).toBe(className);
       expect(next?.getAttribute("style")).toBe(style);
     }
+  });
+});
+
+describe("caret host after a components swap", () => {
+  it("marks the new last element when a swap replaces it", () => {
+    const [components, setComponents] = createSignal<StreamdownProps["components"]>({});
+    const CustomTable = (props: { children?: JSX.Element }) => (
+      <table data-custom-table="">{props.children}</table>
+    );
+    const { container } = render(() => (
+      <Streamdown caret="block" components={components()} isAnimating>
+        {"| a |\n|---|\n| 1 |"}
+      </Streamdown>
+    ));
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.lastElementChild?.hasAttribute("data-sd-caret-hidden")).toBe(true);
+
+    setComponents({ table: CustomTable as never });
+
+    const last = root.lastElementChild;
+    expect(last?.hasAttribute("data-custom-table")).toBe(true);
+    expect(last?.hasAttribute("data-sd-caret-hidden")).toBe(true);
   });
 });
