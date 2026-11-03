@@ -28,6 +28,9 @@ const DOCUMENT_UPDATES = [
 const TABLE = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
 const TABLE_THEN_PROSE = `${TABLE}\n\nText after the table`;
 const CARET_CLASS = "after:content-[var(--streamdown-caret)]";
+// Animated streaming: word spans revealed while streaming, removed on settle.
+const ANIMATED = { animation: "fadeIn", duration: 150, stagger: 0 };
+const ANIMATED_STEPS = ["one two", "one two three", "one two three\n\n- four"];
 // Interactive UI: a code block, a table, an image and a guarded link.
 const UI = [
   "```js\nconst a = 1;\n```",
@@ -95,10 +98,14 @@ const runServer = async (dir) => {
     { renderId: "c" }
   );
   const uiHtml = renderToString(() => Streamdown({ children: UI, mode: "static" }), { renderId: "u" });
+  const animatedHtml = renderToString(
+    () => Streamdown({ animated: ANIMATED, children: ANIMATED_STEPS[0], isAnimating: true }),
+    { renderId: "a" }
+  );
   const page =
     `<!doctype html><html><head>${generateHydrationScript()}</head><body>` +
     `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div>` +
-    `<div id="ui">${uiHtml}</div></body></html>`;
+    `<div id="ui">${uiHtml}</div><div id="animated">${animatedHtml}</div></body></html>`;
   await writeFile(join(dir, "server.html"), page);
 };
 
@@ -299,9 +306,49 @@ const runClient = async (dir, entry, solid) => {
     "the hydrated link did not open the link-safety modal"
   );
 
+  // Animated streaming hydrates, keeps revealed spans, and settles cleanly.
+  const animatedRoot = document.getElementById("animated");
+  const [animatedText, setAnimatedText] = createSignal(ANIMATED_STEPS[0]);
+  const [animating, setAnimating] = createSignal(true);
+  const disposeAnimated = hydrate(
+    () =>
+      Streamdown({
+        animated: ANIMATED,
+        get children() {
+          return animatedText();
+        },
+        get isAnimating() {
+          return animating();
+        },
+      }),
+    animatedRoot,
+    { renderId: "a" }
+  );
+  const animatedProps = (children, isAnimating = true) => ({ animated: ANIMATED, children, isAnimating });
+  const wordSpans = () => [...animatedRoot.querySelectorAll("[data-sd-animate]")];
+  matchesFresh(animatedRoot, animatedProps(ANIMATED_STEPS[0]), "animated after hydration");
+  const firstSpans = wordSpans();
+  check(firstSpans.length === 2, `${firstSpans.length} word spans after hydration, expected 2`);
+  setAnimatedText(ANIMATED_STEPS[1]);
+  const grownSpans = wordSpans();
+  check(
+    grownSpans[0] === firstSpans[0] && grownSpans[1] === firstSpans[1],
+    "the revealed word spans were replaced while streaming after hydration"
+  );
+  check(
+    grownSpans.slice(0, 2).every((span) => span.style.getPropertyValue("--sd-duration") === "0ms"),
+    "the revealed words did not settle to 0ms after hydration"
+  );
+  setAnimatedText(ANIMATED_STEPS[2]);
+  setAnimating(false);
+  check(wordSpans().length === 0, `${wordSpans().length} word spans remain after the stream settled`);
+  check(occurrences(animatedRoot.textContent, "three") === 1, "streamed text is duplicated or missing after settling");
+  matchesFresh(animatedRoot, animatedProps(ANIMATED_STEPS[2], false), "animated after settling");
+
   disposeDocument();
   disposeCaret();
   disposeUi();
+  disposeAnimated();
   window.close();
   check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
   finish(`hydration (dist/${entry})`);

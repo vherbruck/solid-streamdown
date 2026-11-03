@@ -139,7 +139,6 @@ describe("HighlightedCodeBlockBody cachedResult path", () => {
   });
 });
 
-// Ported in plan 3, once lib/animate.ts existed.
 describe("animate.ts remaining coverage", () => {
   const processHtml = async (html: string, plugin = createAnimatePlugin()) => {
     const processor = unified()

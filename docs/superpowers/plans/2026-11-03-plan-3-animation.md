@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task, in order. Steps use checkbox (`- [ ]`) syntax. Each task ends green (`bun run typecheck && bun run test`, plus the hydration check where noted) and with one commit.
 
-**Status:** In progress, 2026-11-03. The owner said to proceed; no owner decisions are open.
+**Status:** Done 2026-11-03. The owner said to proceed; no owner decisions were open.
 
 **Goal:** Port upstream's streaming word animation: the `animated` prop, `createAnimatePlugin`, the shared stagger timeline, `styles.css` keyframes, list-marker, checkbox and void-element animation, and spans that come off when the stream settles. Revealed words must keep their DOM nodes while later words stream in. Also port the deferred-render hook and close plan 3's carry-forward items.
 
@@ -60,9 +60,9 @@ Plan-specific:
   - an object holding a non-string value is dropped;
   - a string style still goes through the parser.
 
-- [ ] **Step 1:** Copy the tests. Run them. Expected: FAIL (module missing).
-- [ ] **Step 2:** Copy `lib/animate.ts` and `styles.css`. Move `AnimateOptions`. Change the guard.
-- [ ] **Step 3:** Run typecheck and tests. Expected: PASS. Commit: `feat: port the animate plugin and its stylesheet`.
+- [x] **Step 1:** Copy the tests. Run them. Expected: FAIL (module missing).
+- [x] **Step 2:** Copy `lib/animate.ts` and `styles.css`. Move `AnimateOptions`. Change the guard.
+- [x] **Step 3:** Run typecheck and tests. Expected: PASS. Commit: `feat: port the animate plugin and its stylesheet`.
 
 ### Task 2: Wire animation into Streamdown
 
@@ -80,22 +80,22 @@ Plan-specific:
 - Converted tests drive props with signals, not the remounting `renderWithRerender`. These tests are about nodes surviving.
 - The StrictMode case ("suppresses already-seen words under StrictMode double-invoke") has no Solid equivalent. Port it as a test that one parse per update takes one timeline slot.
 
-- [ ] **Step 1:** Port the tests. Run them. Expected: FAIL.
-- [ ] **Step 2:** Implement the wiring.
-- [ ] **Step 3: New tests:**
+- [x] **Step 1:** Port the tests. Run them. Expected: FAIL.
+- [x] **Step 2:** Implement the wiring.
+- [x] **Step 3: New tests:**
   - **Revealed spans keep their nodes:** the earlier word spans are the same nodes, their `--sd-duration` is `0ms`, and the new word animates.
   - **Settling keeps the hosts:** settling removes every `[data-sd-animate]` and keeps the same `<p>`.
   - **No animation in static mode:** `mode="static"` never animates.
   - **Server render:** with `animated` and `isAnimating`, the server output holds word spans with their custom properties and no empty attributes.
-- [ ] **Step 4:** Typecheck, tests and hydration check. Commit: `feat: animate streamed words`.
+- [x] **Step 4:** Typecheck, tests and hydration check. Commit: `feat: animate streamed words`.
 
 ### Task 3: Carry-forward fixes
 
 **Files:** `index.tsx`, `lib/use-caret-host.ts`, `__tests__/caret.test.tsx`, `__tests__/streamdown.test.tsx`
 
-- [ ] **Step 1:** Wrap the `onAnimationStart`/`onAnimationEnd` calls in `untrack`. Test: a callback that reads a signal does not re-fire when that signal changes.
-- [ ] **Step 2:** Re-mark the caret host when the last rendered element changes for any reason, a `components` swap included, not only when `blocks()` changes. Test: swapping `components` so the last element is replaced keeps it marked `data-sd-caret-hidden` while a table is last.
-- [ ] **Step 3:** Run tests. Commit: `fix: untrack animation callbacks and re-mark the caret host on component swaps`.
+- [x] **Step 1:** Wrap the `onAnimationStart`/`onAnimationEnd` calls in `untrack`. Test: a callback that reads a signal does not re-fire when that signal changes.
+- [x] **Step 2:** Re-mark the caret host when the last rendered element changes for any reason, a `components` swap included, not only when `blocks()` changes. Test: swapping `components` so the last element is replaced keeps it marked `data-sd-caret-hidden` while a table is last.
+- [x] **Step 3:** Run tests. Commit: `fix: untrack animation callbacks and re-mark the caret host on component swaps`.
 
 ### Task 4: Deferred render
 
@@ -107,22 +107,22 @@ Plan-specific:
 - Test (ported): `__tests__/use-deferred-render.test.tsx`
 - Modify: `tsconfig.json` (include `hooks/**/*`), `UPSTREAM.md` (rename row)
 
-- [ ] **Step 1:** Port the test. Run it. Expected: FAIL.
-- [ ] **Step 2:** Implement. Run it. Expected: PASS. Commit: `feat: port the deferred render primitive`.
+- [x] **Step 1:** Port the test. Run it. Expected: FAIL.
+- [x] **Step 2:** Implement. Run it. Expected: PASS. Commit: `feat: port the deferred render primitive`.
 
 ### Task 5: Hydration, records
 
-- [ ] **Step 1:** Extend `scripts/hydration-check.mjs`:
+- [x] **Step 1:** Extend `scripts/hydration-check.mjs`:
   - server-render a streaming document with `animated` and `isAnimating`, then hydrate it;
   - stream two more ticks and check that the earlier word spans are the same nodes;
   - settle, and check that no `[data-sd-animate]` remains and no text is duplicated.
-- [ ] **Step 2:** `UPSTREAM.md` rows:
+- [x] **Step 2:** `UPSTREAM.md` rows:
   - timeline pass wiring (lazy begin, effect commit);
   - object styles accepted from plugins;
   - `createDeferredRender` instead of `useDeferredRender`;
   - `use-throttled-debouce.ts` not ported.
-- [ ] **Step 3:** Update the carry-forward file: strike the plan 3 items and add new ones.
-- [ ] **Step 4:** Run the full "Done when" list. Commit: `test: hydrate animated streams; record plan 3 deviations`.
+- [x] **Step 3:** Update the carry-forward file: strike the plan 3 items and add new ones.
+- [x] **Step 4:** Run the full "Done when" list. Commit: `test: hydrate animated streams; record plan 3 deviations`.
 
 ## Done when
 

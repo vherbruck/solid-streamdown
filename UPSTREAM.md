@@ -40,6 +40,8 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Props left out of `Streamdown`'s memo comparator | A change to `portal`, `controls`, `icons` and others alone does not re-render, so `portal` acts as an initializing prop | Every prop takes effect when it changes; an overlay opens in the current `portal` target |
 | `hooks/use-deferred-render.ts` | `useDeferredRender()` returns a ref object and a boolean | `createDeferredRender(options)` returns a ref setter and an accessor; options are read reactively, so a props object can be passed |
 | `hooks/use-throttled-debouce.ts` | Defined, never imported | Not ported |
+| Animation timeline passes | `beginPass` during each React render; `commitPass` and each block's `commit()` in layout effects | A pass opens at the first block's `mark`/`take` after the last commit; `Streamdown` commits it, and each `Block` its plugin, in `createEffect` after the DOM updates. `lib/animate.ts` itself is unchanged |
+| Object `style` on HAST | Handed to React as is | Accepted from plugins when every value is a string or a finite number, and applied per property; string styles are parsed as before |
 
 ## Known upstream risks kept for parity
 

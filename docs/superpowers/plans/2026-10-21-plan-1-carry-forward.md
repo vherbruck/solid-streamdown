@@ -12,11 +12,7 @@ Done 2026-11-03 (plan 2): the `// plan 2` skips run, the deferred translations t
 
 ## Plan 3 (animation)
 
-- Port the "animate.ts remaining coverage" describe from upstream `remaining-coverage.test.tsx`; plan 2 left it out because `lib/animate.ts` did not exist.
-- Un-skip "drops animation spans once the stream settles (issue #570)" in `memo-render-equivalence.test.tsx`.
-- Move `AnimateOptions` out of `index.tsx` into `lib/animate.ts`.
-- Wrap the `onAnimationStart`/`onAnimationEnd` calls in `untrack` (`index.tsx`, callbacks effect).
-- The caret host re-marks only when `blocks()` changes. A `components` swap that replaces the last element doesn't re-mark it.
+Done 2026-11-03 (plan 3): `AnimateOptions` lives in `lib/animate.ts`, the animation callbacks run untracked, the caret host re-marks on `components`/`BlockComponent` swaps, and the animate tests that plan 2 deferred are ported.
 
 ## Plan 5 (Mermaid)
 
@@ -25,12 +21,14 @@ Done 2026-11-03 (plan 2): the `// plan 2` skips run, the deferred translations t
 - Fill the Mermaid branch in `BlockCode` (`lib/components.tsx`, marked `plan 5`).
 - Add the Mermaid SVG insertion and the download `DOMParser` to `ALLOWED` in `__tests__/raw-html-exceptions.test.ts`.
 - Use the `lib/ui-context.tsx` primitives for the Mermaid download menu and fullscreen overlay.
+- `hooks/use-deferred-render.ts` (`createDeferredRender`) is ported and tested but not yet used; the Mermaid component uses it.
 
 ## Every later plan
 
 - **Hydration keys:** a spread element with a `ref` or event handlers, nested inside another element's template, takes a hydration key on the server that the client never looks up. Every later key shifts, and Solid's dev build throws. Make such an element the root of its own component, as `ImageElement` in `lib/image.tsx` does.
 - **Empty attributes on the server:** an optional `class` or `style` written as `attr={cond ? x : undefined}` serializes as `attr=""`. Put optional attributes in a spread object instead (`lib/code-block/body.tsx`).
 - **Delegated events:** Solid delegates `onClick`/`onKeyDown` to the document, so `stopPropagation` there does not stop a document-level listener. Use `on:keydown` where a panel must shield the overlay's Escape listener.
+- **Porting tests that check nodes survive an update:** `__tests__/support/render-streamdown.tsx` keeps one `Streamdown` and swaps its props.
 - **Porting tests:** `__tests__/support/rerender.tsx` stands in for React's `rerender` where a test only checks output. Where a test checks that DOM survives an update, drive props with signals instead.
 
 ## Plan 6 (math / CJK)
