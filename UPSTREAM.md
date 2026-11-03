@@ -10,6 +10,8 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | solid-streamdown | streamdown 2.7.1 | c5e44d8 |
 | @solid-streamdown/code | @streamdown/code 2.0.0 | c5e44d8 |
 | @solid-streamdown/mermaid | @streamdown/mermaid 1.0.3 | c5e44d8 |
+| @solid-streamdown/math | @streamdown/math 1.0.3 | c5e44d8 |
+| @solid-streamdown/cjk | @streamdown/cjk 1.0.4 | c5e44d8 |
 
 ## Deviations
 
@@ -44,7 +46,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `hooks/use-throttled-debouce.ts` | Defined, never imported | Not ported |
 | Animation timeline passes | `beginPass` during each React render; `commitPass` and each block's `commit()` in layout effects | A pass opens at the first block's `mark`/`take` after the last commit; `Streamdown` commits it, and each `Block` its plugin, in `createEffect` after the DOM updates. `lib/animate.ts` itself is unchanged |
 | Object `style` on HAST | Handed to React as is | Accepted from plugins when every value is a string or a finite number, and applied per property; string styles are parsed as before |
-| `@solid-streamdown/code` and `@solid-streamdown/mermaid` peer dependencies | `react` (never imported) | None: the plugins import neither React nor Solid |
+| Plugin packages' peer dependencies | `react` (never imported) | None: the plugins import neither React nor Solid |
 | Mermaid component in the code dispatch | `lazy()` import inside `Suspense` with a skeleton fallback | Imported directly, for the same hydration reason as the highlighted code body; the `mermaid` library itself stays in the plugin package |
 | `createDeferredRender` after rendering is due | Effect deps exclude the container ref | Stops observing once `shouldRender` is true, so a component that moves its ref to another element does not restart observation |
 | Code that changed before its highlight arrives | Keeps the previous highlighted result, so new lines stay hidden until the async highlight lands, and for good if it never does | Keeps the highlighted rows whose text is unchanged and shows the rest unhighlighted until the highlight lands |

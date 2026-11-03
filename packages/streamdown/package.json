@@ -104,7 +104,9 @@
     "unist-util-visit-parents": "^6.0.2"
   },
   "devDependencies": {
+    "@solid-streamdown/cjk": "workspace:*",
     "@solid-streamdown/code": "workspace:*",
+    "@solid-streamdown/math": "workspace:*",
     "@solid-streamdown/mermaid": "workspace:*",
     "@types/hast": "^3.0.5",
     "@types/mdast": "^4.0.4",

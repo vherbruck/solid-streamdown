@@ -1,0 +1,43 @@
+{
+  "name": "@solid-streamdown/cjk",
+  "version": "0.0.0",
+  "description": "CJK text plugin for solid-streamdown, a port of @streamdown/cjk",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "vherbruck",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vherbruck/solid-streamdown",
+    "directory": "packages/streamdown-cjk"
+  },
+  "keywords": ["solid", "solidjs", "streamdown", "cjk", "chinese", "japanese", "korean"],
+  "files": ["dist", "LICENSE", "NOTICE"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "mdast-util-gfm-autolink-literal": "^2.0.1",
+    "remark-cjk-friendly": "^2.3.1",
+    "remark-cjk-friendly-gfm-strikethrough": "^2.3.1",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.3",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5"
+  }
+}
