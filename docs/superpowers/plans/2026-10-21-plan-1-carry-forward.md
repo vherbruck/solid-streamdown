@@ -18,6 +18,14 @@ Done 2026-11-03 (plan 2): the `// plan 2` skips run, the deferred translations t
 
 Done 2026-11-03 (plan 3): `AnimateOptions` lives in `lib/animate.ts`, the animation callbacks run untracked, the caret host re-marks on `components`/`BlockComponent` swaps, and the animate tests that plan 2 deferred are ported.
 
+## Plan 4 (code)
+
+Done 2026-11-03 (plan 4): `@solid-streamdown/code` is ported verbatim and tested end to end with core, hydration included. Notes for later plans:
+
+- Plugin packages follow `packages/streamdown-code`: no peer dependencies unless the code imports one, a `NOTICE`, a changeset, and a Vitest alias in core's `vitest.config.ts` so core's tests use the plugin's source.
+- **Plan 7:** the code package's build warns that the `"use client"` directive was ignored. Upstream's build emits the same warning. The directive is meaningless for Solid; drop it at release if the warning is unwanted.
+- **Plan 7:** `@solid-streamdown/code` needs the `@solid-streamdown` npm org (spec, Constraints).
+
 ## Plan 5 (Mermaid)
 
 - Port the "MermaidFullscreenButton panZoom controls config" and "PanZoom edge cases" describes from upstream `final-coverage.test.tsx`.
