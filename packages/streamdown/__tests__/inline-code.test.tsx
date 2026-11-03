@@ -39,7 +39,6 @@ describe("inlineCode virtual component", () => {
       </Streamdown>
     ));
 
-    // plan 2: code-block chrome (data-streamdown="code-block")
     // Block code should NOT use the custom inlineCode component
     const customInline = container.querySelector(
       '[data-testid="custom-inline"]'
@@ -48,8 +47,7 @@ describe("inlineCode virtual component", () => {
     expect(container.querySelector("code")).toBeTruthy();
   });
 
-  it.skip("should render the code-block wrapper for block code", () => {
-    // plan 2: code-block chrome (data-streamdown="code-block")
+  it("should render the code-block wrapper for block code", () => {
     const { container } = render(() => (
       <Streamdown components={{ inlineCode: CustomInline }} mode="static">
         {"```js\nconst x = 1;\n```"}

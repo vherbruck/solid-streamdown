@@ -1,0 +1,23 @@
+import { renderToString } from "solid-js/web";
+import { expect, it } from "vitest";
+import { Streamdown } from "../index";
+
+it("server-renders a fenced block with its chrome", () => {
+  const html = renderToString(() => (
+    <Streamdown mode="static">{"```js\nconst x = 1;\n```"}</Streamdown>
+  ));
+  expect(html).toContain('data-streamdown="code-block"');
+  expect(html).toContain('data-language="js"');
+  expect(html).toContain('data-streamdown="code-block-body"');
+  expect(html).toContain("const x = 1;");
+});
+
+it("server-renders a raw-language block verbatim", () => {
+  const html = renderToString(() => (
+    <Streamdown codeBlockRawLanguages={["ascii"]} mode="static">
+      {"```ascii\n┌─┐\n└─┘\n```"}
+    </Streamdown>
+  ));
+  expect(html).toContain('data-streamdown="raw-code-block"');
+  expect(html).toContain("┌─┐");
+});

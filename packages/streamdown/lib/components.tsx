@@ -9,16 +9,24 @@ import {
   createMemo,
   createSignal,
   type JSX,
+  Match,
   Show,
+  Suspense,
+  Switch,
   splitProps,
   useContext,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { HastNode, HastNodes, RenderContext } from "./hast-render";
+import { useIsCodeFenceIncomplete } from "./block-incomplete-context";
+import { CodeBlock } from "./code-block";
+import { CodeBlockSkeleton } from "./code-block/skeleton";
+import { HastNode, HastNodes, hastTextContent, RenderContext } from "./hast-render";
 import { ImageComponent } from "./image";
 import { LinkSafetyModal } from "./link-modal";
 import type { Components, ExtraProps } from "./markdown";
+import { useCustomRenderer, useMermaidPlugin } from "./plugin-context";
 import { useCn } from "./prefix-context";
+import { RawCodeBlock } from "./raw-code-block";
 import {
   type ControlsConfig,
   type LinkSafetyModalProps,
@@ -331,20 +339,103 @@ const Pre: Component<ElementProps> = (props) => {
   );
 };
 
+const START_LINE_PATTERN = /startLine=(\d+)/;
+const NO_LINE_NUMBERS_PATTERN = /\bnoLineNumbers\b/;
+const LANGUAGE_REGEX = /language-([^\s]+)/;
+
+/** A fenced code block: a custom renderer, a raw block or the code block. */
+const BlockCode: Component<ElementProps> = (props) => {
+  const [local, forwarded] = splitProps(props, ["node", "children", "class"]);
+  const context = useContext(StreamdownContext);
+  const mermaidPlugin = useMermaidPlugin();
+  const isBlockIncomplete = useIsCodeFenceIncomplete();
+
+  const language = () => local.class?.match(LANGUAGE_REGEX)?.at(1) ?? "";
+  const customRenderer = useCustomRenderer(language);
+
+  // Parse startLine from the code fence meta string (e.g. ```js startLine=10)
+  const metastring = () => {
+    const value = local.node?.properties?.metastring;
+    return typeof value === "string" ? value : undefined;
+  };
+  const startLine = () => {
+    const match = metastring()?.match(START_LINE_PATTERN);
+    const parsed = match ? Number.parseInt(match[1] as string, 10) : undefined;
+    return parsed !== undefined && parsed >= 1 ? parsed : undefined;
+  };
+
+  // Parse noLineNumbers from meta string and derive effective lineNumbers
+  const showLineNumbers = () => {
+    const meta = metastring();
+    const metaNoLineNumbers = meta ? NO_LINE_NUMBERS_PATTERN.test(meta) : false;
+    return !metaNoLineNumbers && context.lineNumbers !== false;
+  };
+
+  // The code is the text of the code element. Without a node (the component
+  // rendered directly), fall back to a string child, as upstream reads it.
+  const code = createMemo(() => {
+    if (local.node) {
+      return hastTextContent(local.node.children);
+    }
+    const children = local.children;
+    return typeof children === "string" ? children : "";
+  });
+
+  const isRawLanguage = () => {
+    const lang = language();
+    return Boolean(
+      lang &&
+        context.codeBlockRawLanguages?.includes(lang) &&
+        !(lang === "mermaid" && mermaidPlugin())
+    );
+  };
+
+  return (
+    <Switch
+      fallback={
+        // plan 5: a mermaid fence with the Mermaid plugin renders the diagram here
+        <CodeBlock
+          {...(forwarded as JSX.HTMLAttributes<HTMLDivElement>)}
+          class={local.class}
+          code={code()}
+          isIncomplete={isBlockIncomplete()}
+          language={language()}
+          lineNumbers={showLineNumbers()}
+          startLine={startLine()}
+        />
+      }
+    >
+      <Match when={customRenderer()}>
+        {(renderer) => (
+          <Suspense fallback={<CodeBlockSkeleton />}>
+            <Dynamic
+              code={code()}
+              component={renderer().component}
+              isIncomplete={isBlockIncomplete()}
+              language={language()}
+              meta={metastring()}
+            />
+          </Suspense>
+        )}
+      </Match>
+      <Match when={isRawLanguage()}>
+        <RawCodeBlock code={code()} isIncomplete={isBlockIncomplete()} language={language()} />
+      </Match>
+    </Switch>
+  );
+};
+
 const Code: Component<ElementProps & { "data-block"?: string }> = (props) => {
   const cn = useCn();
   const [local, rest] = splitProps(props, ["node", "children", "class", "data-block"]);
-  // A code element is block-level when `pre` marked it with data-block.
+  // A code element is block-level when it was inside a <pre> element.
+  // The custom pre component marks its children with data-block, an internal
+  // marker that is not forwarded.
   const inline = () => !("data-block" in props);
   return (
     <Show
       when={inline()}
-      fallback={
-        // plan 2: CodeBlock replaces this placeholder
-        <pre>
-          <code class={local.class}>{local.children}</code>
-        </pre>
-      }
+      fallback={<BlockCode {...rest} class={local.class} node={local.node} />}
     >
       <code
         {...rest}

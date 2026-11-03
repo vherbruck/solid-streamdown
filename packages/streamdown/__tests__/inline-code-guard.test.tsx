@@ -69,8 +69,9 @@ describe("inlineCode wrapper and the render guard", () => {
     ));
     expect(container.querySelector("kbd")?.textContent).toBe("x");
     expect(seenNode?.tagName).toBe("code");
-    expect(container.querySelector("pre code.language-js")?.textContent).toBe(
-      "y\n"
-    );
+    expect(
+      container.querySelector('[data-streamdown="code-block"][data-language="js"] code')
+        ?.textContent
+    ).toBe("y");
   });
 });

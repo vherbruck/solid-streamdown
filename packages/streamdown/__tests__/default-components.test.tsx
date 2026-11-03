@@ -182,8 +182,10 @@ describe("li", () => {
 describe("pre and code", () => {
   it("marks the code child of pre as a block", () => {
     const c = md("```js\nconst x = 1;\n```");
-    expect(c.innerHTML).toBe('<pre><code class="language-js">const x = 1;\n</code></pre>');
-    expect(c.querySelector("code")?.hasAttribute("data-streamdown")).toBe(false);
+    const block = c.querySelector('[data-streamdown="code-block"]');
+    expect(block?.getAttribute("data-language")).toBe("js");
+    expect(block?.querySelector("code")?.textContent).toBe("const x = 1;");
+    expect(c.querySelector("[data-streamdown=inline-code]")).toBeNull();
   });
 
   it("renders inline code with upstream classes", () => {

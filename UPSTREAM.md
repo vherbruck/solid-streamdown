@@ -34,6 +34,9 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `usePinnedScroll` | Hook returning a ref object | `createPinnedScroll(isActive, enabled, contentKey)` takes accessors and returns a ref setter |
 | Control elements | Buttons, dropdown menus and overlays are written inline in each control | Controls render through internal `Button`, `Menu` and `Overlay` primitives (`lib/ui-context.tsx`) so an adapter can replace them; the defaults produce upstream's DOM |
 | Portals | `createPortal` puts the overlay element directly in the target | Solid's `<Portal>` puts it inside a container `<div>` in the target |
+| Highlighted code body | `lazy()` import inside `Suspense`, with the unhighlighted body as fallback | Imported directly: Solid's `renderToString` renders a pending `lazy` as its fallback, which then mismatches on hydration |
+| Code text for a fenced block | Read from the `code` element's string child | Read from the code element's HAST text (a string child when rendered without a node) |
+| Highlighter `htmlAttrs` | Spread onto each token `<span>` | Spread after passing the render guard's name and URL checks |
 
 ## Known upstream risks kept for parity
 

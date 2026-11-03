@@ -264,7 +264,7 @@ describe("Markdown Components", () => {
       expect(code?.getAttribute("data-streamdown")).toBe("inline-code");
     });
 
-    // plan 2: code-block chrome (data-streamdown="code-block", copy button)
+    // plan 2: code-block copy button (Task 8)
     it.skip("should render block code when data-block is set", async () => {
       const Code = components.code;
       if (!Code) {
@@ -324,8 +324,7 @@ describe("Markdown Components", () => {
       expect(code?.getAttribute("data-block")).toBe("true");
     });
 
-    // plan 2: code-block chrome (data-language)
-    it.skip("should extract language from code className", async () => {
+    it("should extract language from code className", async () => {
       const Code = components.code;
       if (!Code) {
         throw new Error("Code component not found");
@@ -364,8 +363,7 @@ describe("Markdown Components", () => {
       expect(container.textContent).toBe("plain text code");
     });
 
-    // plan 2: code-block chrome (data-language)
-    it.skip("should render mermaid code as regular code block when plugin not provided", async () => {
+    it("should render mermaid code as regular code block when plugin not provided", async () => {
       const Code = components.code;
       if (!Code) {
         throw new Error("Code component not found");

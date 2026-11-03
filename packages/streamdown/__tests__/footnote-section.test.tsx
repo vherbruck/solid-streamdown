@@ -102,10 +102,9 @@ describe("MemoSection footnote filtering", () => {
 describe("CodeComponent code extraction (line 729)", () => {
   it("should extract code from element children via pre wrapper", () => {
     const container = renderHtml("```javascript\nconst x = 42;\n```");
-    expect(container.querySelector("pre code.language-javascript")?.textContent).toBe(
-      "const x = 42;\n"
-    );
-    // plan 2: [data-streamdown="code-block"] chrome from CodeBlock
+    const codeBlock = container.querySelector('[data-streamdown="code-block"]');
+    expect(codeBlock?.getAttribute("data-language")).toBe("javascript");
+    expect(codeBlock?.querySelector("code")?.textContent).toBe("const x = 42;");
   });
 });
 

@@ -141,5 +141,27 @@ const toSolidProps = (element: Element, space: Space): Record<string, unknown> =
   return result;
 };
 
+/**
+ * Applies the render guard to attributes that come from a plugin rather than
+ * from HAST (e.g. a highlighter's per-token `htmlAttrs`): drops blocked names
+ * and dangerous URLs.
+ */
+const guardAttributes = (
+  attributes: Record<string, string> | undefined,
+  tagName = "span"
+): Record<string, string> => {
+  const result: Record<string, string> = {};
+  for (const [name, value] of Object.entries(attributes ?? {})) {
+    if (isBlockedName(name)) {
+      continue;
+    }
+    if (isUrlAttribute(name, tagName) && hasDangerousScheme(value)) {
+      continue;
+    }
+    result[name] = value;
+  }
+  return result;
+};
+
 export type { Space };
-export { isBlockedElement, toSolidProps };
+export { guardAttributes, isBlockedElement, toSolidProps };

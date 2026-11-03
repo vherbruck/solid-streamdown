@@ -187,8 +187,7 @@ Mixed paragraph: Hello مرحبا World عالم.
       expect(paragraphs[1]?.getAttribute("dir")).toBe("rtl");
     });
 
-    // plan 2: the code-block component carries data-streamdown="code-block"
-    it.skip("renders code blocks as ltr under dir=auto in static mode", () => {
+    it("renders code blocks as ltr under dir=auto in static mode", () => {
       const { container } = render(() => <Streamdown dir="auto" mode="static">
           {"```js\nconsole.log('hello');\n```"}
         </Streamdown>);

@@ -193,9 +193,7 @@ describe("caret suppression", () => {
   // data-streamdown markers would miss every case below, because the consumer's
   // component replaces the element carrying the marker.
   describe("with consumer-supplied renderers", () => {
-    // plan 2: custom fence renderers (plugins.renderers) render through the
-    // code-block component, which does not exist yet
-    it.skip("suppresses the caret under a custom fence renderer", () => {
+    it("suppresses the caret under a custom fence renderer", () => {
       const { container } = render(() => (
         <Streamdown
           caret="block"

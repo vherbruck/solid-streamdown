@@ -215,8 +215,7 @@ describe("useIsCodeFenceIncomplete hook", () => {
   });
 });
 
-// plan 2: code-block chrome (data-streamdown="code-block", data-incomplete)
-describe.skip("incomplete code block detection", () => {
+describe("incomplete code block detection", () => {
   it("should mark code block as incomplete when streaming with unclosed fence", async () => {
     const { container } = render(() => <Streamdown isAnimating={true}>
         {"```javascript\nconst x = 1;"}
