@@ -22,7 +22,7 @@ export type CodeBlockDownloadButtonProps = Omit<
   onError?: (error: Error) => void;
 };
 
-const languageExtensionMap: Record<string, string> = {
+const LANGUAGE_EXTENSION_MAP: Record<string, string> = {
   "1c": "1c",
   "1c-query": "1cq",
   abap: "abap",
@@ -357,8 +357,8 @@ export const CodeBlockDownloadButton = (
     // Own keys only: `in` would also match Object.prototype names such as
     // "constructor" (upstream uses `in`).
     const extension =
-      language && Object.hasOwn(languageExtensionMap, language)
-        ? languageExtensionMap[language]
+      language && Object.hasOwn(LANGUAGE_EXTENSION_MAP, language)
+        ? LANGUAGE_EXTENSION_MAP[language]
         : "txt";
     const filename = `${getDownloadFilename(context.controls, "code", "file")}.${extension}`;
     const mimeType = "text/plain";

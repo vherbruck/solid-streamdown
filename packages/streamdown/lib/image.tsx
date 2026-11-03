@@ -14,7 +14,7 @@ import { useTranslations } from "./translations-context";
 import { useUi } from "./ui-context";
 import { save } from "./utils";
 
-const fileExtensionPattern = /\.[^/.]+$/;
+const FILE_EXTENSION_PATTERN = /\.[^/.]+$/;
 
 type ImageComponentProps = Omit<JSX.ImgHTMLAttributes<HTMLImageElement>, "onLoad" | "onError"> &
   ExtraProps & {
@@ -121,7 +121,7 @@ export const ImageComponent = (props: ImageComponentProps) => {
         }
 
         const baseName = local.alt || originalFilename || "image";
-        filename = `${baseName.replace(fileExtensionPattern, "")}.${fileExtension}`;
+        filename = `${baseName.replace(FILE_EXTENSION_PATTERN, "")}.${fileExtension}`;
       }
 
       save(filename, blob, blob.type);

@@ -223,7 +223,7 @@ export const normalizeHtmlIndentation = (content: string): string => {
   return content.replace(HTML_LINE_INDENT_PATTERN, "$1");
 };
 
-const carets = {
+const CARETS = {
   block: " ▋",
   circle: " ●",
 };
@@ -261,7 +261,7 @@ export type StreamdownProps = Options & {
    */
   tableMaxHeight?: number | string;
   animated?: boolean | AnimateOptions;
-  caret?: keyof typeof carets;
+  caret?: keyof typeof CARETS;
   plugins?: PluginConfig;
   remend?: RemendOptions;
   linkSafety?: LinkSafetyConfig;
@@ -359,7 +359,7 @@ export type StreamdownProps = Options & {
     | undefined;
 } & JSX.AriaAttributes;
 
-const defaultSanitizeSchema = {
+const DEFAULT_SANITIZE_SCHEMA = {
   ...defaultSchema,
   // remark-rehype already prefixes footnote ids and backref hrefs with
   // `user-content-` (its default `clobberPrefix`). hast-util-sanitize's default
@@ -382,7 +382,7 @@ const defaultSanitizeSchema = {
 
 export const defaultRehypePlugins: Record<string, Pluggable> = {
   raw: rehypeRaw,
-  sanitize: [rehypeSanitize, defaultSanitizeSchema],
+  sanitize: [rehypeSanitize, DEFAULT_SANITIZE_SCHEMA],
   harden: [
     harden,
     {
@@ -884,13 +884,13 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
       rehypePlugins === defaultRehypePluginsArray
     ) {
       const extendedSchema = {
-        ...defaultSanitizeSchema,
+        ...DEFAULT_SANITIZE_SCHEMA,
         tagNames: [
-          ...(defaultSanitizeSchema.tagNames ?? []),
+          ...(DEFAULT_SANITIZE_SCHEMA.tagNames ?? []),
           ...Object.keys(allowedTags),
         ],
         attributes: {
-          ...defaultSanitizeSchema.attributes,
+          ...DEFAULT_SANITIZE_SCHEMA.attributes,
           ...allowedTags,
         },
       };
@@ -982,7 +982,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
 
   const caretStyle = createMemo(() =>
     props.caret && props.isAnimating
-      ? ({ "--streamdown-caret": `"${carets[props.caret]}"` } as JSX.CSSProperties)
+      ? ({ "--streamdown-caret": `"${CARETS[props.caret]}"` } as JSX.CSSProperties)
       : undefined
   );
 

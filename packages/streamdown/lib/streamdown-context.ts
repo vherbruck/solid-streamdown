@@ -91,24 +91,24 @@ export interface StreamdownContextType {
   tableMaxHeight: number | string;
 }
 
-const defaultShikiTheme: [ThemeInput, ThemeInput] = [
+const DEFAULT_SHIKI_THEME: [ThemeInput, ThemeInput] = [
   "github-light",
   "github-dark",
 ];
 
-const defaultLinkSafetyConfig: LinkSafetyConfig = {
+const DEFAULT_LINK_SAFETY_CONFIG: LinkSafetyConfig = {
   enabled: true,
 };
 
 export const defaultStreamdownContext: StreamdownContextType = {
   codeBlockMaxHeight: 400,
-  shikiTheme: defaultShikiTheme,
+  shikiTheme: DEFAULT_SHIKI_THEME,
   controls: true,
   isAnimating: false,
   lineNumbers: true,
   mode: "streaming",
   mermaid: undefined,
-  linkSafety: defaultLinkSafetyConfig,
+  linkSafety: DEFAULT_LINK_SAFETY_CONFIG,
   portal: undefined,
   tableMaxHeight: 300,
 };

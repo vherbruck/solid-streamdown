@@ -30,6 +30,13 @@ See `docs/spec.md` for full design spec and open questions.
 | Constants | `SCREAMING_SNAKE_CASE` | `DEFAULT_OPTIONS` |
 | Exports | Named only | `export { StreamMarkdown }` |
 
+Two exceptions keep the port cheap to sync with upstream (see `UPSTREAM.md`):
+
+- Files copied verbatim from upstream (for example `lib/animate.ts`, `lib/utils.ts`, `lib/parse-blocks.tsx`, and the plugin packages' `index.ts`) keep upstream's names, so upstream diffs apply cleanly.
+- Public exports keep upstream's names (`defaultRehypePlugins`, `defaultTranslations`, …).
+
+Mutable module state such as caches (`Map`s) is camelCase; `SCREAMING_SNAKE_CASE` is for values that never change.
+
 ## SolidJS Patterns
 
 - Signals, not React hooks
