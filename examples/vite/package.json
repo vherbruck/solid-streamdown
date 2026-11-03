@@ -13,6 +13,10 @@
     "@solid-streamdown/math": "workspace:*",
     "@solid-streamdown/mermaid": "workspace:*",
     "katex": "^0.16.27",
+    "rehype-harden": "^1.1.8",
+    "rehype-sanitize": "^6.0.0",
+    "remark-breaks": "^4.0.0",
+    "remend": "1.4.0",
     "solid-js": "1.9.17",
     "solid-streamdown": "workspace:*"
   },
