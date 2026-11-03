@@ -24,6 +24,7 @@ import {
   type LinkSafetyModalProps,
   StreamdownContext,
 } from "./streamdown-context";
+import { Table } from "./table";
 import { useUi } from "./ui-context";
 
 type ElementProps = Omit<JSX.HTMLAttributes<HTMLElement>, "ref"> & ExtraProps;
@@ -124,6 +125,41 @@ const shouldShowImageControl = (config: ControlsConfig, controlType: "download")
   }
 
   return imageConfig[controlType] !== false;
+};
+
+const shouldShowTableControl = (
+  config: ControlsConfig,
+  controlType: "copy" | "download" | "fullscreen"
+): boolean => {
+  if (typeof config === "boolean") {
+    return config;
+  }
+
+  const tableConfig = config.table;
+
+  if (tableConfig === false) {
+    return false;
+  }
+
+  if (tableConfig === true || tableConfig === undefined) {
+    return true;
+  }
+
+  return tableConfig[controlType] !== false;
+};
+
+const TableComponent: Component<ElementProps> = (props) => {
+  const context = useContext(StreamdownContext);
+  return (
+    <Table
+      {...(props as Parameters<typeof Table>[0])}
+      maxHeight={context.tableMaxHeight}
+      showControls={shouldShowControls(context.controls, "table")}
+      showCopy={shouldShowTableControl(context.controls, "copy")}
+      showDownload={shouldShowTableControl(context.controls, "download")}
+      showFullscreen={shouldShowTableControl(context.controls, "fullscreen")}
+    />
+  );
 };
 
 const Img: Component<ElementProps> = (props) => {
@@ -416,6 +452,7 @@ export const components = {
   code: Code,
   pre: Pre,
   img: Img,
+  table: TableComponent,
   sup: Sup,
   sub: Sub,
   p: P,

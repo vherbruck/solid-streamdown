@@ -5,6 +5,7 @@
  */
 import { fireEvent, render, waitFor } from "@solidjs/testing-library";
 import { describe, expect, it, vi } from "vitest";
+import { Streamdown } from "../index";
 import { ImageComponent } from "../lib/image";
 import { LinkSafetyModal } from "../lib/link-modal";
 import {
@@ -58,6 +59,33 @@ describe("defaultTranslations", () => {
     expect(defaultTranslations.copyLink).toBe("Copy link");
     expect(defaultTranslations.copied).toBe("Copied");
     expect(defaultTranslations.openLink).toBe("Open link");
+  });
+});
+
+const markdownWithTable = `
+| Name | Value |
+|------|-------|
+| Foo  | Bar   |
+`;
+
+describe("Streamdown translations prop", () => {
+  it("should use custom translations for table copy button", () => {
+    const { container } = render(() => (
+      <Streamdown translations={{ copyTable: "Tabelle kopieren" }}>
+        {markdownWithTable}
+      </Streamdown>
+    ));
+
+    const tableWrapper = container.querySelector(
+      '[data-streamdown="table-wrapper"]'
+    );
+    expect(tableWrapper).toBeTruthy();
+
+    const buttons = tableWrapper?.querySelectorAll("button");
+    const copyButton = Array.from(buttons ?? []).find(
+      (btn) => btn.getAttribute("title") === "Tabelle kopieren"
+    );
+    expect(copyButton).toBeTruthy();
   });
 });
 

@@ -106,6 +106,16 @@ export type {
 } from "./lib/streamdown-context";
 export { StreamdownContext } from "./lib/streamdown-context";
 export {
+  TableCopyDropdown,
+  type TableCopyDropdownProps,
+} from "./lib/table/copy-dropdown";
+export {
+  TableDownloadButton,
+  type TableDownloadButtonProps,
+  TableDownloadDropdown,
+  type TableDownloadDropdownProps,
+} from "./lib/table/download-dropdown";
+export {
   type CSVSeparator,
   escapeMarkdownTableCell,
   extractTableDataFromElement,
@@ -131,7 +141,6 @@ type DefaultElementComponent<K extends keyof JSX.IntrinsicElements> =
  * Prefer composing these inside custom `components` overrides instead of
  * re-applying default styles by hand.
  */
-// plan 2: table joins this map with its component
 export interface DefaultComponents {
   a: DefaultElementComponent<"a">;
   blockquote: DefaultElementComponent<"blockquote">;
@@ -152,6 +161,7 @@ export interface DefaultComponents {
   strong: DefaultElementComponent<"strong">;
   sub: DefaultElementComponent<"sub">;
   sup: DefaultElementComponent<"sup">;
+  table: DefaultElementComponent<"table">;
   tbody: DefaultElementComponent<"tbody">;
   td: DefaultElementComponent<"td">;
   th: DefaultElementComponent<"th">;

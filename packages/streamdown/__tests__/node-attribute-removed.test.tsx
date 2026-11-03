@@ -291,10 +291,9 @@ describe("Node Attribute Fix", () => {
     // covered by the UL test above.
   });
 
-  // plan 2: table component (table-wrapper, table controls)
-  // (upstream imports Table from ../lib/table; the tests use components.table until plan 2)
-  describe.skip("Table Component - Correct data-streamdown attributes", () => {
-    it.skip("should have table-wrapper on div and table on table element", () => {
+  // Upstream imports Table from ../lib/table; these use components.table.
+  describe("Table Component - Correct data-streamdown attributes", () => {
+    it("should have table-wrapper on div and table on table element", () => {
       const Table = (components as Record<string, any>).table;
       const { container } = render(() => (
         <Table>
@@ -322,8 +321,7 @@ describe("Node Attribute Fix", () => {
       expect(table?.tagName.toLowerCase()).toBe("table");
     });
 
-    // plan 2: table component
-    it.skip("should NOT have table-wrapper attribute on table element", () => {
+    it("should NOT have table-wrapper attribute on table element", () => {
       const Table = (components as Record<string, any>).table;
       const { container } = render(() => (
         <Table>

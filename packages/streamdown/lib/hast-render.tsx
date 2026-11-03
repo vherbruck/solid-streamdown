@@ -131,13 +131,14 @@ const RAW_TEXT_TAGS = new Set([
   "xmp",
 ]);
 
-const textContent = (nodes: readonly RootContent[]): string => {
+/** The text of `nodes` and their descendants, reading through the store. */
+const hastTextContent = (nodes: readonly RootContent[]): string => {
   let result = "";
   for (const node of nodes) {
     if (node.type === "text") {
       result += node.value;
     } else if (node.type === "element") {
-      result += textContent(node.children);
+      result += hastTextContent(node.children);
     }
   }
   return result;
@@ -226,7 +227,7 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
         node={{
           type: "text",
           get value() {
-            return textContent(props.node.children);
+            return hastTextContent(props.node.children);
           },
         }}
       />
@@ -278,4 +279,12 @@ const HastNodes: Component<{ nodes: readonly RootContent[] }> = (props) => (
   <Index each={props.nodes}>{(node) => <HastNode node={node()} />}</Index>
 );
 
-export { createHastTree, HastNode, HastNodes, MappedElement, RenderContext, resolveTarget };
+export {
+  createHastTree,
+  HastNode,
+  HastNodes,
+  hastTextContent,
+  MappedElement,
+  RenderContext,
+  resolveTarget,
+};

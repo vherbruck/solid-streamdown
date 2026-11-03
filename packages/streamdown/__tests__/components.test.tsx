@@ -13,8 +13,7 @@ import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-c
 const noLinkSafety = { ...defaultStreamdownContext, linkSafety: undefined };
 
 
-// Upstream casts to Required<Options["components"]>; this package's map has
-// no a/img/table until plan 2, so look components up loosely.
+// Upstream casts to Required<Options["components"]>; look components up loosely.
 const components = importedComponents as Record<string, Component<any>>;
 
 describe("Markdown Components", () => {
@@ -447,8 +446,7 @@ describe("Markdown Components", () => {
   });
 
   describe("Table Components", () => {
-    // plan 2: table component
-    it.skip("should render table with wrapper div", () => {
+    it("should render table with wrapper div", () => {
       const Table = components.table;
       if (!Table) {
         throw new Error("Table component not found");

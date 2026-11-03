@@ -76,8 +76,7 @@ describe("simple element components", () => {
     expectEl("tbody tr", "border-border", "table-row");
     expectEl("th", "whitespace-nowrap px-4 py-2 text-start font-semibold text-sm", "table-header-cell");
     expectEl("td", "px-4 py-2 text-sm", "table-cell");
-    // plan 2 registers table, so it stays intrinsic here
-    expect(c.querySelector("table")?.hasAttribute("data-streamdown")).toBe(false);
+    expect(c.querySelector("table")?.getAttribute("data-streamdown")).toBe("table");
   });
 
   it("merges a consumer class after the defaults", () => {
@@ -90,9 +89,9 @@ describe("simple element components", () => {
     expect(c.querySelector("[data-streamdown=strong]")?.tagName).toBe("SPAN");
   });
 
-  it("registers the built-in components (table arrives in plan 2)", () => {
+  it("registers the built-in components", () => {
     expect(Object.keys(components).sort()).toEqual(
-      "a img ol li ul hr strong h1 h2 h3 h4 h5 h6 thead tbody tr th td blockquote code pre sup sub p section"
+      "a img table ol li ul hr strong h1 h2 h3 h4 h5 h6 thead tbody tr th td blockquote code pre sup sub p section"
         .split(" ")
         .sort()
     );

@@ -115,7 +115,9 @@ const outline = (container) => [...container.childNodes].map(outlineNode).join("
 
 const outlineNode = (node) => {
   if (node.nodeType === 3) {
-    return JSON.stringify(node.data);
+    // A client render leaves an empty text node where a closed <Show> sits
+    // among siblings; hydration does not create one. Neither renders anything.
+    return node.data === "" ? "" : JSON.stringify(node.data);
   }
   if (node.nodeType !== 1) {
     return "";
@@ -129,9 +131,26 @@ const outlineNode = (node) => {
 
 const runClient = async (dir, entry, solid) => {
   const { JSDOM } = await import("jsdom");
-  const dom = new JSDOM(await readFile(join(dir, "server.html"), "utf8"), { runScripts: "dangerously" });
+  const dom = new JSDOM(await readFile(join(dir, "server.html"), "utf8"), {
+    runScripts: "dangerously",
+    // Provides requestAnimationFrame, which the scroll pinning in tables and
+    // code blocks uses.
+    pretendToBeVisual: true,
+  });
   const { window } = dom;
-  for (const name of ["window", "document", "Node", "Element", "HTMLElement", "SVGElement", "Text", "Comment", "DocumentFragment"]) {
+  for (const name of [
+    "window",
+    "document",
+    "Node",
+    "Element",
+    "HTMLElement",
+    "SVGElement",
+    "Text",
+    "Comment",
+    "DocumentFragment",
+    "requestAnimationFrame",
+    "cancelAnimationFrame",
+  ]) {
     globalThis[name] = window[name];
   }
   check(window._$HY !== undefined, "the hydration script did not run (no _$HY)");
