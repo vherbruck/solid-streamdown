@@ -264,8 +264,7 @@ describe("Markdown Components", () => {
       expect(code?.getAttribute("data-streamdown")).toBe("inline-code");
     });
 
-    // plan 2: code-block copy button (Task 8)
-    it.skip("should render block code when data-block is set", async () => {
+    it("should render block code when data-block is set", async () => {
       const Code = components.code;
       if (!Code) {
         throw new Error("Code component not found");

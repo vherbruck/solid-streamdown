@@ -1,6 +1,6 @@
-import { render } from "@solidjs/testing-library";
+import { fireEvent, render, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Streamdown } from "../index";
 import { CodeBlockBody } from "../lib/code-block/body";
 
@@ -67,5 +67,37 @@ describe("highlighter attributes", () => {
     expect(token.hasAttribute("onclick")).toBe(false);
     expect(token.hasAttribute("href")).toBe(false);
     expect(token.innerHTML).toBe("x");
+  });
+});
+
+describe("code block controls while streaming", () => {
+  it("keeps the copied state when more code streams into the fence", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    const [text, setText] = createSignal("```js\nconst a = 1;\n```\n\nmore");
+    const { container } = render(() => <Streamdown>{text()}</Streamdown>);
+    const button = container.querySelector(
+      '[data-streamdown="code-block-copy-button"]'
+    ) as HTMLButtonElement;
+    fireEvent.click(button);
+    await waitFor(() => expect(container.querySelector("output")).not.toBeNull());
+
+    setText("```js\nconst a = 1;\n```\n\nmore text after the block");
+
+    expect(container.querySelector('[data-streamdown="code-block-copy-button"]')).toBe(button);
+    expect(container.querySelector("output")?.textContent).toBe("Copied");
+    expect(writeText).toHaveBeenCalledWith("const a = 1;\n");
+  });
+
+  it("copies the latest code of a growing fence", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    const [text, setText] = createSignal("```js\nconst a = 1;");
+    const { container } = render(() => <Streamdown>{text()}</Streamdown>);
+    setText("```js\nconst a = 1;\nconst b = 2;\n```");
+    fireEvent.click(
+      container.querySelector('[data-streamdown="code-block-copy-button"]') as Element
+    );
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("const a = 1;\nconst b = 2;\n"));
   });
 });

@@ -104,6 +104,12 @@ export type {
   PortalTarget,
   StreamdownContextType,
 } from "./lib/streamdown-context";
+export { CodeBlock } from "./lib/code-block";
+export { CodeBlockContainer } from "./lib/code-block/container";
+export { CodeBlockCopyButton } from "./lib/code-block/copy-button";
+export { CodeBlockDownloadButton } from "./lib/code-block/download-button";
+export { CodeBlockHeader } from "./lib/code-block/header";
+export { CodeBlockSkeleton } from "./lib/code-block/skeleton";
 export { StreamdownContext } from "./lib/streamdown-context";
 export {
   TableCopyDropdown,

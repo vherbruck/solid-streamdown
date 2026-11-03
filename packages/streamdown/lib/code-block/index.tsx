@@ -7,10 +7,10 @@ import { children, createMemo, type JSX, Show, splitProps, useContext } from "so
 import type { HighlightResult } from "../plugin-types";
 import { useCn } from "../prefix-context";
 import { StreamdownContext } from "../streamdown-context";
-import { CodeBlockBody } from "./body";
 import { CodeBlockContainer } from "./container";
 import { CodeBlockContext } from "./context";
 import { CodeBlockHeader } from "./header";
+import { HighlightedCodeBlockBody } from "./highlighted-body";
 
 const trimTrailingNewlines = (str: string): string => {
   let end = str.length;
@@ -31,6 +31,26 @@ type CodeBlockProps = JSX.HTMLAttributes<HTMLDivElement> & {
   lineNumbers?: boolean;
 };
 
+// Resolves the controls inside CodeBlockContext, so they read this block's code.
+const CodeBlockActions = (props: { children?: JSX.Element }) => {
+  const cn = useCn();
+  const actions = children(() => props.children);
+  return (
+    <Show when={actions()}>
+      <div class={cn("pointer-events-none absolute top-2 right-2 z-10 flex items-center")}>
+        <div
+          class={cn(
+            "pointer-events-auto flex shrink-0 items-center gap-2 rounded-md border border-sidebar bg-sidebar/80 px-1.5 py-1 supports-[backdrop-filter]:bg-sidebar/70 supports-[backdrop-filter]:backdrop-blur"
+          )}
+          data-streamdown="code-block-actions"
+        >
+          {actions()}
+        </div>
+      </div>
+    </Show>
+  );
+};
+
 export const CodeBlock = (props: CodeBlockProps) => {
   const [local, rest] = splitProps(props, [
     "code",
@@ -41,9 +61,7 @@ export const CodeBlock = (props: CodeBlockProps) => {
     "startLine",
     "lineNumbers",
   ]);
-  const cn = useCn();
   const context = useContext(StreamdownContext);
-  const actions = children(() => local.children);
   // Remove trailing newlines to prevent empty line at end of code blocks
   const trimmedCode = createMemo(() => trimTrailingNewlines(local.code));
 
@@ -78,25 +96,16 @@ export const CodeBlock = (props: CodeBlockProps) => {
         language={local.language}
       >
         <CodeBlockHeader language={local.language} />
-        <Show when={actions()}>
-          <div class={cn("pointer-events-none absolute top-2 right-2 z-10 flex items-center")}>
-            <div
-              class={cn(
-                "pointer-events-auto flex shrink-0 items-center gap-2 rounded-md border border-sidebar bg-sidebar/80 px-1.5 py-1 supports-[backdrop-filter]:bg-sidebar/70 supports-[backdrop-filter]:backdrop-blur"
-              )}
-              data-streamdown="code-block-actions"
-            >
-              {actions()}
-            </div>
-          </div>
-        </Show>
-        <CodeBlockBody
+        <CodeBlockActions>{local.children}</CodeBlockActions>
+        <HighlightedCodeBlockBody
           {...rest}
           class={local.class}
+          code={trimmedCode()}
+          isIncomplete={local.isIncomplete ?? false}
           language={local.language}
           lineNumbers={local.lineNumbers}
           maxHeight={context.codeBlockMaxHeight}
-          result={raw()}
+          raw={raw()}
           startLine={local.startLine}
         />
       </CodeBlockContainer>

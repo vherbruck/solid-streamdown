@@ -19,6 +19,8 @@ import {
 import { Dynamic } from "solid-js/web";
 import { useIsCodeFenceIncomplete } from "./block-incomplete-context";
 import { CodeBlock } from "./code-block";
+import { CodeBlockCopyButton } from "./code-block/copy-button";
+import { CodeBlockDownloadButton } from "./code-block/download-button";
 import { CodeBlockSkeleton } from "./code-block/skeleton";
 import { HastNode, HastNodes, hastTextContent, RenderContext } from "./hast-render";
 import { ImageComponent } from "./image";
@@ -27,6 +29,7 @@ import type { Components, ExtraProps } from "./markdown";
 import { useCustomRenderer, useMermaidPlugin } from "./plugin-context";
 import { useCn } from "./prefix-context";
 import { RawCodeBlock } from "./raw-code-block";
+import { getCopyCallbacks } from "./controls";
 import {
   type ControlsConfig,
   type LinkSafetyModalProps,
@@ -339,6 +342,27 @@ const Pre: Component<ElementProps> = (props) => {
   );
 };
 
+const shouldShowCodeControl = (
+  config: ControlsConfig,
+  controlType: "copy" | "download"
+): boolean => {
+  if (typeof config === "boolean") {
+    return config;
+  }
+
+  const codeConfig = config.code;
+
+  if (codeConfig === false) {
+    return false;
+  }
+
+  if (codeConfig === true || codeConfig === undefined) {
+    return true;
+  }
+
+  return codeConfig[controlType] !== false;
+};
+
 const START_LINE_PATTERN = /startLine=(\d+)/;
 const NO_LINE_NUMBERS_PATTERN = /\bnoLineNumbers\b/;
 const LANGUAGE_REGEX = /language-([^\s]+)/;
@@ -402,7 +426,16 @@ const BlockCode: Component<ElementProps> = (props) => {
           language={language()}
           lineNumbers={showLineNumbers()}
           startLine={startLine()}
-        />
+        >
+          <Show when={shouldShowControls(context.controls, "code")}>
+            <Show when={shouldShowCodeControl(context.controls, "download")}>
+              <CodeBlockDownloadButton code={code()} language={language()} />
+            </Show>
+            <Show when={shouldShowCodeControl(context.controls, "copy")}>
+              <CodeBlockCopyButton {...getCopyCallbacks(context.controls, "code")} />
+            </Show>
+          </Show>
+        </CodeBlock>
       }
     >
       <Match when={customRenderer()}>

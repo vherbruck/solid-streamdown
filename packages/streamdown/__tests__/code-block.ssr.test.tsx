@@ -21,3 +21,12 @@ it("server-renders a raw-language block verbatim", () => {
   expect(html).toContain('data-streamdown="raw-code-block"');
   expect(html).toContain("┌─┐");
 });
+
+it("server-renders the copy and download buttons without touching browser APIs", () => {
+  const html = renderToString(() => (
+    <Streamdown mode="static">{"```js\nconst x = 1;\n```"}</Streamdown>
+  ));
+  expect(html).toContain('data-streamdown="code-block-copy-button"');
+  expect(html).toContain('data-streamdown="code-block-download-button"');
+  expect(html).not.toContain("<output");
+});

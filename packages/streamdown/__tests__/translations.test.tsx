@@ -68,7 +68,57 @@ const markdownWithTable = `
 | Foo  | Bar   |
 `;
 
+const markdownWithCode = `
+\`\`\`javascript
+console.log("hello");
+\`\`\`
+`;
+
 describe("Streamdown translations prop", () => {
+  it("should use default translations when no translations prop is provided", async () => {
+    const { container } = render(() => <Streamdown>{markdownWithCode}</Streamdown>);
+
+    await waitFor(() => {
+      const copyButton = container.querySelector(
+        '[data-streamdown="code-block-copy-button"]'
+      );
+      expect(copyButton).toBeTruthy();
+      expect(copyButton?.getAttribute("title")).toBe("Copy Code");
+    });
+  });
+
+  it("should use custom translations for code block copy button", async () => {
+    const { container } = render(() => (
+      <Streamdown translations={{ copyCode: "Kopieren" }}>
+        {markdownWithCode}
+      </Streamdown>
+    ));
+
+    await waitFor(() => {
+      const copyButton = container.querySelector(
+        '[data-streamdown="code-block-copy-button"]'
+      );
+      expect(copyButton).toBeTruthy();
+      expect(copyButton?.getAttribute("title")).toBe("Kopieren");
+    });
+  });
+
+  it("should use custom translations for code block download button", async () => {
+    const { container } = render(() => (
+      <Streamdown translations={{ downloadFile: "Datei herunterladen" }}>
+        {markdownWithCode}
+      </Streamdown>
+    ));
+
+    await waitFor(() => {
+      const downloadButton = container.querySelector(
+        '[data-streamdown="code-block-download-button"]'
+      );
+      expect(downloadButton).toBeTruthy();
+      expect(downloadButton?.getAttribute("title")).toBe("Datei herunterladen");
+    });
+  });
+
   it("should use custom translations for table copy button", () => {
     const { container } = render(() => (
       <Streamdown translations={{ copyTable: "Tabelle kopieren" }}>
@@ -86,6 +136,27 @@ describe("Streamdown translations prop", () => {
       (btn) => btn.getAttribute("title") === "Tabelle kopieren"
     );
     expect(copyButton).toBeTruthy();
+  });
+
+  it("should support partial translations (only override specific keys)", async () => {
+    const { container } = render(() => (
+      <Streamdown translations={{ copyCode: "コピー" }}>
+        {markdownWithCode}
+      </Streamdown>
+    ));
+
+    await waitFor(() => {
+      const copyButton = container.querySelector(
+        '[data-streamdown="code-block-copy-button"]'
+      );
+      expect(copyButton?.getAttribute("title")).toBe("コピー");
+
+      // Other defaults should still be present
+      const downloadButton = container.querySelector(
+        '[data-streamdown="code-block-download-button"]'
+      );
+      expect(downloadButton?.getAttribute("title")).toBe("Download file");
+    });
   });
 });
 
