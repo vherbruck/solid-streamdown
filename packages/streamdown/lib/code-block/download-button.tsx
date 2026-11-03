@@ -354,8 +354,12 @@ export const CodeBlockDownloadButton = (
 
   const downloadCode = () => {
     const language = local.language;
+    // Own keys only: `in` would also match Object.prototype names such as
+    // "constructor" (upstream uses `in`).
     const extension =
-      language && language in languageExtensionMap ? languageExtensionMap[language] : "txt";
+      language && Object.hasOwn(languageExtensionMap, language)
+        ? languageExtensionMap[language]
+        : "txt";
     const filename = `${getDownloadFilename(context.controls, "code", "file")}.${extension}`;
     const mimeType = "text/plain";
 

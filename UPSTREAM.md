@@ -52,6 +52,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `@solid-streamdown/code` highlighter load failure | The rejected `createHighlighter` promise stays cached, so that language and theme pair never highlights again until reload | The failed promise is dropped from the cache, so the next request retries |
 | Animate plugin state across messages | Per-block plugins keep their revealed length until `animated` changes, so a Streamdown reused for a new message shows its opening text without animation | A rehype step before each block's plugin resets it when the block's rendered text is shorter than what the plugin last revealed |
 | Mermaid plugin swapped mid-render | The render loop keeps the plugin it started with, so later charts in the same loop render with the old plugin and config | Each queued request carries the plugin current when it was made |
+| Code download extension lookup | `language in languageExtensionMap`, so a fence labeled `constructor` or `toString` gets an inherited function as its extension | Own keys only (`Object.hasOwn`); such labels download as `.txt` |
 
 ## Known upstream risks kept for parity
 

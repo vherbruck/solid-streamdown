@@ -328,3 +328,22 @@ describe("CodeBlockDownloadButton", () => {
     );
   });
 });
+
+describe("download extension lookup", () => {
+  it.each(["constructor", "toString", "__proto__"])(
+    "treats a fence labeled %s as an unknown language",
+    async (language) => {
+      const { save } = await import("../lib/utils");
+      const { container } = render(() => (
+        <CodeBlock code="x" language={language}>
+          <CodeBlockDownloadButton code="x" language={language} />
+        </CodeBlock>
+      ));
+      const button = container.querySelector(
+        '[data-streamdown="code-block-download-button"]'
+      ) as HTMLButtonElement;
+      fireEvent.click(button);
+      expect(save).toHaveBeenLastCalledWith("file.txt", "x", "text/plain");
+    }
+  );
+});
