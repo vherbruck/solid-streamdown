@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task. Each task ends green (`bun run typecheck && bun run build && bun run test`, plus the hydration check from Task 3) and with one commit.
 
-**Status:** In progress, 2026-11-03. The owner said to proceed; no owner decisions are open.
+**Status:** Done 2026-11-03. The owner said to proceed; no owner decisions were open.
 
 **Goal:** Port Mermaid diagrams.
 - **Core** (`lib/mermaid/*`): the diagram component with its streaming-aware render loop, pan/zoom, fullscreen, the SVG/PNG/MMD download menu, and the `mermaid-block` chrome in the code dispatch.
@@ -52,7 +52,7 @@ Plan-specific:
 - The `transform` style is an object.
 - The viewport height goes into a spread, so the server writes no empty `style`.
 
-- [ ] **Step 1:** Port the tests. Run them. Expected: FAIL. Then port the modules. Run them. Expected: PASS. Commit: `feat: port Mermaid utilities and pan/zoom`.
+- [x] **Step 1:** Port the tests. Run them. Expected: FAIL. Then port the modules. Run them. Expected: PASS. Commit: `feat: port Mermaid utilities and pan/zoom`.
 
 ### Task 2: The diagram, its download menu and fullscreen
 
@@ -64,7 +64,7 @@ Plan-specific:
 - **Render loop:** one render runs at a time. While the fence streams, the component yields after each layout and then renders only the latest chart. A failed render keeps the last valid SVG, and shows the error only when there is nothing else to display.
 - **Server:** the component renders the deferred placeholder.
 
-- [ ] **Step 1:** Port the tests. Run them. Expected: FAIL. Then port the modules. Run them. Expected: PASS. Commit: `feat: add the Mermaid diagram, download menu and fullscreen`.
+- [x] **Step 1:** Port the tests. Run them. Expected: FAIL. Then port the modules. Run them. Expected: PASS. Commit: `feat: add the Mermaid diagram, download menu and fullscreen`.
 
 ### Task 3: Mermaid in the code dispatch, security and hydration
 
@@ -74,16 +74,16 @@ Plan-specific:
 - Test (new): `__tests__/mermaid-security.test.tsx`, `__tests__/mermaid.ssr.test.tsx`
 - Modify: `__tests__/raw-html-exceptions.test.ts`, `scripts/hydration-check.mjs`
 
-- [ ] **Step 1:** Port and un-skip the tests. Run them. Expected: FAIL. Implement the branch. Run them. Expected: PASS.
-- [ ] **Step 2: Security tests:**
+- [x] **Step 1:** Port and un-skip the tests. Run them. Expected: FAIL. Implement the branch. Run them. Expected: PASS.
+- [x] **Step 2: Security tests:**
   - the SVG inserted is exactly the plugin's `render()` output, with no `bindFunctions` call;
   - a `mermaid` fence never reaches the DOM as HAST-derived `innerHTML`;
   - with no Mermaid plugin, a `mermaid` fence renders as a code block;
   - the raw-HTML scan allows exactly the three named exceptions.
-- [ ] **Step 3: Server render and hydration.**
+- [x] **Step 3: Server render and hydration.**
   - The server renders the `mermaid-block` chrome and a placeholder.
   - The hydration check hydrates a page with a stub diagram plugin (and an IntersectionObserver stub), matches a fresh client render, then makes the diagram visible and checks the SVG appears once.
-- [ ] **Step 4:** Commit: `feat: render Mermaid blocks with their controls`.
+- [x] **Step 4:** Commit: `feat: render Mermaid blocks with their controls`.
 
 ### Task 4: `@solid-streamdown/mermaid`
 
@@ -101,11 +101,11 @@ Plan-specific:
   - `UPSTREAM.md`: "Synced to" row.
 - Test (new, core): `__tests__/mermaid-plugin.test.tsx`. `<Streamdown plugins={{ mermaid }}>` typechecks. With jsdom's SVG measurement stubbed as upstream does, a simple flowchart renders to an inserted `<svg>`.
 
-- [ ] **Step 1:** Scaffold, port and run. Expected: PASS. Commit: `feat: add @solid-streamdown/mermaid`.
+- [x] **Step 1:** Scaffold, port and run. Expected: PASS. Commit: `feat: add @solid-streamdown/mermaid`.
 
 ### Task 5: Records
 
-- [ ] Add `UPSTREAM.md` rows for every deviation introduced here. Update the carry-forward file and mark this plan done. Commit.
+- [x] Add `UPSTREAM.md` rows for every deviation introduced here. Update the carry-forward file and mark this plan done. Commit.
 
 ## Done when
 

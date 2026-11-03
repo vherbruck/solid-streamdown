@@ -28,12 +28,7 @@ Done 2026-11-03 (plan 4): `@solid-streamdown/code` is ported verbatim and tested
 
 ## Plan 5 (Mermaid)
 
-- Port the "MermaidFullscreenButton panZoom controls config" and "PanZoom edge cases" describes from upstream `final-coverage.test.tsx`.
-- Un-skip the `// plan 5` tests (`components`, `coverage-final`, `remaining-coverage`, `show-controls`).
-- Fill the Mermaid branch in `BlockCode` (`lib/components.tsx`, marked `plan 5`).
-- Add the Mermaid SVG insertion and the download `DOMParser` to `ALLOWED` in `__tests__/raw-html-exceptions.test.ts`.
-- Use the `lib/ui-context.tsx` primitives for the Mermaid download menu and fullscreen overlay.
-- `hooks/use-deferred-render.ts` (`createDeferredRender`) is ported and tested but not yet used; the Mermaid component uses it.
+Done 2026-11-03 (plan 5): the Mermaid branch, its controls, the deferred-render primitive in use, `@solid-streamdown/mermaid`, and the three named raw-HTML exceptions pinned by `__tests__/raw-html-exceptions.test.ts`.
 
 ## Every later plan
 
@@ -90,6 +85,8 @@ Done 2026-11-03 (plan 4): `@solid-streamdown/code` is ported verbatim and tested
   - The tsup preset probe in `tsup.config.ts`; the hydration check backstops it.
 
 ## Plan 9 (documentation and examples)
+
+- **Real-browser security check:** Mermaid charts whose labels hold HTML stall Mermaid's text measurement under jsdom, so label sanitization under `securityLevel: "strict"` (Mermaid's own DOMPurify step) is untested here. The examples' smoke tests should render a label such as `A["<img src=x onerror=…>"]` in a real browser and assert that no handler attribute reaches the DOM.
 
 - Port the 25 pages under `UP/../../apps/website/content/docs` (including `plugins/*`) as Markdown, rewritten for Solid (`class`, accessors, `createMarkdownStream`, Solid components in `components`).
 - Every code sample comes from a file in an `examples/` workspace that CI typechecks and builds: a Vite client app and a SolidStart SSR app, each with a smoke test.
