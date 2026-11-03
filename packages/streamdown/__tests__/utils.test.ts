@@ -227,7 +227,7 @@ describe("save utility", () => {
 
   describe("CSV UTF-8 BOM handling", () => {
     const OriginalBlob = globalThis.Blob;
-    let BlobSpy: MockInstance;
+    let BlobSpy: MockInstance<typeof Blob>;
     let lastBlobParts: BlobPart[] | undefined;
 
     beforeEach(() => {

@@ -10,15 +10,15 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",
-    "esbuild-plugin-solid": "^0.6.0",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.6.3",
+    "esbuild-plugin-solid": "^0.6.0",
     "jsdom": "^29.0.1",
     "solid-js": "1.9.17",
     "tsup": "^8.4.0",
     "tsup-preset-solid": "^2.2.0",
     "typescript": "^5.8.2",
     "vite-plugin-solid": "^2.11.6",
-    "vitest": "^3.2.0"
+    "vitest": "^4.1.12"
   }
 }
