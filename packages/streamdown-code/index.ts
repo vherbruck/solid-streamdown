@@ -312,6 +312,13 @@ const getHighlighter = (
   });
 
   highlighterCache.set(cacheKey, highlighterPromise);
+  // A failed load (chunk or network error, a bad theme) is not cached, so
+  // the next request retries it. (Upstream keeps the rejected promise.)
+  highlighterPromise.catch(() => {
+    if (highlighterCache.get(cacheKey) === highlighterPromise) {
+      highlighterCache.delete(cacheKey);
+    }
+  });
   return highlighterPromise;
 };
 

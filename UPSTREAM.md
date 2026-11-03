@@ -49,6 +49,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `createDeferredRender` after rendering is due | Effect deps exclude the container ref | Stops observing once `shouldRender` is true, so a component that moves its ref to another element does not restart observation |
 | Code that changed before its highlight arrives | Keeps the previous highlighted result, so new lines stay hidden until the async highlight lands, and for good if it never does | Keeps the highlighted rows whose text is unchanged and shows the rest unhighlighted until the highlight lands |
 | Image beside text in a paragraph | Wrapper, overlay and placeholder are `<div>`s inside the `<p>`; the HTML parser moves them out of server-rendered markup, which then does not hydrate | Inside a paragraph they render as `<span>`s with the same classes (the placeholder also gets `display: block`); a standalone image keeps the `<div>`s |
+| `@solid-streamdown/code` highlighter load failure | The rejected `createHighlighter` promise stays cached, so that language and theme pair never highlights again until reload | The failed promise is dropped from the cache, so the next request retries |
 
 ## Known upstream risks kept for parity
 
