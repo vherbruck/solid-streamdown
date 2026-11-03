@@ -4,11 +4,22 @@
  * Modified for SolidJS by the solid-streamdown authors.
  */
 import type { Element, ElementContent, RootContent } from "hast";
-import { type Component, createMemo, type JSX, Show, splitProps, useContext } from "solid-js";
+import {
+  type Component,
+  createMemo,
+  createSignal,
+  type JSX,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { HastNode, HastNodes, RenderContext } from "./hast-render";
+import { LinkSafetyModal } from "./link-modal";
 import type { Components, ExtraProps } from "./markdown";
 import { useCn } from "./prefix-context";
+import { type LinkSafetyModalProps, StreamdownContext } from "./streamdown-context";
+import { useUi } from "./ui-context";
 
 type ElementProps = Omit<JSX.HTMLAttributes<HTMLElement>, "ref"> & ExtraProps;
 
@@ -81,6 +92,94 @@ const Hr: Component<ElementProps> = (props) => {
 };
 
 // Upstream drops only "\n" and "" children before looking for a lone paragraph.
+const INCOMPLETE_LINK = "streamdown:incomplete-link";
+
+const openInNewTab = (href: string) => {
+  window.open(href, "_blank", "noreferrer");
+};
+
+const A: Component<ElementProps & { href?: string }> = (props) => {
+  const cn = useCn();
+  const ui = useUi();
+  const context = useContext(StreamdownContext);
+  const [local, rest] = splitProps(props, ["node", "children", "class", "href"]);
+  const [isModalOpen, setIsModalOpen] = createSignal(false);
+  const isIncomplete = () => local.href === INCOMPLETE_LINK;
+  const isGuarded = () => Boolean(context.linkSafety?.enabled && local.href);
+
+  const handleClick = async (event: MouseEvent) => {
+    const linkSafety = context.linkSafety;
+    const href = local.href;
+    if (!(linkSafety?.enabled && href) || isIncomplete()) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (linkSafety.onLinkCheck) {
+      const isAllowed = await linkSafety.onLinkCheck(href);
+      if (isAllowed) {
+        openInNewTab(href);
+        return;
+      }
+    }
+
+    setIsModalOpen(true);
+  };
+
+  const modalProps: LinkSafetyModalProps = {
+    get url() {
+      return local.href ?? "";
+    },
+    get isOpen() {
+      return isModalOpen();
+    },
+    onClose: () => setIsModalOpen(false),
+    onConfirm: () => {
+      if (local.href) {
+        openInNewTab(local.href);
+      }
+    },
+  };
+
+  return (
+    <Show
+      fallback={
+        <a
+          {...(rest as JSX.AnchorHTMLAttributes<HTMLAnchorElement>)}
+          class={cn("wrap-anywhere font-medium text-primary underline", local.class)}
+          data-incomplete={isIncomplete()}
+          data-streamdown="link"
+          href={local.href}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {local.children}
+        </a>
+      }
+      when={isGuarded()}
+    >
+      <ui.Button
+        class={cn(
+          "wrap-anywhere appearance-none text-start font-medium text-primary underline",
+          local.class
+        )}
+        data-incomplete={isIncomplete()}
+        data-streamdown="link"
+        onClick={handleClick}
+        type="button"
+      >
+        {local.children}
+      </ui.Button>
+      {context.linkSafety?.renderModal ? (
+        context.linkSafety.renderModal(modalProps)
+      ) : (
+        <LinkSafetyModal {...modalProps} />
+      )}
+    </Show>
+  );
+};
+
 const isLineBreakText = (node: RootContent): boolean =>
   node.type === "text" && (node.value === "\n" || node.value === "");
 
@@ -248,6 +347,7 @@ const Section: Component<ElementProps> = (props) => {
 // The element-specific prop types differ only in event-handler targets, which
 // these components forward untouched, so one shared prop type is sound.
 export const components = {
+  a: A,
   ol: Ol,
   li: Li,
   ul: Ul,

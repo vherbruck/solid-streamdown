@@ -35,8 +35,7 @@ describe("link reference definitions", () => {
     expect(container.textContent).toContain("More text here.");
   });
 
-  // plan 2: link component (data-streamdown="link")
-  it.skip("resolves a reference link whose definition is in a later block", () => {
+  it("resolves a reference link whose definition is in a later block", () => {
     const markdown =
       "See [the docs][1] for details.\n\nMore text here.\n\n[1]: https://example.com/docs\n";
 
@@ -75,8 +74,7 @@ describe("link reference definitions", () => {
     }
   });
 
-  // plan 2: link component (data-streamdown="link")
-  it.skip("resolves collapsed and shortcut references to an earlier definition", () => {
+  it("resolves collapsed and shortcut references to an earlier definition", () => {
     const markdown =
       "[docs]: https://example.com/docs\n\nRead [docs][] or [docs].\n";
 

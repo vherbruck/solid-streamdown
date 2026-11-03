@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import { describe, expect, it } from "vitest";
 import { components } from "../lib/components";
 import { Markdown } from "../lib/markdown";
+import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
 
 // Upstream builds React elements by hand and feeds them to the section
 // component. Here the same HTML goes through the full pipeline, so the
@@ -33,10 +34,13 @@ describe("MemoSection footnote filtering", () => {
   });
 
   it("should render footnotes written as [^1] markdown", () => {
+    // With link safety on (the default), links render as buttons, as upstream.
     const { container } = render(() => (
-      <Markdown components={components} remarkPlugins={[remarkGfm]}>
-        {"Text with footnote[^1].\n\n[^1]: This is the footnote definition."}
-      </Markdown>
+      <StreamdownContext.Provider value={{ ...defaultStreamdownContext, linkSafety: undefined }}>
+        <Markdown components={components} remarkPlugins={[remarkGfm]}>
+          {"Text with footnote[^1].\n\n[^1]: This is the footnote definition."}
+        </Markdown>
+      </StreamdownContext.Provider>
     ));
     expect(container.textContent).toContain("Text with footnote");
     expect(container.querySelector("sup a[data-footnote-ref]")?.textContent).toBe("1");

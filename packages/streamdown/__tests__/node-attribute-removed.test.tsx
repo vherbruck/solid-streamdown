@@ -6,6 +6,11 @@
 import { render } from "@solidjs/testing-library";
 import { describe, expect, it } from "vitest";
 import { components } from "../lib/components";
+import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
+
+// Upstream renders these inside a StreamdownContext whose linkSafety is unset.
+const noLinkSafety = { ...defaultStreamdownContext, linkSafety: undefined };
+
 
 describe("Node Attribute Fix", () => {
   // Create a realistic HAST node object that would be passed by react-markdown
@@ -159,14 +164,15 @@ describe("Node Attribute Fix", () => {
     });
   });
 
-  // plan 2: link component
-  describe.skip("Link Component - No node attribute in HTML", () => {
+  describe("Link Component - No node attribute in HTML", () => {
     it("should NOT render node attribute in A element", () => {
       const A = (components as Record<string, any>).a;
       const { container } = render(() => (
-        <A href="https://example.com" node={mockHastNode as any}>
-          Link text
-        </A>
+        <StreamdownContext.Provider value={noLinkSafety}>
+          <A href="https://example.com" node={mockHastNode as any}>
+            Link text
+          </A>
+        </StreamdownContext.Provider>
       ));
 
       const a = container.querySelector("a");

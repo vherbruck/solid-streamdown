@@ -199,8 +199,7 @@ describe("Disable Autolink Protocols (#607)", () => {
       expect(container.textContent).toBe(content);
     });
 
-    // plan 2: link component (data-streamdown="link")
-    it.skip("unwraps disabled bare-email autolinks to plain text", () => {
+    it("unwraps disabled bare-email autolinks to plain text", () => {
       const content = "Contact foo@example.com now";
       const { container } = render(() => (
         <Streamdown
@@ -226,8 +225,7 @@ describe("Disable Autolink Protocols (#607)", () => {
       expect(link?.getAttribute("href")).toBe("mailto:foo@example.com");
     });
 
-    // plan 2: link component (data-streamdown="link")
-    it.skip("leaves autolinks unchanged when the prop is not provided", () => {
+    it("leaves autolinks unchanged when the prop is not provided", () => {
       const content = "Contact foo@example.com now";
       const { container } = render(() => (
         <Streamdown linkSafety={{ enabled: false }}>{content}</Streamdown>

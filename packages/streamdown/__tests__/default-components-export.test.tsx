@@ -19,8 +19,7 @@ describe("defaultComponents export", () => {
     expect(defaultComponents.pre).toBeTruthy();
   });
 
-  it.skip("exports the link component", () => {
-    // plan 2: link component (`a`)
+  it("exports the link component", () => {
     expect((defaultComponents as unknown as Record<string, unknown>).a).toBeTruthy();
   });
 
@@ -50,8 +49,7 @@ describe("defaultComponents export", () => {
     expect(heading?.textContent).toBe("Hello");
   });
 
-  it.skip("supports Dynamic composition for conditional overrides", () => {
-    // plan 2: link component (`a`, data-streamdown="link")
+  it("supports Dynamic composition for conditional overrides", () => {
     const DefaultA = (defaultComponents as unknown as Record<string, any>).a;
     const { container } = render(() => (
       <Streamdown

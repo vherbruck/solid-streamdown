@@ -7,6 +7,11 @@ import { render, waitFor } from "@solidjs/testing-library";
 import type { Component } from "solid-js";
 import { describe, expect, it } from "vitest";
 import { components as importedComponents } from "../lib/components";
+import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
+
+// Upstream renders these inside a StreamdownContext whose linkSafety is unset.
+const noLinkSafety = { ...defaultStreamdownContext, linkSafety: undefined };
+
 
 // Upstream casts to Required<Options["components"]>; this package's map has
 // no a/img/table until plan 2, so look components up loosely.
@@ -145,16 +150,18 @@ describe("Markdown Components", () => {
       expect(span?.className).toContain("font-semibold");
     });
 
-    // plan 2: link component
-    it.skip("should render link with correct attributes and classes", () => {
+    it("should render link with correct attributes and classes", () => {
       const A = components.a;
       if (!A) {
         throw new Error("A component not found");
       }
-      const { container } = render(() => <A href="https://example.com" node={null as any}>
+      const { container } = render(() => (
+        <StreamdownContext.Provider value={noLinkSafety}>
+          <A href="https://example.com" node={null as any}>
             Link text
           </A>
-      );
+        </StreamdownContext.Provider>
+      ));
       const link = container.querySelector("a");
       expect(link).toBeTruthy();
       expect(link?.className).toContain("wrap-anywhere");
@@ -165,16 +172,18 @@ describe("Markdown Components", () => {
       expect(link?.getAttribute("target")).toBe("_blank");
     });
 
-    // plan 2: link component
-    it.skip("should mark incomplete links with data attribute", () => {
+    it("should mark incomplete links with data attribute", () => {
       const A = components.a;
       if (!A) {
         throw new Error("A component not found");
       }
-      const { container } = render(() => <A href="streamdown:incomplete-link" node={null as any}>
+      const { container } = render(() => (
+        <StreamdownContext.Provider value={noLinkSafety}>
+          <A href="streamdown:incomplete-link" node={null as any}>
             Incomplete link text
           </A>
-      );
+        </StreamdownContext.Provider>
+      ));
       // Should render a normal anchor with data-incomplete attribute
       const link = container.querySelector('a[data-streamdown="link"]');
       expect(link).toBeTruthy();

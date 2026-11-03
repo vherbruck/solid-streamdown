@@ -26,7 +26,9 @@ describe("Incomplete streaming links (#551)", () => {
 
   it("should render incomplete markdown links via MarkdownA instead of harden [blocked] (plain element)", () => {
     const { container } = render(() => (
-      <Streamdown mode="streaming">{"see [the docs"}</Streamdown>
+      <Streamdown linkSafety={{ enabled: false }} mode="streaming">
+        {"see [the docs"}
+      </Streamdown>
     ));
 
     expect(
@@ -39,8 +41,7 @@ describe("Incomplete streaming links (#551)", () => {
     expect(link?.textContent).toBe("the docs");
   });
 
-  // plan 2: link component (data-streamdown="link")
-  it.skip("should render incomplete markdown links via MarkdownA instead of harden [blocked]", () => {
+  it("should render incomplete markdown links via MarkdownA instead of harden [blocked]", () => {
     const { container } = render(() => <Streamdown mode="streaming">{"see [the docs"}</Streamdown>
     );
 
@@ -56,7 +57,9 @@ describe("Incomplete streaming links (#551)", () => {
 
   it("should render incomplete URL tails via MarkdownA instead of harden [blocked] (plain element)", () => {
     const { container } = render(() => (
-      <Streamdown mode="streaming">{"see [the docs](https://exam"}</Streamdown>
+      <Streamdown linkSafety={{ enabled: false }} mode="streaming">
+        {"see [the docs](https://exam"}
+      </Streamdown>
     ));
 
     expect(
@@ -69,8 +72,7 @@ describe("Incomplete streaming links (#551)", () => {
     expect(link?.textContent).toBe("the docs");
   });
 
-  // plan 2: link component (data-streamdown="link")
-  it.skip("should render incomplete URL tails via MarkdownA instead of harden [blocked]", () => {
+  it("should render incomplete URL tails via MarkdownA instead of harden [blocked]", () => {
     const { container } = render(() => <Streamdown mode="streaming">{"see [the docs](https://exam"}</Streamdown>
     );
 

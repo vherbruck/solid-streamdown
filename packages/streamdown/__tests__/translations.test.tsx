@@ -4,7 +4,8 @@
  * Modified for SolidJS by the solid-streamdown authors.
  */
 import { render } from "@solidjs/testing-library";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { LinkSafetyModal } from "../lib/link-modal";
 import {
   defaultTranslations,
   TranslationsContext,
@@ -56,6 +57,55 @@ describe("defaultTranslations", () => {
     expect(defaultTranslations.copyLink).toBe("Copy link");
     expect(defaultTranslations.copied).toBe("Copied");
     expect(defaultTranslations.openLink).toBe("Open link");
+  });
+});
+
+describe("LinkSafetyModal translations", () => {
+  it("should show default translations in link safety modal", () => {
+    render(() => (
+      <LinkSafetyModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        url="https://example.com"
+      />
+    ));
+
+    expect(document.body.textContent).toContain("Open external link?");
+    expect(document.body.textContent).toContain(
+      "You're about to visit an external website."
+    );
+    expect(document.body.textContent).toContain("Copy link");
+    expect(document.body.textContent).toContain("Open link");
+  });
+
+  it("should use custom translations in link safety modal", () => {
+    const customTranslations = {
+      ...defaultTranslations,
+      openExternalLink: "Externen Link öffnen?",
+      externalLinkWarning: "Sie besuchen eine externe Website.",
+      copyLink: "Link kopieren",
+      openLink: "Link öffnen",
+      close: "Schließen",
+    };
+
+    render(() => (
+      <TranslationsContext.Provider value={customTranslations}>
+        <LinkSafetyModal
+          isOpen={true}
+          onClose={vi.fn()}
+          onConfirm={vi.fn()}
+          url="https://example.com"
+        />
+      </TranslationsContext.Provider>
+    ));
+
+    expect(document.body.textContent).toContain("Externen Link öffnen?");
+    expect(document.body.textContent).toContain(
+      "Sie besuchen eine externe Website."
+    );
+    expect(document.body.textContent).toContain("Link kopieren");
+    expect(document.body.textContent).toContain("Link öffnen");
   });
 });
 

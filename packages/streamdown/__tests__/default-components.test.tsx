@@ -90,9 +90,9 @@ describe("simple element components", () => {
     expect(c.querySelector("[data-streamdown=strong]")?.tagName).toBe("SPAN");
   });
 
-  it("does not register a, img or table", () => {
+  it("registers the built-in components (img and table arrive in plan 2)", () => {
     expect(Object.keys(components).sort()).toEqual(
-      "ol li ul hr strong h1 h2 h3 h4 h5 h6 thead tbody tr th td blockquote code pre sup sub p section"
+      "a ol li ul hr strong h1 h2 h3 h4 h5 h6 thead tbody tr th td blockquote code pre sup sub p section"
         .split(" ")
         .sort()
     );

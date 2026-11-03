@@ -107,8 +107,7 @@ Mixed paragraph: Hello مرحبا World عالم.
     expect(inlineCode?.textContent).toBe("مرحبا");
   });
 
-  // plan 2: the link component and its data-streamdown marker
-  it.skip("renders links with RTL text", () => {
+  it("renders links with RTL text", () => {
     const rtlLink = "[نص الرابط العربي](https://example.com)";
 
     const { container } = render(() => <Streamdown linkSafety={{ enabled: false }}>{rtlLink}</Streamdown>);
