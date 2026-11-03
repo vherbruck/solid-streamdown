@@ -51,3 +51,23 @@ describe("image component under Streamdown", () => {
     expect(container.querySelector('button[title="Download image"]')).not.toBeNull();
   });
 });
+
+describe("image inside a sentence", () => {
+  it("renders its wrapper as phrasing content with the same classes", () => {
+    const { container } = render(() => (
+      <Streamdown mode="static">{"Text with ![x](https://example.com/a.png) inline."}</Streamdown>
+    ));
+    const wrapper = container.querySelector('[data-streamdown="image-wrapper"]');
+    expect(wrapper?.tagName).toBe("SPAN");
+    expect(wrapper?.className).toBe("group relative my-4 inline-block");
+    expect(wrapper?.closest("p")).not.toBeNull();
+    expect(container.querySelector("p div")).toBeNull();
+  });
+
+  it("keeps the standalone image's div wrapper", () => {
+    const { container } = render(() => (
+      <Streamdown mode="static">{"![x](https://example.com/a.png)"}</Streamdown>
+    ));
+    expect(container.querySelector('[data-streamdown="image-wrapper"]')?.tagName).toBe("DIV");
+  });
+});

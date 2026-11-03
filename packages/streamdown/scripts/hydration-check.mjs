@@ -59,6 +59,7 @@ const UI = [
   "```js\nconst a = 1;\n```",
   "| A | B |\n| --- | --- |\n| 1 | 2 |",
   "![logo](https://example.com/logo.png)",
+  "Text with ![inline](https://example.com/inline.png) beside it.",
   "[docs](https://example.com)",
 ].join("\n\n");
 const CARET_HIDDEN = "data-sd-caret-hidden";
@@ -332,7 +333,8 @@ const runClient = async (dir, entry, solid) => {
   const count = (selector) => uiRoot.querySelectorAll(selector).length;
   check(count('[data-streamdown="code-block"]') === 1, `${count('[data-streamdown="code-block"]')} code blocks after hydration`);
   check(count('[data-streamdown="table-wrapper"]') === 1, `${count('[data-streamdown="table-wrapper"]')} table wrappers after hydration`);
-  check(count('[data-streamdown="image-wrapper"]') === 1, `${count('[data-streamdown="image-wrapper"]')} image wrappers after hydration`);
+  check(count('[data-streamdown="image-wrapper"]') === 2, `${count('[data-streamdown="image-wrapper"]')} image wrappers after hydration, expected 2`);
+  check(count("p div") === 0, "a div ended up inside a paragraph after hydration");
   check(occurrences(uiRoot.textContent, "const a = 1;") === 1, "the code is duplicated or missing after hydration");
 
   const copied = [];

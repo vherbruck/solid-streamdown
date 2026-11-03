@@ -30,6 +30,7 @@ import { MermaidDownloadDropdown } from "./mermaid/download-button";
 import { MermaidFullscreenButton } from "./mermaid/fullscreen-button";
 import type { Components, ExtraProps } from "./markdown";
 import { useCustomRenderer, useMermaidPlugin } from "./plugin-context";
+import { PhrasingContext } from "./phrasing-context";
 import { useCn } from "./prefix-context";
 import { RawCodeBlock } from "./raw-code-block";
 import { getCopyCallbacks } from "./controls";
@@ -325,7 +326,7 @@ const P: Component<ElementProps> = (props) => {
   return (
     <Show when={!unwrapped()} fallback={local.children}>
       <p {...(rest as JSX.HTMLAttributes<HTMLParagraphElement>)}>
-        {local.children}
+        <PhrasingContext.Provider value={true}>{local.children}</PhrasingContext.Provider>
       </p>
     </Show>
   );

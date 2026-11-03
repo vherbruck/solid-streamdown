@@ -4,10 +4,11 @@
  * Modified for SolidJS by the solid-streamdown authors.
  */
 import { INCOMPLETE_IMAGE_PLACEHOLDER } from "remend";
-import { createSignal, type JSX, onMount, Show, splitProps } from "solid-js";
+import { createSignal, type JSX, onMount, Show, splitProps, useContext } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { useIcons } from "./icon-context";
 import type { ExtraProps } from "./markdown";
+import { PhrasingContext } from "./phrasing-context";
 import { useCn } from "./prefix-context";
 import { useTranslations } from "./translations-context";
 import { useUi } from "./ui-context";
@@ -41,6 +42,10 @@ export const ImageComponent = (props: ImageComponentProps) => {
   ]);
   const icons = useIcons();
   const cn = useCn();
+  // Inside a paragraph (an image beside text) the wrapper must be phrasing
+  // content: spans with the same classes. Upstream renders divs, which the
+  // HTML parser moves out of the <p>, breaking server-rendered hydration.
+  const box = useContext(PhrasingContext) ? "span" : "div";
   const ui = useUi();
   const t = useTranslations();
   let imgRef: HTMLImageElement | undefined;
@@ -130,7 +135,11 @@ export const ImageComponent = (props: ImageComponentProps) => {
     <Show when={local.src}>
       <Show
         fallback={
-          <div class={cn("group relative my-4 inline-block")} data-streamdown="image-wrapper">
+          <Dynamic
+            class={cn("group relative my-4 inline-block")}
+            component={box}
+            data-streamdown="image-wrapper"
+          >
             {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: image overlay with intentional load/error handling */}
             <img
               {...rest}
@@ -148,10 +157,11 @@ export const ImageComponent = (props: ImageComponentProps) => {
               </span>
             </Show>
             <Show when={showControls()}>
-              <div
+              <Dynamic
                 class={cn(
                   "pointer-events-none absolute inset-0 hidden rounded-lg bg-black/10 group-hover:block"
                 )}
+                component={box}
                 data-streamdown="image-overlay"
               />
             </Show>
@@ -168,20 +178,24 @@ export const ImageComponent = (props: ImageComponentProps) => {
                 <Dynamic component={icons.DownloadIcon} size={14} />
               </ui.Button>
             </Show>
-          </div>
+          </Dynamic>
         }
         when={local.src === INCOMPLETE_IMAGE_PLACEHOLDER}
       >
-        <div
+        <Dynamic
           class={cn("group relative my-4 inline-block")}
+          component={box}
           data-incomplete="true"
           data-streamdown="image-wrapper"
         >
-          <div
+          <Dynamic
             class={cn("h-24 w-48 animate-pulse rounded-lg bg-muted")}
+            component={box}
             data-streamdown="image-placeholder"
+            // A span ignores width and height unless it is a block
+            {...(box === "span" ? { style: { display: "block" } } : {})}
           />
-        </div>
+        </Dynamic>
       </Show>
     </Show>
   );
