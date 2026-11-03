@@ -20,6 +20,7 @@ import {
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import type { Pluggable, PluggableList } from "unified";
+import type { AnimateOptions } from "./lib/animate";
 import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
 import { MappedElement, resolveTarget } from "./lib/hast-render";
@@ -60,6 +61,8 @@ import {
 } from "./lib/translations-context";
 import { type CnFunction, createCn } from "./lib/utils";
 
+export type { AnimateOptions } from "./lib/animate";
+export { createAnimatePlugin } from "./lib/animate";
 export { useIsCodeFenceIncomplete } from "./lib/block-incomplete-context";
 export type {
   MarkdownStream,
@@ -208,21 +211,6 @@ export const normalizeHtmlIndentation = (content: string): string => {
   // Remove 4+ spaces/tabs before HTML tags at line starts
   return content.replace(HTML_LINE_INDENT_PATTERN, "$1");
 };
-
-// plan 3: moves to lib/animate.ts together with the animate plugin
-export interface AnimateOptions {
-  animation?: "fadeIn" | "blurIn" | "slideUp" | (string & {});
-  duration?: number;
-  easing?: string;
-  /**
-   * Soft cap (ms) on how far ahead of wall-clock words may be scheduled.
-   * Larger values favour longer cascades / stricter cross-block serialization;
-   * smaller values keep a fast stream visually caught up. @default 320
-   */
-  maxBacklogMs?: number;
-  sep?: "word" | "char";
-  stagger?: number;
-}
 
 const carets = {
   block: " ▋",

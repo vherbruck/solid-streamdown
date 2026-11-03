@@ -160,3 +160,27 @@ describe("isBlockedElement", () => {
     expect(isBlockedElement("style")).toBe(false);
   });
 });
+
+describe("object styles from plugins", () => {
+  const withStyle = (style: unknown) =>
+    toSolidProps(
+      { type: "element", tagName: "span", properties: { style: style as string }, children: [] },
+      "html"
+    );
+
+  it("keeps an object style with string values", () => {
+    expect(withStyle({ "--sd-duration": "150ms", color: "red" }).style).toEqual({
+      "--sd-duration": "150ms",
+      color: "red",
+    });
+  });
+
+  it("drops an object style holding a non-string value", () => {
+    expect(withStyle({ color: "red", nested: { a: 1 } }).style).toBeUndefined();
+    expect(withStyle({ color: Number.NaN }).style).toBeUndefined();
+  });
+
+  it("still parses a string style", () => {
+    expect(withStyle("color: red; --x: 1").style).toEqual({ color: "red", "--x": "1" });
+  });
+});

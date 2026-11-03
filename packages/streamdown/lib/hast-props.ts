@@ -72,6 +72,23 @@ const toStyleObject = (value: string): Record<string, string> | undefined => {
   }
 };
 
+const toPlainStyleObject = (value: unknown): Record<string, string> | undefined => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return undefined;
+  }
+  const style: Record<string, string> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry === "string") {
+      style[key] = entry;
+    } else if (typeof entry === "number" && Number.isFinite(entry)) {
+      style[key] = String(entry);
+    } else {
+      return undefined;
+    }
+  }
+  return style;
+};
+
 const toSolidProps = (element: Element, space: Space): Record<string, unknown> => {
   const schema = space === "svg" ? svg : html;
   const tagName = element.tagName.toLowerCase();
@@ -107,10 +124,10 @@ const toSolidProps = (element: Element, space: Space): Record<string, unknown> =
     }
 
     if (name === "style") {
-      if (typeof value !== "string") {
-        continue;
-      }
-      const style = toStyleObject(value);
+      // Markdown-derived HAST carries string styles. A plugin may set an
+      // object (upstream's render animate plugin does); it reaches Solid as
+      // an object too, applied per property, and only with plain values.
+      const style = typeof value === "string" ? toStyleObject(value) : toPlainStyleObject(value);
       if (style) {
         result.style = style;
       }
