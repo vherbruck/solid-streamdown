@@ -1,0 +1,35 @@
+{
+  "name": "@solid-streamdown/code",
+  "version": "0.0.0",
+  "description": "Shiki syntax highlighting plugin for solid-streamdown, a port of @streamdown/code",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "vherbruck",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vherbruck/solid-streamdown",
+    "directory": "packages/streamdown-code"
+  },
+  "keywords": ["solid", "solidjs", "streamdown", "shiki", "syntax-highlighting"],
+  "files": ["dist", "LICENSE", "NOTICE"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "shiki": "^4.4.3"
+  }
+}

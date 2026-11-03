@@ -8,6 +8,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Package | Upstream | Commit |
 |---------|----------|--------|
 | solid-streamdown | streamdown 2.7.1 | c5e44d8 |
+| @solid-streamdown/code | @streamdown/code 2.0.0 | c5e44d8 |
 
 ## Deviations
 
@@ -42,6 +43,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `hooks/use-throttled-debouce.ts` | Defined, never imported | Not ported |
 | Animation timeline passes | `beginPass` during each React render; `commitPass` and each block's `commit()` in layout effects | A pass opens at the first block's `mark`/`take` after the last commit; `Streamdown` commits it, and each `Block` its plugin, in `createEffect` after the DOM updates. `lib/animate.ts` itself is unchanged |
 | Object `style` on HAST | Handed to React as is | Accepted from plugins when every value is a string or a finite number, and applied per property; string styles are parsed as before |
+| `@solid-streamdown/code` peer dependencies | `react` (never imported) | None: the plugin imports neither React nor Solid |
 
 ## Known upstream risks kept for parity
 
