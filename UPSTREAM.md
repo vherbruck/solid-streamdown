@@ -56,6 +56,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Mermaid plugin swapped mid-render | The render loop keeps the plugin it started with, so later charts in the same loop render with the old plugin and config | Each queued request carries the plugin current when it was made |
 | Code download extension lookup | `language in languageExtensionMap`, so a fence labeled `constructor` or `toString` gets an inherited function as its extension | Own keys only (`Object.hasOwn`); such labels download as `.txt` |
 | Processor cache key per parse | Serializes every plugin's options on every parse | Each plugin entry's key is memoized by entry identity, so options are walked once; an entry whose options are mutated in place after use keeps its earlier processor |
+| SVG and MathML element creation | React creates elements in the namespace of their context | Solid's `Dynamic` picks SVG from a fixed tag list and never MathML, so the renderer creates SVG- and MathML-space elements itself with `createElementNS` (children of `foreignObject` and MathML text integration points are HTML again, as the HTML parser does). `a` inside `svg` still maps to the link component, as upstream |
 
 ## Known upstream risks kept for parity
 

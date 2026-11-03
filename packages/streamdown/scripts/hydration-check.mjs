@@ -49,6 +49,9 @@ const diagramPlugin = {
     render: async () => ({ svg: '<svg data-stub-diagram="" viewBox="0 0 100 50"></svg>' }),
   }),
 };
+// KaTeX output: MathML, plus SVG for the square root, then more math streamed
+// in after hydration.
+const MATH_STEPS = ["$$\n\\sqrt{x}\n$$", "$$\n\\sqrt{x}\n$$\n\n$$\n\\frac{1}{2}\n$$"];
 // Code highlighted by the real plugin after hydration.
 const HIGHLIGHTED = "```ts\nconst answer: number = 42;\n```\n\n[after code](https://example.com)";
 // Animated streaming: word spans revealed while streaming, removed on settle.
@@ -104,10 +107,12 @@ const checkBuildOutput = async () => {
   const server = await readFile(join(DIST, "server.js"), "utf8");
   check(server.includes("ssrHydrationKey"), "dist/server.js has no ssrHydrationKey: not hydratable SSR output");
   check(/\bssr(Element)?\(/.test(server), "dist/server.js has no ssr()/ssrElement() calls: not SSR output");
-  check(!server.includes("getNextElement"), "dist/server.js uses getNextElement: it holds client output");
+  // Compiled client templates hydrate through getNextElement(<template>); the
+  // renderer's own namespaced elements call it bare, behind isServer.
+  check(!/getNextElement\(_tmpl/.test(server), "dist/server.js hydrates client templates: it holds client output");
   for (const { entry } of CLIENT_PASSES) {
     const client = await readFile(join(DIST, entry), "utf8");
-    check(client.includes("getNextElement"), `dist/${entry} has no getNextElement: not hydratable client output`);
+    check(/getNextElement\(_tmpl/.test(client), `dist/${entry} hydrates no templates: not hydratable client output`);
     check(!client.includes("ssrHydrationKey"), `dist/${entry} uses ssrHydrationKey: it holds server output`);
   }
   finish("build output check (see tsup.config.ts)");
@@ -131,6 +136,11 @@ const runServer = async (dir) => {
     () => Streamdown({ children: DIAGRAM, mode: "static", plugins: { mermaid: diagramPlugin } }),
     { renderId: "m" }
   );
+  const { math } = await import("@solid-streamdown/math");
+  const mathHtml = renderToString(
+    () => Streamdown({ children: MATH_STEPS[0], plugins: { math } }),
+    { renderId: "x" }
+  );
   const voidsHtml = renderToString(() => Streamdown({ children: VOIDS, mode: "static" }), { renderId: "v" });
   const animatedHtml = renderToString(
     () => Streamdown({ animated: ANIMATED, children: ANIMATED_STEPS[0], isAnimating: true }),
@@ -141,7 +151,8 @@ const runServer = async (dir) => {
     `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div>` +
     `<div id="ui">${uiHtml}</div><div id="animated">${animatedHtml}</div>` +
     `<div id="voids">${voidsHtml}</div><div id="highlighted">${highlightedHtml}</div>` +
-    `<div id="diagram">${diagramHtml}</div></body></html>`;
+    `<div id="diagram">${diagramHtml}</div>` +
+    `<div id="math">${mathHtml}</div></body></html>`;
   await writeFile(join(dir, "server.html"), page);
 };
 
@@ -206,6 +217,8 @@ const runClient = async (dir, entry, solid) => {
     "HTMLHeadElement",
     "MouseEvent",
     "KeyboardEvent",
+    // rehype-katex's browser build parses KaTeX's HTML with DOMParser.
+    "DOMParser",
   ]) {
     globalThis[name] = window[name];
   }
@@ -382,6 +395,39 @@ const runClient = async (dir, entry, solid) => {
     "the link after the code block did not hydrate"
   );
 
+  // Math hydrates in its namespaces, and math streamed in afterwards is
+  // created in them too.
+  const { math } = await import("@solid-streamdown/math");
+  const mathRoot = document.getElementById("math");
+  const [mathText, setMathText] = createSignal(MATH_STEPS[0]);
+  const disposeMath = hydrate(
+    () =>
+      Streamdown({
+        plugins: { math },
+        get children() {
+          return mathText();
+        },
+      }),
+    mathRoot,
+    { renderId: "x" }
+  );
+  matchesFresh(mathRoot, { children: MATH_STEPS[0], plugins: { math } }, "math after hydration");
+  const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const wrongNamespaces = () =>
+    [
+      ...[...mathRoot.querySelectorAll("math, math *")].filter((el) => {
+        const html = el.closest("mi, mo, mn, ms, mtext") && el.closest("mi, mo, mn, ms, mtext") !== el;
+        return !html && el.namespaceURI !== MATHML_NS;
+      }),
+      ...[...mathRoot.querySelectorAll("svg, svg *")].filter((el) => el.namespaceURI !== SVG_NS),
+    ].map((el) => el.localName);
+  check(mathRoot.querySelector("svg") !== null, "KaTeX's square-root SVG is missing after hydration");
+  check(wrongNamespaces().length === 0, `math elements in the wrong namespace after hydration: ${wrongNamespaces().join(", ")}`);
+  setMathText(MATH_STEPS[1]);
+  check(mathRoot.querySelectorAll("math").length === 2, `${mathRoot.querySelectorAll("math").length} math elements after streaming more math`);
+  check(wrongNamespaces().length === 0, `math elements in the wrong namespace after streaming: ${wrongNamespaces().join(", ")}`);
+
   // A Mermaid block hydrates as its placeholder, then renders once visible.
   const diagramRoot = document.getElementById("diagram");
   const diagramProps = { children: DIAGRAM, mode: "static", plugins: { mermaid: diagramPlugin } };
@@ -460,6 +506,7 @@ const runClient = async (dir, entry, solid) => {
   disposeVoids();
   disposeHighlighted();
   disposeDiagram();
+  disposeMath();
   window.close();
   check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
   finish(`hydration (dist/${entry})`);

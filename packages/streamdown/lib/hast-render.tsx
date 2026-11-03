@@ -9,13 +9,14 @@ import {
   Index,
   type JSX,
   Match,
+  Show,
   Switch,
   sharedConfig,
   splitProps,
   useContext,
 } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
-import { Dynamic, escape, isServer } from "solid-js/web";
+import { Dynamic, escape, getNextElement, isServer, spread } from "solid-js/web";
 import { isBlockedElement, type Space, toSolidProps } from "./hast-props";
 import type { Components } from "./markdown";
 
@@ -188,11 +189,60 @@ const resolveTarget = (tagName: string, mapped: unknown): RenderTarget => {
   return tagName;
 };
 
+const NAMESPACE_URIS = {
+  svg: "http://www.w3.org/2000/svg",
+  math: "http://www.w3.org/1998/Math/MathML",
+} as const;
+
+// MathML elements whose children the HTML parser treats as HTML again
+// (text integration points; mglyph and malignmark stay MathML).
+const MATHML_TEXT_INTEGRATION = new Set(["mi", "mo", "mn", "ms", "mtext"]);
+
+/** The space an element's children are created in, as the HTML parser does. */
+const childSpace = (space: Space, node: Element): Space => {
+  const tag = node.tagName.toLowerCase();
+  if (space === "svg" && tag === "foreignobject") {
+    return "html";
+  }
+  if (space === "math") {
+    if (MATHML_TEXT_INTEGRATION.has(tag)) {
+      return "html";
+    }
+    if (tag === "annotation-xml") {
+      const encoding = String(node.properties?.encoding ?? "").toLowerCase();
+      if (encoding === "text/html" || encoding === "application/xhtml+xml") {
+        return "html";
+      }
+    }
+  }
+  return space;
+};
+
+/**
+ * Creates an SVG or MathML element in its namespace. Solid's Dynamic picks a
+ * namespace from a fixed list of SVG tag names, so it would create MathML,
+ * and SVG's `a`, `title` and `style`, as HTML elements. Client only: the
+ * server writes markup, which the browser parses into the right namespace.
+ * Props are set as attributes (Solid's SVG path) for MathML too.
+ */
+const NamespacedElement: Component<
+  Record<string, unknown> & { tag: string; namespace: "svg" | "math" }
+> = (props) => {
+  const [local, others] = splitProps(props, ["tag", "namespace", "component"]);
+  const element = sharedConfig.context
+    ? getNextElement()
+    : document.createElementNS(NAMESPACE_URIS[local.namespace], local.tag);
+  spread(element, others, true);
+  return element;
+};
+
 // `component` is safe as the target's prop name: the render guard drops it
 // from every element's props.
 type MappedElementProps = Record<string, unknown> & {
   component: RenderTarget;
   node?: Element;
+  /** The namespace a tag-name target is created in (HTML when omitted). */
+  namespace?: Space;
 };
 
 /**
@@ -201,11 +251,23 @@ type MappedElementProps = Record<string, unknown> & {
  * DOM as an attribute. An `undefined` target renders nothing.
  */
 const MappedElement: Component<MappedElementProps> = (props) => {
-  const [, tagProps] = splitProps(props, ["node"]);
+  const [, componentProps] = splitProps(props, ["namespace"]);
+  const [, tagProps] = splitProps(props, ["node", "namespace"]);
+  const foreignNamespace = () =>
+    !isServer && (props.namespace === "svg" || props.namespace === "math")
+      ? props.namespace
+      : undefined;
   return (
     <Switch>
       <Match when={typeof props.component === "function"}>
-        <Dynamic {...props} component={props.component} />
+        <Dynamic {...componentProps} component={props.component} />
+      </Match>
+      <Match when={typeof props.component === "string" && foreignNamespace()}>
+        {(namespace) => (
+          <Show keyed when={props.component as string}>
+            {(tag) => <NamespacedElement {...tagProps} namespace={namespace()} tag={tag} />}
+          </Show>
+        )}
       </Match>
       <Match when={typeof props.component === "string"}>
         <Dynamic {...tagProps} component={props.component} />
@@ -219,9 +281,13 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
 ) => {
   const components = useContext(RenderContext);
   const parentSpace = useContext(SpaceContext);
-  const space = createMemo<Space>(() =>
-    parentSpace() === "svg" || props.node.tagName.toLowerCase() === "svg" ? "svg" : "html"
-  );
+  // The element's own namespace: svg and math start one, anything else stays
+  // in its parent's. Its children may switch back to HTML (childSpace).
+  const space = createMemo<Space>(() => {
+    const tag = props.node.tagName.toLowerCase();
+    return tag === "svg" ? "svg" : tag === "math" ? "math" : parentSpace();
+  });
+  const innerSpace = createMemo<Space>(() => childSpace(space(), props.node));
   // Read through the descriptor so a Proxy-backed map can supply fallbacks.
   // Entries must therefore be data properties, not getters.
   const target = createMemo(() =>
@@ -277,12 +343,13 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
   };
 
   return (
-    <SpaceContext.Provider value={space}>
+    <SpaceContext.Provider value={innerSpace}>
       <MappedElement
         {...toSolidProps(props.node, space())}
         {...props.extraProps}
         node={props.node}
         component={target()}
+        namespace={space()}
       >
         {children()}
       </MappedElement>

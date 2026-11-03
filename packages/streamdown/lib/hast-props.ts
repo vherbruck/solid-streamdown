@@ -5,7 +5,8 @@ import { find, html, svg } from "property-information";
 import { stringify as spaces } from "space-separated-tokens";
 import parseStyle from "style-to-object";
 
-type Space = "html" | "svg";
+/** The namespace an element is created in; MathML uses the HTML property schema. */
+type Space = "html" | "svg" | "math";
 
 const RESERVED_NAMES = new Set([
   "innerhtml",
