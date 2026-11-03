@@ -38,6 +38,8 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Code text for a fenced block | Read from the `code` element's string child | Read from the code element's HAST text (a string child when rendered without a node) |
 | Highlighter `htmlAttrs` | Spread onto each token `<span>` | Spread after passing the render guard's name and URL checks |
 | Props left out of `Streamdown`'s memo comparator | A change to `portal`, `controls`, `icons` and others alone does not re-render, so `portal` acts as an initializing prop | Every prop takes effect when it changes; an overlay opens in the current `portal` target |
+| `hooks/use-deferred-render.ts` | `useDeferredRender()` returns a ref object and a boolean | `createDeferredRender(options)` returns a ref setter and an accessor; options are read reactively, so a props object can be passed |
+| `hooks/use-throttled-debouce.ts` | Defined, never imported | Not ported |
 
 ## Known upstream risks kept for parity
 
