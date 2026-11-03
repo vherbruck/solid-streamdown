@@ -19,6 +19,17 @@ type HighlightedCodeBlockBodyProps = JSX.HTMLAttributes<HTMLDivElement> & {
   lineNumbers?: boolean;
 };
 
+const rowText = (row: HighlightResult["tokens"][number]): string =>
+  row.map((token) => token.content).join("");
+
+const mergeWithRaw = (previous: HighlightResult, raw: HighlightResult): HighlightResult => ({
+  ...previous,
+  tokens: raw.tokens.map((rawRow, index) => {
+    const previousRow = previous.tokens[index];
+    return previousRow && rowText(previousRow) === rowText(rawRow) ? previousRow : rawRow;
+  }),
+});
+
 export const HighlightedCodeBlockBody = (props: HighlightedCodeBlockBodyProps) => {
   const [local, rest] = splitProps(props, [
     "code",
@@ -62,6 +73,13 @@ export const HighlightedCodeBlockBody = (props: HighlightedCodeBlockBodyProps) =
 
     if (cachedResult) {
       setResult(cachedResult);
+    } else {
+      // No highlight for this code yet. Keep the highlighted rows whose text
+      // is unchanged and show the rest unhighlighted, so new text appears at
+      // once without unchanged lines flickering back to plain, and the block
+      // never freezes if highlighting never arrives. (Upstream keeps the
+      // previous result as is until the callback.)
+      setResult((previous) => mergeWithRaw(previous, raw));
     }
     onCleanup(() => {
       current = false;

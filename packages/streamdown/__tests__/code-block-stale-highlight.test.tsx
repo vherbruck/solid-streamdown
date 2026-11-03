@@ -102,3 +102,60 @@ describe("HighlightedCodeBlockBody", () => {
     expect(token().style.getPropertyValue("--sdm-c")).toBe("#00ff00");
   });
 });
+
+describe("HighlightedCodeBlockBody while a highlight is pending", () => {
+  const colored = (code: string): HighlightResult => ({
+    bg: "transparent",
+    fg: "inherit",
+    tokens: code
+      .split("\n")
+      .map((line) => [{ content: line, color: "#ff0000", bgColor: "transparent", htmlStyle: {}, offset: 0 }]),
+  });
+  const plain = (code: string): HighlightResult => ({
+    bg: "transparent",
+    fg: "inherit",
+    tokens: code
+      .split("\n")
+      .map((line) => [{ content: line, color: "inherit", bgColor: "transparent", htmlStyle: {}, offset: 0 }]),
+  });
+
+  const renderWith = (highlight: (code: string) => HighlightResult | null) => {
+    const plugin = {
+      name: "shiki" as const,
+      type: "code-highlighter" as const,
+      highlight: (options: HighlightOptions) => highlight(options.code),
+      supportsLanguage: () => true,
+      getSupportedLanguages: () => [],
+      getThemes: () => ["github-light", "github-dark"],
+    };
+    const [code, setCode] = createSignal("const a = 1;");
+    const view = render(() => (
+      <PluginContext.Provider value={{ code: plugin as never }}>
+        <StreamdownContext.Provider value={defaultStreamdownContext}>
+          <HighlightedCodeBlockBody code={code()} language="javascript" raw={plain(code())} />
+        </StreamdownContext.Provider>
+      </PluginContext.Provider>
+    ));
+    const rows = () =>
+      Array.from(view.container.querySelectorAll<HTMLElement>('[data-streamdown="code-block-body"] code > span'));
+    return { rows, setCode };
+  };
+
+  it("shows new lines at once and keeps unchanged highlighted lines", () => {
+    // Only the first code is ever highlighted; later code stays pending.
+    const { rows, setCode } = renderWith((code) => (code === "const a = 1;" ? colored(code) : null));
+    expect((rows()[0]?.firstElementChild as HTMLElement).style.getPropertyValue("--sdm-c")).toBe("#ff0000");
+
+    setCode("const a = 1;\nconst b = 2;");
+
+    expect(rows().map((row) => row.textContent)).toEqual(["const a = 1;", "const b = 2;"]);
+    expect((rows()[0]?.firstElementChild as HTMLElement).style.getPropertyValue("--sdm-c")).toBe("#ff0000");
+    expect((rows()[1]?.firstElementChild as HTMLElement).style.getPropertyValue("--sdm-c")).toBe("inherit");
+  });
+
+  it("never freezes when highlighting never resolves", () => {
+    const { rows, setCode } = renderWith(() => null);
+    setCode("const a = 1;\nconst b = 2;\nconst c = 3;");
+    expect(rows().map((row) => row.textContent)).toEqual(["const a = 1;", "const b = 2;", "const c = 3;"]);
+  });
+});
