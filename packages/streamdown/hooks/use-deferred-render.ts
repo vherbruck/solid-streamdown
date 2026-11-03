@@ -101,6 +101,12 @@ export function createDeferredRender(options: DeferredRenderOptions = {}): {
       return;
     }
 
+    // Once rendering is due, stop observing (upstream disconnects then too).
+    // A component that moves the ref to another element must not restart it.
+    if (shouldRender()) {
+      return;
+    }
+
     const element = container();
     /* v8 ignore next */
     if (!element) {

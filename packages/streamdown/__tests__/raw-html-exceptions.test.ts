@@ -14,6 +14,10 @@ const ALLOWED = [
   // Diagram downloads parse the SVG the Mermaid plugin rendered in an inert
   // DOMParser document, to serialize it as XML. Nothing is inserted.
   "lib/mermaid/utils.ts: DOMParser",
+  // The Mermaid diagram inserts the SVG its plugin rendered (securityLevel
+  // "strict" by default). HAST never reaches innerHTML: the render guard
+  // drops it from every element's props.
+  "lib/mermaid/index.tsx: innerHTML",
 ];
 
 const root = join(import.meta.dirname, "..");
