@@ -30,3 +30,18 @@ it("server-renders the copy and download buttons without touching browser APIs",
   expect(html).toContain('data-streamdown="code-block-download-button"');
   expect(html).not.toContain("<output");
 });
+
+it("server-renders no empty class or style attributes", () => {
+  const html = renderToString(() => (
+    <Streamdown
+      codeBlockMaxHeight={0}
+      lineNumbers={false}
+      mode="static"
+      tableMaxHeight={0}
+    >
+      {"```js\nconst x = 1;\n```\n\n| a |\n|---|\n| 1 |"}
+    </Streamdown>
+  ));
+  expect(html).not.toContain('style=""');
+  expect(html).not.toContain('class=""');
+});

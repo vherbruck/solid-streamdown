@@ -64,7 +64,7 @@ export const TableCopyDropdown = (props: TableCopyDropdownProps) => {
         content = tableDataToMarkdown(tableData);
       }
 
-      // The one raw-HTML use in plan 2: a serialization of the rendered,
+      // A named raw-HTML exception (spec): a serialization of the rendered,
       // already-sanitized table, put on the clipboard. Nothing is inserted.
       const clipboardItemData = new ClipboardItem({
         "text/plain": new Blob([content], { type: "text/plain" }),

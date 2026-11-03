@@ -37,6 +37,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Highlighted code body | `lazy()` import inside `Suspense`, with the unhighlighted body as fallback | Imported directly: Solid's `renderToString` renders a pending `lazy` as its fallback, which then mismatches on hydration |
 | Code text for a fenced block | Read from the `code` element's string child | Read from the code element's HAST text (a string child when rendered without a node) |
 | Highlighter `htmlAttrs` | Spread onto each token `<span>` | Spread after passing the render guard's name and URL checks |
+| Props left out of `Streamdown`'s memo comparator | A change to `portal`, `controls`, `icons` and others alone does not re-render, so `portal` acts as an initializing prop | Every prop takes effect when it changes; an overlay opens in the current `portal` target |
 
 ## Known upstream risks kept for parity
 

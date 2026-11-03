@@ -28,6 +28,13 @@ const DOCUMENT_UPDATES = [
 const TABLE = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
 const TABLE_THEN_PROSE = `${TABLE}\n\nText after the table`;
 const CARET_CLASS = "after:content-[var(--streamdown-caret)]";
+// Interactive UI: a code block, a table, an image and a guarded link.
+const UI = [
+  "```js\nconst a = 1;\n```",
+  "| A | B |\n| --- | --- |\n| 1 | 2 |",
+  "![logo](https://example.com/logo.png)",
+  "[docs](https://example.com)",
+].join("\n\n");
 const CARET_HIDDEN = "data-sd-caret-hidden";
 
 // Each pass names the package entry and the solid-js/web build it must load.
@@ -87,9 +94,11 @@ const runServer = async (dir) => {
     () => Streamdown({ caret: "block", children: TABLE, isAnimating: true }),
     { renderId: "c" }
   );
+  const uiHtml = renderToString(() => Streamdown({ children: UI, mode: "static" }), { renderId: "u" });
   const page =
     `<!doctype html><html><head>${generateHydrationScript()}</head><body>` +
-    `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div></body></html>`;
+    `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div>` +
+    `<div id="ui">${uiHtml}</div></body></html>`;
   await writeFile(join(dir, "server.html"), page);
 };
 
@@ -150,9 +159,15 @@ const runClient = async (dir, entry, solid) => {
     "DocumentFragment",
     "requestAnimationFrame",
     "cancelAnimationFrame",
+    // Solid's Portal checks for a <head> mount; the UI checks dispatch events.
+    "HTMLHeadElement",
+    "MouseEvent",
+    "KeyboardEvent",
   ]) {
     globalThis[name] = window[name];
   }
+  // jsdom has no scrolling; the scroll pinning in tables and code blocks calls it.
+  window.HTMLElement.prototype.scrollTo = () => {};
   check(window._$HY !== undefined, "the hydration script did not run (no _$HY)");
   globalThis._$HY = window._$HY;
 
@@ -253,8 +268,40 @@ const runClient = async (dir, entry, solid) => {
   check(caretRoot.querySelector(`[${CARET_HIDDEN}]`) === null, "an element is still caret-suppressed once prose follows the table");
   matchesFresh(caretRoot, caretProps(TABLE_THEN_PROSE), "caret after prose");
 
+  // Interactive UI hydrates once and works afterwards.
+  const uiRoot = document.getElementById("ui");
+  const uiProps = { children: UI, mode: "static" };
+  const disposeUi = hydrate(() => Streamdown(uiProps), uiRoot, { renderId: "u" });
+  matchesFresh(uiRoot, uiProps, "ui after hydration");
+  const count = (selector) => uiRoot.querySelectorAll(selector).length;
+  check(count('[data-streamdown="code-block"]') === 1, `${count('[data-streamdown="code-block"]')} code blocks after hydration`);
+  check(count('[data-streamdown="table-wrapper"]') === 1, `${count('[data-streamdown="table-wrapper"]')} table wrappers after hydration`);
+  check(count('[data-streamdown="image-wrapper"]') === 1, `${count('[data-streamdown="image-wrapper"]')} image wrappers after hydration`);
+  check(occurrences(uiRoot.textContent, "const a = 1;") === 1, "the code is duplicated or missing after hydration");
+
+  const copied = [];
+  Object.defineProperty(globalThis.navigator, "clipboard", {
+    configurable: true,
+    value: { writeText: async (text) => copied.push(text) },
+  });
+  uiRoot
+    .querySelector('[data-streamdown="code-block-copy-button"]')
+    ?.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  check(copied.length === 1 && copied[0] === "const a = 1;\n", `the hydrated copy button copied ${JSON.stringify(copied)}`);
+
+  uiRoot
+    .querySelector('button[data-streamdown="link"]')
+    ?.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  check(
+    document.querySelector('[data-streamdown="link-safety-modal"]') !== null,
+    "the hydrated link did not open the link-safety modal"
+  );
+
   disposeDocument();
   disposeCaret();
+  disposeUi();
   window.close();
   check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
   finish(`hydration (dist/${entry})`);

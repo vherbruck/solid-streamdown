@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task, in order. Steps use checkbox (`- [ ]`) syntax for tracking. Each task ends green (`bun run typecheck && bun run test`) and with one commit.
 
-**Status:** Approved by owner 2026-11-03, with both recommendations in "Decisions for the owner" accepted.
+**Status:** Done 2026-11-03. Approved by the owner the same day, with both recommendations in "Decisions for the owner" accepted. Later-plan items it produced are in `2026-10-21-plan-1-carry-forward.md`.
 
 **Goal:** Port the interactive parts that upstream keeps in core: link safety, images, tables with copy/download/fullscreen, and the code-block chrome (header, body, line numbers, copy and download, raw languages, custom renderers and the highlighter contract). Add the icon set and `icons` prop, and put the translations to use. Afterwards the 31 `// plan 2` skips run, and the components map has `a`, `img` and `table`.
 
@@ -60,13 +60,13 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - `resolveMaxHeight(maxHeight?: number | string): string | undefined`
 - `createPinnedScroll(isActive: Accessor<boolean>, enabled: Accessor<boolean>, contentKey: Accessor<unknown>): (el: HTMLElement) => void`. It returns a ref setter and replaces `usePinnedScroll`; add an `UPSTREAM.md` row for the rename.
 
-- [ ] **Step 1:** Copy the three test files, fixing imports only. Run them. Expected: FAIL (modules missing).
-- [ ] **Step 2:** Port the five modules. `table/utils`, `controls`, `portal` and `scroll-lock` have no React and are copied verbatim. `use-pinned-scroll` becomes a Solid primitive:
+- [x] **Step 1:** Copy the three test files, fixing imports only. Run them. Expected: FAIL (modules missing).
+- [x] **Step 2:** Port the five modules. `table/utils`, `controls`, `portal` and `scroll-lock` have no React and are copied verbatim. `use-pinned-scroll` becomes a Solid primitive:
   - a `scroll` listener added in a `createEffect` on `enabled()`, removed with `onCleanup`;
   - a pinned flag re-armed when `isActive()` goes false → true;
   - one `requestAnimationFrame` per frame, cancelled with `onCleanup`.
-- [ ] **Step 3:** Point `streamdown-context.ts` at `table/utils`. Run `bun run typecheck && bun run test`. Expected: PASS.
-- [ ] **Step 4:** Commit: `feat: port table utils, control config helpers, portal, scroll lock and pinned scroll`.
+- [x] **Step 3:** Point `streamdown-context.ts` at `table/utils`. Run `bun run typecheck && bun run test`. Expected: PASS.
+- [x] **Step 4:** Commit: `feat: port table utils, control config helpers, portal, scroll lock and pinned scroll`.
 
 ---
 
@@ -84,15 +84,15 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - `IconProvider(props: { icons?: Partial<IconMap>; children: JSX.Element })`
 - `useIcons(): IconMap`. The value is an object with one getter per key, falling back to `defaultIcons`. No shallow-equal cache is needed, because reads are lazy.
 
-- [ ] **Step 1:** Copy the test, swapping React render for `@solidjs/testing-library`. Run it. Expected: FAIL.
-- [ ] **Step 2:** Port the icons and the context.
-- [ ] **Step 3: Type-level completeness check** (carry-forward). In `index.tsx`, add a compile-time assertion that `STREAMDOWN_PROP_NAMES` covers every key of `StreamdownProps` that is not an HTML attribute:
+- [x] **Step 1:** Copy the test, swapping React render for `@solidjs/testing-library`. Run it. Expected: FAIL.
+- [x] **Step 2:** Port the icons and the context.
+- [x] **Step 3: Type-level completeness check** (carry-forward). In `index.tsx`, add a compile-time assertion that `STREAMDOWN_PROP_NAMES` covers every key of `StreamdownProps` that is not an HTML attribute:
   ```ts
   type MissingPropNames = Exclude<keyof StreamdownOwnProps, (typeof STREAMDOWN_PROP_NAMES)[number]>;
   const _allPropNamesListed: [MissingPropNames] extends [never] ? true : MissingPropNames = true;
   ```
   Split `StreamdownProps` into `StreamdownOwnProps & HTMLAttributes` if it isn't already split that way. Deleting `"icons"` from the list must fail `tsc`; check that by hand once.
-- [ ] **Step 4:** Run typecheck and tests. Expected: PASS. Commit: `feat: add icons, icon context and the icons prop`.
+- [x] **Step 4:** Run typecheck and tests. Expected: PASS. Commit: `feat: add icons, icon context and the icons prop`.
 
 ---
 
@@ -115,14 +115,14 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
   - renders nothing on the server.
 - `UiContext`, whose default value holds the three primitives above.
 
-- [ ] **Step 1:** Write tests:
+- [x] **Step 1:** Write tests:
   - `Menu` opens and closes, and an outside `mousedown` closes it;
   - `Overlay` portals into the `portal` target, and Escape calls `onClose`;
   - two open overlays keep the body locked until both close;
   - server render of a closed `Overlay` outputs nothing;
   - a context override replaces `Button`.
-- [ ] **Step 2:** Implement. Run tests. Expected: PASS.
-- [ ] **Step 3:** Commit: `feat: add internal UI primitives for controls`.
+- [x] **Step 2:** Implement. Run tests. Expected: PASS.
+- [x] **Step 3:** Commit: `feat: add internal UI primitives for controls`.
 
 ---
 
@@ -141,18 +141,18 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - Otherwise the link renders as `<a … rel="noreferrer" target="_blank">`, with HAST props spread before the fixed props (our deviation).
 - The modal renders through `Overlay` (or a `Portal` if Task 3 is rejected). The modal handles copy-URL, confirm (open then close), Escape and backdrop click.
 
-- [ ] **Step 1:** Copy the tests, converting React patterns:
+- [x] **Step 1:** Copy the tests, converting React patterns:
   - `rerender` becomes a signal;
   - `act` and `waitFor` come from `@solidjs/testing-library`;
   - `fireEvent` stays.
   The Mermaid cases in `link-safety.test.tsx` become `it.skip` "plan 5". Run them. Expected: FAIL.
-- [ ] **Step 2:** Implement `A` and `LinkSafetyModal`. The `isModalOpen` signal is owned by `A`, so streaming text into the link label does not close an open modal.
-- [ ] **Step 3: Add tests:**
+- [x] **Step 2:** Implement `A` and `LinkSafetyModal`. The `isModalOpen` signal is owned by `A`, so streaming text into the link label does not close an open modal.
+- [x] **Step 3: Add tests:**
   - toggling `linkSafety.enabled` at runtime swaps `<a>` and `<button>`, and no modal stays mounted;
   - server render with link safety on outputs a `<button>` and no modal;
   - `window.open` is always called with `"noreferrer"`;
   - with sanitize and harden removed, a `javascript:` href never reaches `window.open`. The render guard already drops it; assert that clicking does nothing.
-- [ ] **Step 4:** Un-skip the link skips. Run all tests. Expected: PASS. Commit: `feat: add link component and link-safety modal`.
+- [x] **Step 4:** Un-skip the link skips. Run all tests. Expected: PASS. Commit: `feat: add link component and link-safety modal`.
 
 ---
 
@@ -172,13 +172,13 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - Download calls `fetch(src)` and works out the filename from the URL or the MIME type. On failure it calls `window.open(src, "_blank")`.
 - The consumer's `onLoad`/`onError` from `components` props are still called.
 
-- [ ] **Step 1:** Copy the tests. Run them. Expected: FAIL.
-- [ ] **Step 2:** Implement.
-- [ ] **Step 3: Add tests:**
+- [x] **Step 1:** Copy the tests. Run them. Expected: FAIL.
+- [x] **Step 2:** Implement.
+- [x] **Step 3: Add tests:**
   - `fetch` is called with exactly one argument (no credentials mode);
   - the server render contains the `image-wrapper` and no download button;
   - a paragraph holding only an image renders no `<p>`. `P` already handles this; confirm it with the real `Img`.
-- [ ] **Step 4:** Run tests. Expected: PASS. Commit: `feat: add image component with download control`.
+- [x] **Step 4:** Run tests. Expected: PASS. Commit: `feat: add image component with download control`.
 
 ---
 
@@ -198,13 +198,13 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - Fullscreen renders a portal overlay containing a second rendering of the same table children.
 - In fullscreen, children render through `<HastNodes nodes={props.node.children}>`, not by moving the inline DOM. This differs from React, which renders `children` twice; the result is the same.
 
-- [ ] **Step 1:** Copy the tests. Run them. Expected: FAIL.
-- [ ] **Step 2:** Implement, using `Menu`/`Overlay` from Task 3.
-- [ ] **Step 3: Add tests:**
+- [x] **Step 1:** Copy the tests. Run them. Expected: FAIL.
+- [x] **Step 2:** Implement, using `Menu`/`Overlay` from Task 3.
+- [x] **Step 3: Add tests:**
   - **Streaming:** appending rows keeps the wrapper node, the controls node and an open copy menu.
   - **Overlay stacking:** a link-safety modal opened from a link inside a fullscreen table leaves `document.body.style.overflow` as `hidden` until both close.
   - **SSR:** the wrapper and controls render, with no fullscreen overlay.
-- [ ] **Step 4:** Run tests. Expected: PASS. Commit: `feat: add table wrapper with copy, download and fullscreen controls`.
+- [x] **Step 4:** Run tests. Expected: PASS. Commit: `feat: add table wrapper with copy, download and fullscreen controls`.
 
 ---
 
@@ -230,13 +230,13 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - `raw` is a memo of the trimmed code. `CodeBlockBody` renders `<Index each={result().tokens}>` for rows and `<Index>` for tokens inside each row, so earlier line spans keep their DOM nodes as lines append.
 - Token styles are objects. `token.htmlAttrs` pass through the render guard's name filter. Export a small `guardAttributes(attrs)` from `hast-props.ts` for this.
 
-- [ ] **Step 1:** Copy the tests. Cases needing the real Shiki plugin become `it.skip` "plan 4", Mermaid ones "plan 5", animate ones "plan 3". Run them. Expected: FAIL.
-- [ ] **Step 2:** Implement in this order: container, header, context, body, raw block, skeleton, then `CodeBlock`. Wire the dispatch into `Code`.
-- [ ] **Step 3: Add tests:**
+- [x] **Step 1:** Copy the tests. Cases needing the real Shiki plugin become `it.skip` "plan 4", Mermaid ones "plan 5", animate ones "plan 3". Run them. Expected: FAIL.
+- [x] **Step 2:** Implement in this order: container, header, context, body, raw block, skeleton, then `CodeBlock`. Wire the dispatch into `Code`.
+- [x] **Step 3: Add tests:**
   - **Streaming a fence line by line:** the same `code-block` element, the same first line `<span>`, and only one new row span per new line.
   - **Guard on highlighter attributes:** `htmlAttrs: { onclick: "x", "data-x": "1" }` from a stub highlighter keeps `data-x` and drops `onclick`.
   - **SSR** of a fenced block.
-- [ ] **Step 4:** Add an `UPSTREAM.md` row: no `lazy()`/`Suspense` for the highlighted body. Run tests. Expected: PASS. Commit: `feat: add code block body, container, raw languages and custom renderers`.
+- [x] **Step 4:** Add an `UPSTREAM.md` row: no `lazy()`/`Suspense` for the highlighted body. Run tests. Expected: PASS. Commit: `feat: add code block body, container, raw languages and custom renderers`.
 
 ---
 
@@ -256,13 +256,13 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
   - it ignores a callback for code the block has moved past, using a `current` flag cleared in `onCleanup`;
   - it uses `raw` when no plugin is installed.
 
-- [ ] **Step 1:** Copy the tests. Run them. Expected: FAIL.
-- [ ] **Step 2:** Implement.
-- [ ] **Step 3: Add tests:**
+- [x] **Step 1:** Copy the tests. Run them. Expected: FAIL.
+- [x] **Step 2:** Implement.
+- [x] **Step 3: Add tests:**
   - "copied" state survives a streamed append to the same fence;
   - a stub plugin whose async callback arrives after the code changed does not overwrite the newer result;
   - SSR renders the copy button without touching `navigator`.
-- [ ] **Step 4:** Run tests. Expected: PASS. Commit: `feat: add code block copy, download and highlighter contract`.
+- [x] **Step 4:** Run tests. Expected: PASS. Commit: `feat: add code block copy, download and highlighter contract`.
 
 ---
 
@@ -272,14 +272,14 @@ Everything in plan 1's "Global Constraints" still applies: file headers, kebab-c
 - Test (ported, non-Mermaid/animate parts; the rest `it.skip` with their plan): `__tests__/components-rerender.test.tsx`, `components-memo`, `memo-comparators`, `memo-render-equivalence`, `coverage-final`, `final-coverage`, `remaining-coverage`, `streamdown-coverage`, `portal`
 - Modify: `__tests__/security.test.tsx`, `scripts/hydration-check.mjs`, `UPSTREAM.md`, `docs/superpowers/plans/2026-10-21-plan-1-carry-forward.md`
 
-- [ ] **Step 1:** Port the listed files. Where an upstream test asserts React memo behavior (render counts), assert the Solid equivalent: the same DOM node before and after.
-- [ ] **Step 2: Raw-HTML exception test.** Scan `index.tsx` and `lib/**` for `innerHTML|outerHTML|insertAdjacentHTML|DOMParser|eval\(|new Function`, ignoring comments. Assert that the only hit is `outerHTML` in `lib/table/copy-dropdown.tsx`. Plan 5 adds its two Mermaid exceptions to this list.
-- [ ] **Step 3: Hydration check.** Extend it with a fenced code block, a table and an image. Assert no duplicated or missing text, and that the copy button is interactive after hydration.
-- [ ] **Step 4: Records.**
+- [x] **Step 1:** Port the listed files. Where an upstream test asserts React memo behavior (render counts), assert the Solid equivalent: the same DOM node before and after.
+- [x] **Step 2: Raw-HTML exception test.** Scan `index.tsx` and `lib/**` for `innerHTML|outerHTML|insertAdjacentHTML|DOMParser|eval\(|new Function`, ignoring comments. Assert that the only hit is `outerHTML` in `lib/table/copy-dropdown.tsx`. Plan 5 adds its two Mermaid exceptions to this list.
+- [x] **Step 3: Hydration check.** Extend it with a fenced code block, a table and an image. Assert no duplicated or missing text, and that the copy button is interactive after hydration.
+- [x] **Step 4: Records.**
   - Update `UPSTREAM.md` with every deviation added in this plan.
   - In the carry-forward file, strike the plan 2 items that landed.
   - Add anything new for later plans.
-- [ ] **Step 5:** Run the full "Done when" list. Commit: `test: port cross-cutting UI tests and pin raw-HTML exceptions`.
+- [x] **Step 5:** Run the full "Done when" list. Commit: `test: port cross-cutting UI tests and pin raw-HTML exceptions`.
 
 ---
 

@@ -73,7 +73,8 @@ export const Table = (props: TableProps) => {
           "border-collapse overflow-x-auto overflow-y-auto rounded-md border border-border bg-background"
         )}
         ref={scrollRef}
-        style={maxHeightStyle() ? { "max-height": maxHeightStyle() } : undefined}
+        // A spread, so the server writes no empty style attribute
+        {...(maxHeightStyle() ? { style: { "max-height": maxHeightStyle() } } : {})}
       >
         <table
           {...rest}

@@ -156,6 +156,19 @@ export const CodeBlockBody = (props: CodeBlockBodyProps) => {
     return style;
   });
 
+  // Optional attributes as a spread, so the server writes no empty class or
+  // style attribute where the client sets none.
+  const codeAttributes = (): JSX.HTMLAttributes<HTMLElement> => {
+    if (!lineNumbers()) {
+      return {};
+    }
+    const startLine = local.startLine;
+    return {
+      class: cn("[counter-increment:line_0] [counter-reset:line]"),
+      ...(startLine && startLine > 1 ? { style: { "counter-reset": `line ${startLine - 1}` } } : {}),
+    };
+  };
+
   return (
     <div
       {...rest}
@@ -167,7 +180,8 @@ export const CodeBlockBody = (props: CodeBlockBodyProps) => {
       data-language={local.language}
       data-streamdown="code-block-body"
       ref={scrollRef}
-      style={maxHeightStyle() ? { "max-height": maxHeightStyle() } : undefined}
+      // A spread, so the server writes no empty style attribute
+      {...(maxHeightStyle() ? { style: { "max-height": maxHeightStyle() } } : {})}
     >
       <pre
         class={cn(
@@ -177,14 +191,7 @@ export const CodeBlockBody = (props: CodeBlockBodyProps) => {
         )}
         style={preStyle()}
       >
-        <code
-          class={lineNumbers() ? cn("[counter-increment:line_0] [counter-reset:line]") : undefined}
-          style={
-            lineNumbers() && local.startLine && local.startLine > 1
-              ? { "counter-reset": `line ${local.startLine - 1}` }
-              : undefined
-          }
-        >
+        <code {...codeAttributes()}>
           <Index each={local.result.tokens}>
             {(row) => (
               <span class={lineNumbers() ? cn(LINE_NUMBER_CLASSES_BASE) : cn(LINE_CLASSES_BASE)}>
