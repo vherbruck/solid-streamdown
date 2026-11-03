@@ -24,6 +24,7 @@ import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
 import { MappedElement, resolveTarget } from "./lib/hast-render";
 import { detectTextDirection } from "./lib/detect-direction";
+import { type IconMap, IconProvider } from "./lib/icon-context";
 import { hasIncompleteCodeFence, hasTable } from "./lib/incomplete-code-utils";
 import {
   type Components,
@@ -113,6 +114,7 @@ export {
   tableDataToMarkdown,
   tableDataToTSV,
 } from "./lib/table/utils";
+export type { IconMap } from "./lib/icon-context";
 export type { StreamdownTranslations } from "./lib/translations-context";
 export { defaultTranslations } from "./lib/translations-context";
 
@@ -312,7 +314,8 @@ export type StreamdownProps = Options & {
   disableAutolinkProtocols?: string[];
   /** Override UI strings for i18n / custom labels */
   translations?: Partial<StreamdownTranslations>;
-  // plan 2: `icons?: Partial<IconMap>` arrives with the icon context
+  /** Custom icons to override the default icons used in controls */
+  icons?: Partial<IconMap>;
   /** Tailwind CSS prefix to prepend to all utility classes (e.g. `"tw"` produces `tw:flex` instead of `flex`). Enables Tailwind v4's `prefix()` support. Note: user-supplied `class` values are also prefixed. */
   prefix?: string;
   /** Show line numbers in code blocks. @default true */
@@ -484,10 +487,26 @@ const STREAMDOWN_PROP_NAMES = [
   "literalTagContent",
   "disableAutolinkProtocols",
   "translations",
+  "icons",
   "prefix",
   "onAnimationStart",
   "onAnimationEnd",
 ] as const satisfies readonly (keyof StreamdownProps)[];
+
+// Fails to compile when a Streamdown prop is missing from the list above,
+// which would otherwise fall through to `rest` and reach Markdown.
+type StreamdownOwnPropName = Exclude<
+  keyof StreamdownProps,
+  keyof Options | keyof JSX.AriaAttributes | `data-${string}`
+>;
+type UnlistedStreamdownProp = Exclude<
+  StreamdownOwnPropName,
+  (typeof STREAMDOWN_PROP_NAMES)[number]
+>;
+// biome-ignore lint/correctness/noUnusedVariables: compile-time check
+const assertStreamdownPropsListed: [UnlistedStreamdownProp] extends [never]
+  ? true
+  : UnlistedStreamdownProp = true;
 
 type CodeProps = JSX.IntrinsicElements["code"] & ExtraProps;
 
@@ -849,6 +868,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
       <PluginContext.Provider value={pluginsValue}>
         <StreamdownContext.Provider value={contextValue}>
           <PrefixContext.Provider value={cn}>
+            <IconProvider icons={props.icons}>
             <div
               {...rootAttributes()}
               class={cn(
@@ -921,6 +941,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
                 </Markdown>
               </Show>
             </div>
+            </IconProvider>
           </PrefixContext.Provider>
         </StreamdownContext.Provider>
       </PluginContext.Provider>
