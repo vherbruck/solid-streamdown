@@ -124,8 +124,7 @@ graph TD
       });
     });
 
-    // plan 5: Mermaid
-      it.skip("should hide only mermaid controls when mermaid is false", async () => {
+      it("should hide only mermaid controls when mermaid is false", async () => {
       const mockMermaidPlugin = {
         name: "mermaid" as const,
         type: "diagram" as const,
@@ -241,8 +240,7 @@ graph TD
       });
     });
 
-    // plan 5: Mermaid
-      it.skip("should show mermaid pan-zoom controls by default", async () => {
+      it("should show mermaid pan-zoom controls by default", async () => {
       const mockMermaidPlugin = {
         name: "mermaid" as const,
         type: "diagram" as const,

@@ -9,6 +9,8 @@ import { StreamdownContext } from "../index";
 import { components as importedComponents } from "../lib/components";
 import { ImageComponent } from "../lib/image";
 import { Markdown } from "../lib/markdown";
+import { MermaidFullscreenButton } from "../lib/mermaid/fullscreen-button";
+import { PanZoom } from "../lib/mermaid/pan-zoom";
 import { PluginContext } from "../lib/plugin-context";
 import { TableDownloadDropdown } from "../lib/table/download-dropdown";
 import { defaultStreamdownContext } from "../lib/streamdown-context";
@@ -34,6 +36,7 @@ describe("ImageComponent cached image handling", () => {
     const { container } = render(() => (
       <StreamdownContext.Provider
         value={{
+         ...defaultStreamdownContext,
           ...defaultStreamdownContext,
           shikiTheme: ["github-light", "github-dark"],
           controls: true,
@@ -64,6 +67,7 @@ describe("ImageComponent cached image handling", () => {
     const { container } = render(() => (
       <StreamdownContext.Provider
         value={{
+         ...defaultStreamdownContext,
           ...defaultStreamdownContext,
           shikiTheme: ["github-light", "github-dark"],
           controls: true,
@@ -83,6 +87,7 @@ describe("ImageComponent cached image handling", () => {
     const { container } = render(() => (
       <StreamdownContext.Provider
         value={{
+         ...defaultStreamdownContext,
           ...defaultStreamdownContext,
           shikiTheme: ["github-light", "github-dark"],
           controls: true,
@@ -107,6 +112,112 @@ describe("ImageComponent cached image handling", () => {
     );
     // The error state should be set
     expect(container).toBeTruthy();
+  });
+});
+
+describe("MermaidFullscreenButton panZoom controls config", () => {
+  it("should hide panZoom when mermaid controls = false (line 50)", () => {
+    const { container } = render(() => (
+      <PluginContext.Provider
+        value={{
+          mermaid: {
+            name: "mermaid" as const,
+            type: "diagram" as const,
+            language: "mermaid",
+            getMermaid: () => ({
+              initialize: vi.fn(),
+              render: vi.fn().mockResolvedValue({ svg: "<svg></svg>" }),
+            }),
+          },
+        }}
+      >
+        <StreamdownContext.Provider
+          value={{
+            ...defaultStreamdownContext,
+            shikiTheme: ["github-light", "github-dark"],
+            controls: { mermaid: false },
+            isAnimating: false,
+            mode: "streaming",
+          }}
+        >
+          <MermaidFullscreenButton chart="graph TD; A-->B" />
+        </StreamdownContext.Provider>
+      </PluginContext.Provider>));
+
+    expect(container.querySelector("button")).toBeTruthy();
+  });
+
+  it("should show panZoom when mermaid controls = true (line 53)", () => {
+    const { container } = render(() => (
+      <PluginContext.Provider
+        value={{
+          mermaid: {
+            name: "mermaid" as const,
+            type: "diagram" as const,
+            language: "mermaid",
+            getMermaid: () => ({
+              initialize: vi.fn(),
+              render: vi.fn().mockResolvedValue({ svg: "<svg></svg>" }),
+            }),
+          },
+        }}
+      >
+        <StreamdownContext.Provider
+          value={{
+            ...defaultStreamdownContext,
+            shikiTheme: ["github-light", "github-dark"],
+            controls: { mermaid: true },
+            isAnimating: false,
+            mode: "streaming",
+          }}
+        >
+          <MermaidFullscreenButton chart="graph TD; A-->B" />
+        </StreamdownContext.Provider>
+      </PluginContext.Provider>));
+
+    expect(container.querySelector("button")).toBeTruthy();
+  });
+
+  it("should handle undefined mermaid controls (line 53)", () => {
+    const { container } = render(() => (
+      <PluginContext.Provider value={{}}>
+        <StreamdownContext.Provider
+          value={{
+            ...defaultStreamdownContext,
+            shikiTheme: ["github-light", "github-dark"],
+            controls: { mermaid: undefined },
+            isAnimating: false,
+            mode: "streaming",
+          }}
+        >
+          <MermaidFullscreenButton chart="graph TD; A-->B" />
+        </StreamdownContext.Provider>
+      </PluginContext.Provider>));
+
+    expect(container.querySelector("button")).toBeTruthy();
+  });
+});
+
+describe("PanZoom edge cases", () => {
+  it("should not move when pointer moves but not panning (line 88)", () => {
+    const { container } = render(() => (
+      <PanZoom>
+        <div data-testid="content">Content</div>
+      </PanZoom>));
+
+    // Get the content div (the one with role="application")
+    const contentEl = container.querySelector('[role="application"]');
+    expect(contentEl).toBeTruthy();
+
+    // Fire pointer move without a pointer down first (not panning)
+    fireEvent.pointerMove(contentEl as HTMLElement, {
+      clientX: 100,
+      clientY: 100,
+    });
+
+    // Should not change transform
+    const transform = (contentEl as HTMLElement).style.transform;
+    expect(transform).toContain("translate(0px, 0px)");
   });
 });
 
@@ -152,6 +263,7 @@ describe("TableDownloadDropdown error on save throw (line 78)", () => {
     const { container } = render(() => (
       <StreamdownContext.Provider
         value={{
+         ...defaultStreamdownContext,
           ...defaultStreamdownContext,
           shikiTheme: ["github-light", "github-dark"],
           controls: true,

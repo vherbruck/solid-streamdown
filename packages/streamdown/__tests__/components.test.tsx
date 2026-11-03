@@ -8,6 +8,7 @@ import type { Component } from "solid-js";
 import { describe, expect, it } from "vitest";
 import { components as importedComponents } from "../lib/components";
 import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
+import { PluginContext } from "../lib/plugin-context";
 
 // Upstream renders these inside a StreamdownContext whose linkSafety is unset.
 const noLinkSafety = { ...defaultStreamdownContext, linkSafety: undefined };
@@ -393,14 +394,12 @@ describe("Markdown Components", () => {
       expect(mermaidBlock).toBeNull();
     });
 
-    // plan 5: mermaid block
-    it.skip("should render mermaid block with correct structure when plugin is provided", async () => {
+    it("should render mermaid block with correct structure when plugin is provided", async () => {
       const Code = components.code;
       if (!Code) {
         throw new Error("Code component not found");
       }
 
-      // plan 5: wrap in PluginContext.Provider with this mock plugin
       const { vi } = await import("vitest");
 
       // Create a mock mermaid plugin
@@ -414,14 +413,13 @@ describe("Markdown Components", () => {
         }),
       };
 
-      const { container } = render(() => <Code
-            class="language-mermaid"
-            data-block="true"
-            node={null as any}
-          >
+      const { container } = render(() => (
+        <PluginContext.Provider value={{ mermaid: mockMermaidPlugin }}>
+          <Code class="language-mermaid" data-block="true" node={null as any}>
             {"graph TD; A-->B;"}
           </Code>
-      );
+        </PluginContext.Provider>
+      ));
 
       // Wait for Suspense boundary to resolve
       await waitFor(() => {

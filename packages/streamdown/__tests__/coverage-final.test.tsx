@@ -377,8 +377,7 @@ describe("Markdown processor: raw node handling via custom rehype plugin", () =>
 });
 
 describe("shouldShowMermaidControl with mermaid: undefined (line 136)", () => {
-  // plan 5: Mermaid
-  it.skip("should default to showing controls when mermaid key is not in config", () => {
+  it("should default to showing controls when mermaid key is not in config", () => {
     // When controls is an object but mermaid is not specified,
     // shouldShowMermaidControl should return true (line 136)
     const { container } = renderWithRerender(() => (

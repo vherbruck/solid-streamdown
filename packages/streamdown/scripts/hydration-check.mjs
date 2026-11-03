@@ -37,6 +37,18 @@ const VOIDS = [
   "a<wbr>b and <kbd>key</kbd> [after wbr](https://example.com)",
   "| a | b |\n| --- | --- |\n| 1 | 2 |",
 ].join("\n\n");
+// A Mermaid block with a stub diagram plugin: Mermaid itself needs a real
+// layout engine, and core's side is what hydrates.
+const DIAGRAM = "```mermaid\ngraph TD; A-->B\n```\n\n[after diagram](https://example.com)";
+const diagramPlugin = {
+  name: "mermaid",
+  type: "diagram",
+  language: "mermaid",
+  getMermaid: () => ({
+    initialize: () => {},
+    render: async () => ({ svg: '<svg data-stub-diagram="" viewBox="0 0 100 50"></svg>' }),
+  }),
+};
 // Code highlighted by the real plugin after hydration.
 const HIGHLIGHTED = "```ts\nconst answer: number = 42;\n```\n\n[after code](https://example.com)";
 // Animated streaming: word spans revealed while streaming, removed on settle.
@@ -114,6 +126,10 @@ const runServer = async (dir) => {
     () => Streamdown({ children: HIGHLIGHTED, mode: "static", plugins: { code } }),
     { renderId: "h" }
   );
+  const diagramHtml = renderToString(
+    () => Streamdown({ children: DIAGRAM, mode: "static", plugins: { mermaid: diagramPlugin } }),
+    { renderId: "m" }
+  );
   const voidsHtml = renderToString(() => Streamdown({ children: VOIDS, mode: "static" }), { renderId: "v" });
   const animatedHtml = renderToString(
     () => Streamdown({ animated: ANIMATED, children: ANIMATED_STEPS[0], isAnimating: true }),
@@ -123,7 +139,8 @@ const runServer = async (dir) => {
     `<!doctype html><html><head>${generateHydrationScript()}</head><body>` +
     `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div>` +
     `<div id="ui">${uiHtml}</div><div id="animated">${animatedHtml}</div>` +
-    `<div id="voids">${voidsHtml}</div><div id="highlighted">${highlightedHtml}</div></body></html>`;
+    `<div id="voids">${voidsHtml}</div><div id="highlighted">${highlightedHtml}</div>` +
+    `<div id="diagram">${diagramHtml}</div></body></html>`;
   await writeFile(join(dir, "server.html"), page);
 };
 
@@ -191,6 +208,20 @@ const runClient = async (dir, entry, solid) => {
   ]) {
     globalThis[name] = window[name];
   }
+  // jsdom has no IntersectionObserver; deferred diagrams wait on one. This
+  // stub records observers so the check can report the diagram as visible.
+  const observers = [];
+  globalThis.IntersectionObserver = class {
+    constructor(callback) {
+      this.callback = callback;
+      observers.push(this);
+    }
+    observe() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  };
   // jsdom has no scrolling; the scroll pinning in tables and code blocks calls it.
   window.HTMLElement.prototype.scrollTo = () => {};
   check(window._$HY !== undefined, "the hydration script did not run (no _$HY)");
@@ -349,6 +380,30 @@ const runClient = async (dir, entry, solid) => {
     "the link after the code block did not hydrate"
   );
 
+  // A Mermaid block hydrates as its placeholder, then renders once visible.
+  const diagramRoot = document.getElementById("diagram");
+  const diagramProps = { children: DIAGRAM, mode: "static", plugins: { mermaid: diagramPlugin } };
+  const disposeDiagram = hydrate(() => Streamdown(diagramProps), diagramRoot, { renderId: "m" });
+  matchesFresh(diagramRoot, diagramProps, "mermaid block after hydration");
+  check(
+    diagramRoot.querySelector('[data-streamdown="mermaid-block"]') !== null,
+    "the mermaid block did not hydrate"
+  );
+  for (const observer of observers) {
+    observer.callback([{ isIntersecting: true }], observer);
+  }
+  for (let waited = 0; !diagramRoot.querySelector("[data-stub-diagram]") && waited < 3000; waited += 50) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  check(
+    diagramRoot.querySelectorAll("[data-stub-diagram]").length === 1,
+    `${diagramRoot.querySelectorAll("[data-stub-diagram]").length} diagram SVGs once visible, expected 1`
+  );
+  check(
+    diagramRoot.querySelector('button[data-streamdown="link"]') !== null,
+    "the link after the diagram did not hydrate"
+  );
+
   // Void elements hydrate without shifting later keys.
   const voidsRoot = document.getElementById("voids");
   const voidsProps = { children: VOIDS, mode: "static" };
@@ -402,6 +457,7 @@ const runClient = async (dir, entry, solid) => {
   disposeAnimated();
   disposeVoids();
   disposeHighlighted();
+  disposeDiagram();
   window.close();
   check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
   finish(`hydration (dist/${entry})`);

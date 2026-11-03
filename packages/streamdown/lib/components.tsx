@@ -25,6 +25,9 @@ import { CodeBlockSkeleton } from "./code-block/skeleton";
 import { HastNode, HastNodes, hastTextContent, RenderContext } from "./hast-render";
 import { ImageComponent } from "./image";
 import { LinkSafetyModal } from "./link-modal";
+import { Mermaid } from "./mermaid";
+import { MermaidDownloadDropdown } from "./mermaid/download-button";
+import { MermaidFullscreenButton } from "./mermaid/fullscreen-button";
 import type { Components, ExtraProps } from "./markdown";
 import { useCustomRenderer, useMermaidPlugin } from "./plugin-context";
 import { useCn } from "./prefix-context";
@@ -367,6 +370,78 @@ const START_LINE_PATTERN = /startLine=(\d+)/;
 const NO_LINE_NUMBERS_PATTERN = /\bnoLineNumbers\b/;
 const LANGUAGE_REGEX = /language-([^\s]+)/;
 
+const shouldShowMermaidControl = (
+  config: ControlsConfig,
+  controlType: "download" | "copy" | "fullscreen" | "panZoom"
+): boolean => {
+  if (typeof config === "boolean") {
+    return config;
+  }
+
+  const mermaidConfig = config.mermaid;
+
+  if (mermaidConfig === false) {
+    return false;
+  }
+
+  if (mermaidConfig === true || mermaidConfig === undefined) {
+    return true;
+  }
+
+  return mermaidConfig[controlType] !== false;
+};
+
+/** A Mermaid fence, rendered as a diagram with its controls. */
+const MermaidBlock: Component<{ chart: string; class?: string }> = (props) => {
+  const cn = useCn();
+  const context = useContext(StreamdownContext);
+  const show = (control: "download" | "copy" | "fullscreen" | "panZoom") =>
+    shouldShowMermaidControl(context.controls, control);
+  const showActions = () =>
+    shouldShowControls(context.controls, "mermaid") &&
+    (show("download") || show("copy") || show("fullscreen"));
+
+  return (
+    <div
+      class={cn(
+        "group relative my-4 flex w-full flex-col gap-2 rounded-xl border border-border bg-sidebar p-2",
+        props.class
+      )}
+      data-streamdown="mermaid-block"
+    >
+      <div class={cn("flex h-8 items-center text-muted-foreground text-xs")}>
+        <span class={cn("ms-1 font-mono lowercase")}>mermaid</span>
+      </div>
+      <Show when={showActions()}>
+        <div class={cn("pointer-events-none absolute end-2 top-2 z-10 flex items-center")}>
+          <div
+            class={cn(
+              "pointer-events-auto flex shrink-0 items-center gap-2 rounded-md border border-sidebar bg-sidebar/80 px-1.5 py-1 supports-[backdrop-filter]:bg-sidebar/70 supports-[backdrop-filter]:backdrop-blur"
+            )}
+            data-streamdown="mermaid-block-actions"
+          >
+            <Show when={show("download")}>
+              <MermaidDownloadDropdown chart={props.chart} config={context.mermaid?.config} />
+            </Show>
+            <Show when={show("copy")}>
+              <CodeBlockCopyButton
+                code={props.chart}
+                {...getCopyCallbacks(context.controls, "mermaid")}
+              />
+            </Show>
+            <Show when={show("fullscreen")}>
+              <MermaidFullscreenButton chart={props.chart} config={context.mermaid?.config} />
+            </Show>
+          </div>
+        </div>
+      </Show>
+      <div class={cn("overflow-hidden rounded-md border border-border bg-background")}>
+        <Mermaid chart={props.chart} config={context.mermaid?.config} showControls={show("panZoom")} />
+      </div>
+    </div>
+  );
+};
+
 /** A fenced code block: a custom renderer, a raw block or the code block. */
 const BlockCode: Component<ElementProps> = (props) => {
   const [local, forwarded] = splitProps(props, ["node", "children", "class"]);
@@ -417,7 +492,6 @@ const BlockCode: Component<ElementProps> = (props) => {
   return (
     <Switch
       fallback={
-        // plan 5: a mermaid fence with the Mermaid plugin renders the diagram here
         <CodeBlock
           {...(forwarded as JSX.HTMLAttributes<HTMLDivElement>)}
           class={local.class}
@@ -453,6 +527,9 @@ const BlockCode: Component<ElementProps> = (props) => {
       </Match>
       <Match when={isRawLanguage()}>
         <RawCodeBlock code={code()} isIncomplete={isBlockIncomplete()} language={language()} />
+      </Match>
+      <Match when={language() === "mermaid" && mermaidPlugin()}>
+        <MermaidBlock chart={code()} class={local.class} />
       </Match>
     </Switch>
   );

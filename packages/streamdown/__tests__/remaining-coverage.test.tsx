@@ -62,8 +62,7 @@ describe("components.tsx MemoParagraph", () => {
 });
 
 describe("components.tsx shouldShowMermaidControl", () => {
-  // plan 5: Mermaid
-  it.skip("should handle mermaid control config with specific controls disabled", () => {
+  it("should handle mermaid control config with specific controls disabled", () => {
     const mockMermaidPlugin = {
       name: "mermaid" as const,
       type: "diagram" as const,
