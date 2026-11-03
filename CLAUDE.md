@@ -52,12 +52,19 @@ deviations are in `UPSTREAM.md`. Licensed Apache-2.0 (see `LICENSE`, `NOTICE`).
 
 ## Commands
 
-Run from the repo root (each runs the script in every package):
+Run from the repo root:
 
 - `bun install` — install deps
-- `bun run build` — build packages (tsup)
-- `bun run typecheck` — type check
-- `bun run test` — run tests (Vitest `dom` and `ssr` projects)
+- `bun run build` — build the packages (tsup), then the example apps
+- `bun run typecheck` — type check the packages
+- `bun run test` — package tests (Vitest `dom` and `ssr` projects) and script tests
+- `bun run docs:check` — every TS/TSX sample in `docs/guide` matches its file in `examples/vite/src/snippets` (`bun run docs:sync` copies the files into the pages)
+- `bun run test:e2e` — Playwright smoke tests of both example apps (after `bun run build`)
+- `bun run --filter solid-streamdown test:hydration` — server render and hydrate the built package
+
+## Documentation
+
+`docs/guide/` is Streamdown's documentation ported to Solid. A TS/TSX sample there must come from a snippet file: put the code in `examples/vite/src/snippets/<page>/<name>.tsx` (default-exporting a component the gallery renders), precede the block with `<!-- example: … -->`, and run `bun run docs:sync`.
 
 ## What NOT To Do
 

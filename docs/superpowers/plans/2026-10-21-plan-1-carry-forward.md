@@ -44,23 +44,22 @@ Done 2026-11-03 (plan 6): `@solid-streamdown/math` and `@solid-streamdown/cjk` a
 
 ## Plan 7 (release)
 
-- **Dropped React-only tests:** the plan 2 port dropped upstream tests that build React element trees by hand. These are three footnote describes in `coverage-final.test.tsx`, listed in that file, and the React-element children case. They need no Solid port.
+Done in plan 9 (2026-11-03): the README is Apache-2.0 and carries the security notes (R9/R10: removing rehype-sanitize exposes `srcdoc`, `iframe`, `object`, `embed` and SVG-animate vectors, as with React; R25: components rendering raw-text elements own their escaping). Every package has a README in its `files`. CI pins Bun 1.4.3. The SolidStart example compiles the package's `solid`-condition JSX in SSR and DOM modes and is smoke-tested in Chromium, which covers the JSX-build smoke test. It caught a hydration bug the built-output check missed.
 
-- **README:**
-  - The root README still says MIT; the project is now Apache-2.0.
-  - Security section: removing rehype-sanitize exposes `srcdoc`, `iframe`, `object`, `embed` and SVG-animate vectors. This matches upstream React (rulings R9/R10).
-  - Security section: components that render raw-text elements such as `<style>{children}</style>` own their own escaping (R25).
+Still open:
+
+- **Dropped React-only tests:** the plan 2 port dropped upstream tests that build React element trees by hand. These are three footnote describes in `coverage-final.test.tsx`, listed in that file, and the React-element children case. They need no Solid port.
 - **Packaging:**
-  - Rewrite `release.yml` for multi-package Changesets publishing.
-  - Pin `bun-version` in CI.
-  - The package `files` list names `styles.css` and `README.md`, which don't exist yet.
-  - Add a smoke test that compiles the `solid`-condition JSX build (`dist/index.jsx`) in SSR and DOM modes, which is the path SolidStart uses.
+  - Rewrite `release.yml` for multi-package Changesets publishing. It still publishes from the private root and runs a script that does not exist.
+  - The `@solid-streamdown` npm org must exist, with the release token granted (spec, Constraints).
+  - The plugin builds warn that the `"use client"` directive was ignored. Upstream's do too; drop the directive if the warning is unwanted.
 - **Hydration harness:**
   - Un-skip the caret-suppression hydration assertion (R4).
   - Revisit the one-time replacement of server text nodes at the first post-hydration update (R19).
   - Make the hydration check append to the trailing block.
   - Fix its failure labels.
 - **Optional:** make `dir="auto"` detection run per block inside `Index`; today every block is re-detected on every token, the same as upstream.
+- **CI time:** the Playwright run takes about 4.5 minutes, mostly the gallery test walking 120 snippets. Split it per section if it becomes a bottleneck.
 
 ## Deferred minors (can wait)
 
@@ -87,13 +86,9 @@ Done 2026-11-03 (plan 6): `@solid-streamdown/math` and `@solid-streamdown/cjk` a
 
 ## Plan 9 (documentation and examples)
 
-- KaTeX's stylesheet is the consumer's import (`katex/dist/katex.min.css`), as upstream documents. Say so in the math page and the examples.
+Done 2026-11-03 (plan 9): all 25 pages are in `docs/guide`, every sample is in `examples/vite/src/snippets`, both example apps are smoke-tested in Chromium, and the Mermaid label sanitization check now runs in a real browser.
 
-- **Real-browser security check:** Mermaid charts whose labels hold HTML stall Mermaid's text measurement under jsdom, so label sanitization under `securityLevel: "strict"` (Mermaid's own DOMPurify step) is untested here. The examples' smoke tests should render a label such as `A["<img src=x onerror=…>"]` in a real browser and assert that no handler attribute reaches the DOM.
-
-- Port the 25 pages under `UP/../../apps/website/content/docs` (including `plugins/*`) as Markdown, rewritten for Solid (`class`, accessors, `createMarkdownStream`, Solid components in `components`).
-- Every code sample comes from a file in an `examples/` workspace that CI typechecks and builds: a Vite client app and a SolidStart SSR app, each with a smoke test.
-- Fold in plan 7's README items that are documentation rather than packaging.
+- `useTranslations()` is documented upstream but exported by neither upstream nor us; the guide shows a shared-object pattern instead. Export it only if upstream does.
 
 ## Plan 8 (Kobalte adapter)
 

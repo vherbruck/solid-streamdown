@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task. Each task ends green (`bun run typecheck && bun run build && bun run test`, the hydration check, and, from Task 2 on, `bun run docs:check` and the example builds) and with one commit, made only after those pass.
 
-**Status:** In progress, 2026-11-03. The owner chose the format on 2026-11-03: Markdown docs plus tested examples, no docs website (spec, Decisions).
+**Status:** Done 2026-11-03. The owner chose the format on 2026-11-03: Markdown docs plus tested examples, no docs website (spec, Decisions).
 
 **Goal:**
 - Port upstream's 25 documentation pages (`apps/website/content/docs/**/*.mdx` at `c5e44d8`) to Markdown under `docs/guide/`, rewritten for Solid.
