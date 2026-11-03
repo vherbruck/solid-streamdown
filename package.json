@@ -2,9 +2,9 @@
   "name": "solid-streamdown-monorepo",
   "private": true,
   "license": "Apache-2.0",
-  "workspaces": ["packages/*"],
+  "workspaces": ["packages/*", "examples/*"],
   "scripts": {
-    "build": "bun run --filter './packages/*' build",
+    "build": "bun run --filter './packages/*' build && bun run --filter './examples/*' build",
     "typecheck": "bun run --filter './packages/*' typecheck",
     "test": "bun run --filter './packages/*' test && bun test ./scripts",
     "docs:check": "node scripts/check-docs.mjs",

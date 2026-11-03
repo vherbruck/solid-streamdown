@@ -1,0 +1,26 @@
+{
+  "name": "@solid-streamdown/example-vite",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "dev": "vite",
+    "preview": "vite preview --port 4173 --strictPort"
+  },
+  "dependencies": {
+    "@solid-streamdown/cjk": "workspace:*",
+    "@solid-streamdown/code": "workspace:*",
+    "@solid-streamdown/math": "workspace:*",
+    "@solid-streamdown/mermaid": "workspace:*",
+    "katex": "^0.16.27",
+    "solid-js": "1.9.17",
+    "solid-streamdown": "workspace:*"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.8.2",
+    "vite": "8.3.4",
+    "vite-plugin-solid": "2.11.14"
+  }
+}

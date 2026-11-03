@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+@import "solid-streamdown/styles.css";
+
+/* Tailwind must see the classes the packages render: one line per installed
+   package, relative to this file (the paths the guide gives). */
+@source "../node_modules/solid-streamdown/dist/*.js";
+@source "../node_modules/@solid-streamdown/code/dist/*.js";
+@source "../node_modules/@solid-streamdown/mermaid/dist/*.js";
+
+/* The color tokens solid-streamdown reads (shadcn's names). Any design system
+   that defines them works. */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0);
+  --sidebar: oklch(0.985 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-sidebar: var(--sidebar);
+}
