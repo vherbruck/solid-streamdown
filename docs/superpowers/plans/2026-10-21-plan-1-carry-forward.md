@@ -2,12 +2,9 @@
 
 These are the items plan 1 left open for later plans. They come from the execution ledger and its reviews, which were deleted when plan 1 finished. Each later plan should read this list when it's written.
 
-## Must land before any release (first task of plan 2)
+## Must land before any release
 
-- **Raw-text element mapping XSS (server-rendered HTML).** A component mapping to a raw-text element (`components={{ p: "style" }}`, and likewise `textarea`, `title`, `xmp`, `iframe`, `noembed`, `noframes`, `noscript`) lets markdown close that element in server HTML when the mapped element has element children. The payload is attribute text such as a link title `"</style><img src=x onerror=…>"`. The cause is that Solid's `ssrElement` escapes only `"` and `&` in attribute values.
-  - **Fix:** when an element resolves to a raw-text tag, whether as the source tag or as a mapping, render its text content only, as React does for `<style>`. Do this on client and server.
-  - **Tests:** add SSR tests for each raw-text tag.
-  - **Exposure:** the default config, and any config without such a mapping, is unaffected. Probe scripts were kept under the session scratchpad (`probe-rr/`).
+- ~~**Raw-text element mapping XSS (server-rendered HTML).**~~ Fixed 2026-11-03: an element rendered as `iframe`, `noembed`, `noframes`, `noscript`, `style`, `textarea`, `title` or `xmp` renders only its text content (`lib/hast-render.tsx`). Regression tests in `security.test.tsx` and `security.ssr.test.tsx`.
 
 ## Plan 2 (interactive UI)
 

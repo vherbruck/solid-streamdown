@@ -117,6 +117,32 @@ const hydratingText = (props: { node: Text }): JSX.Element => {
   return read as unknown as JSX.Element;
 };
 
+// HTML elements whose content the parser reads as text up to the matching end
+// tag. An element child's attribute could hold that end tag, which escapes
+// only `"` and `&` on the server, so these elements render their text only.
+const RAW_TEXT_TAGS = new Set([
+  "iframe",
+  "noembed",
+  "noframes",
+  "noscript",
+  "style",
+  "textarea",
+  "title",
+  "xmp",
+]);
+
+const textContent = (nodes: readonly RootContent[]): string => {
+  let result = "";
+  for (const node of nodes) {
+    if (node.type === "text") {
+      result += node.value;
+    } else if (node.type === "element") {
+      result += textContent(node.children);
+    }
+  }
+  return result;
+};
+
 /** What an element renders as: a component, a tag name, or nothing. */
 type RenderTarget = Component<any> | string | undefined;
 
@@ -188,16 +214,35 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
   // function, not through JSX: as a component it would take a hydration key
   // that the client, which renders no provider, never takes.
   const textScope = isServer ? useContext(ServerTextContext) : undefined;
+  const rawText = createMemo(() => {
+    const rendered = target();
+    return (
+      space() === "html" && typeof rendered === "string" && RAW_TEXT_TAGS.has(rendered.toLowerCase())
+    );
+  });
+  const content = (): JSX.Element =>
+    rawText() ? (
+      <HastText
+        node={{
+          type: "text",
+          get value() {
+            return textContent(props.node.children);
+          },
+        }}
+      />
+    ) : (
+      <HastNodes nodes={props.node.children} />
+    );
   const children = (): JSX.Element => {
     if (!textScope) {
-      return <HastNodes nodes={props.node.children} />;
+      return content();
     }
     const rendered = target();
     const tag = typeof rendered === "string" ? rendered : props.node.tagName;
     return ServerTextContext.Provider({
       value: serverTextScope(textScope, tag),
       get children() {
-        return <HastNodes nodes={props.node.children} />;
+        return content();
       },
     });
   };

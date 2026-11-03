@@ -132,3 +132,29 @@ describe("style text on the server", () => {
     expect(text).toBe(`${css} </style>`);
   });
 });
+
+// Tags whose content the HTML parser reads as text up to the matching end tag.
+const RAW_TEXT_TAGS = ["style", "textarea", "title", "xmp", "iframe", "noembed", "noframes", "noscript"];
+
+describe("raw-text elements on the server", () => {
+  it.each(RAW_TEXT_TAGS)("a paragraph mapped to %s cannot be closed from an attribute", (tag) => {
+    const html = renderToString(() => (
+      <Streamdown components={{ p: tag as never }} mode="static">
+        {`[x](https://example.com "</${tag}><img src=x onerror=alert(1)>")`}
+      </Streamdown>
+    ));
+    expect(html.toLowerCase()).toContain(`<${tag}`);
+    expect(liveElements(html)).toEqual([]);
+  });
+
+  it.each(RAW_TEXT_TAGS)("a paragraph mapped to %s renders its text only", (tag) => {
+    const html = renderToString(() => (
+      <Streamdown components={{ p: tag as never }} mode="static">
+        {"a **b** [c](https://example.com)"}
+      </Streamdown>
+    ));
+    expect(html).not.toContain("<strong");
+    expect(html).not.toContain("<a ");
+    expect(html).toMatch(new RegExp(`<${tag}[^>]*>a b c</${tag}>`));
+  });
+});

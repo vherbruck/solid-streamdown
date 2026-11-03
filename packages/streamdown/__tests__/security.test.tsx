@@ -1,5 +1,6 @@
 import { render } from "@solidjs/testing-library";
 import type { Root } from "hast";
+import { createSignal } from "solid-js";
 import { visit } from "unist-util-visit";
 import { afterEach, describe, expect, it } from "vitest";
 import { type Components, defaultRehypePlugins, Streamdown } from "../index";
@@ -98,5 +99,31 @@ describe("render guard", () => {
     ));
     expect(container.querySelector("script")).toBeNull();
     expect(window.__sdCode).toBeUndefined();
+  });
+});
+
+describe("raw-text elements", () => {
+  it.each(["style", "textarea", "title", "xmp", "iframe", "noembed", "noframes", "noscript"])(
+    "a paragraph mapped to %s holds only its text",
+    (tag) => {
+      const { container } = render(() => (
+        <Streamdown components={{ p: tag as never }} mode="static">
+          {"a **b** [c](https://example.com)"}
+        </Streamdown>
+      ));
+      const element = container.querySelector(tag);
+      expect(element).not.toBeNull();
+      expect(element?.children.length).toBe(0);
+      expect(element?.textContent).toBe("a b c");
+    }
+  );
+
+  it("updates a mapped raw-text element's text while streaming", () => {
+    const [text, setText] = createSignal("a **b");
+    const { container } = render(() => <Streamdown components={{ p: "textarea" }}>{text()}</Streamdown>);
+    setText("a **b** [c](https://example.com) d");
+    const element = container.querySelector("textarea");
+    expect(element?.children.length).toBe(0);
+    expect(element?.textContent).toBe("a b c d");
   });
 });

@@ -31,6 +31,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | Built-in components' fixed props | Spread the HAST-derived props last, so those win | Apply their fixed props (`class`, `data-streamdown`, …) after the HAST-derived spread, so the fixed props win |
 | Namespaced attributes | React renders `xlink:href`, `xml:lang` and similar | The render guard drops every attribute name containing `:` |
 | Text in a server-rendered `<style>` | React's server renderer escapes `<style` and `</style` as `<\73 tyle` and `</\73 tyle` | Same escape for an HTML `style`. Inside `svg` or `math`, where the browser parses style content as markup, the text is HTML-escaped instead; React applies only its style escape there, which leaves markup after it live |
+| Raw-text elements | Element children render inside `iframe`, `noembed`, `noframes`, `noscript`, `style`, `textarea`, `title` and `xmp` (for example `components={{ p: "style" }}`) | Those elements render only their text content, on client and server. Solid's server renderer escapes only `"` and `&` in attribute values, so a child's attribute could otherwise close the element and inject markup |
 
 ## Known upstream risks kept for parity
 
