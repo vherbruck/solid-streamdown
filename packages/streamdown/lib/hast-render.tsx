@@ -144,6 +144,27 @@ const hastTextContent = (nodes: readonly RootContent[]): string => {
   return result;
 };
 
+// Elements with no content. The server never renders their children, so the
+// client must not create child components for them either (see HastElement).
+const VOID_TAGS = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "keygen",
+  "link",
+  "menuitem",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+]);
+
 /** What an element renders as: a component, a tag name, or nothing. */
 type RenderTarget = Component<any> | string | undefined;
 
@@ -221,8 +242,15 @@ const HastElement: Component<{ node: Element; extraProps?: Record<string, unknow
       space() === "html" && typeof rendered === "string" && RAW_TEXT_TAGS.has(rendered.toLowerCase())
     );
   });
+  // A void tag gets no children: Solid's server renderer skips them, and on
+  // the client the spread would still create (empty) child components, which
+  // shifts hydration keys wherever the element shares a key scope.
+  const isVoid = createMemo(() => {
+    const rendered = target();
+    return typeof rendered === "string" && VOID_TAGS.has(rendered.toLowerCase());
+  });
   const content = (): JSX.Element =>
-    rawText() ? (
+    isVoid() ? undefined : rawText() ? (
       <HastText
         node={{
           type: "text",

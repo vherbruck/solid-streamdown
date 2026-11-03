@@ -28,6 +28,15 @@ const DOCUMENT_UPDATES = [
 const TABLE = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
 const TABLE_THEN_PROSE = `${TABLE}\n\nText after the table`;
 const CARET_CLASS = "after:content-[var(--streamdown-caret)]";
+// Void elements the renderer emits itself (hard break, task-list checkbox,
+// raw HTML), each followed by hydrated content, so a stray component created
+// for a void element's children would shift every later hydration key.
+const VOIDS = [
+  "line one  \nline two [after break](https://example.com)",
+  "- [ ] open task [after checkbox](https://example.com)\n- [x] done task",
+  "a<wbr>b and <kbd>key</kbd> [after wbr](https://example.com)",
+  "| a | b |\n| --- | --- |\n| 1 | 2 |",
+].join("\n\n");
 // Animated streaming: word spans revealed while streaming, removed on settle.
 const ANIMATED = { animation: "fadeIn", duration: 150, stagger: 0 };
 const ANIMATED_STEPS = ["one two", "one two three", "one two three\n\n- four"];
@@ -98,6 +107,7 @@ const runServer = async (dir) => {
     { renderId: "c" }
   );
   const uiHtml = renderToString(() => Streamdown({ children: UI, mode: "static" }), { renderId: "u" });
+  const voidsHtml = renderToString(() => Streamdown({ children: VOIDS, mode: "static" }), { renderId: "v" });
   const animatedHtml = renderToString(
     () => Streamdown({ animated: ANIMATED, children: ANIMATED_STEPS[0], isAnimating: true }),
     { renderId: "a" }
@@ -105,7 +115,8 @@ const runServer = async (dir) => {
   const page =
     `<!doctype html><html><head>${generateHydrationScript()}</head><body>` +
     `<div id="document">${documentHtml}</div><div id="caret">${caretHtml}</div>` +
-    `<div id="ui">${uiHtml}</div><div id="animated">${animatedHtml}</div></body></html>`;
+    `<div id="ui">${uiHtml}</div><div id="animated">${animatedHtml}</div>` +
+    `<div id="voids">${voidsHtml}</div></body></html>`;
   await writeFile(join(dir, "server.html"), page);
 };
 
@@ -216,12 +227,12 @@ const runClient = async (dir, entry, solid) => {
     { renderId: "d" }
   );
 
-  const bodyText = document.body.textContent;
+  const bodyText = docRoot.textContent;
   check(occurrences(bodyText, "Hi") === 1, `"Hi" appears ${occurrences(bodyText, "Hi")} times after hydration`);
   check(occurrences(bodyText, "Some bold text") === 1, `"Some bold text" appears ${occurrences(bodyText, "Some bold text")} times after hydration`);
-  check(document.querySelectorAll("h1").length === 1, `${document.querySelectorAll("h1").length} h1 elements after hydration`);
-  check(document.querySelectorAll("li").length === 2, `${document.querySelectorAll("li").length} li elements after hydration`);
-  const strongCount = document.querySelectorAll('[data-streamdown="strong"]').length;
+  check(docRoot.querySelectorAll("h1").length === 1, `${docRoot.querySelectorAll("h1").length} h1 elements after hydration`);
+  check(docRoot.querySelectorAll("li").length === 2, `${docRoot.querySelectorAll("li").length} li elements after hydration`);
+  const strongCount = docRoot.querySelectorAll('[data-streamdown="strong"]').length;
   check(strongCount === 1, `${strongCount} strong elements after hydration`);
 
   // Hydration adopts every server node instead of rendering its own.
@@ -306,6 +317,14 @@ const runClient = async (dir, entry, solid) => {
     "the hydrated link did not open the link-safety modal"
   );
 
+  // Void elements hydrate without shifting later keys.
+  const voidsRoot = document.getElementById("voids");
+  const voidsProps = { children: VOIDS, mode: "static" };
+  const disposeVoids = hydrate(() => Streamdown(voidsProps), voidsRoot, { renderId: "v" });
+  matchesFresh(voidsRoot, voidsProps, "void elements after hydration");
+  check(voidsRoot.querySelectorAll("br").length === 1, "the hard break is duplicated or missing after hydration");
+  check(voidsRoot.querySelectorAll('input[type="checkbox"]').length === 2, "task-list checkboxes are duplicated or missing after hydration");
+
   // Animated streaming hydrates, keeps revealed spans, and settles cleanly.
   const animatedRoot = document.getElementById("animated");
   const [animatedText, setAnimatedText] = createSignal(ANIMATED_STEPS[0]);
@@ -349,6 +368,7 @@ const runClient = async (dir, entry, solid) => {
   disposeCaret();
   disposeUi();
   disposeAnimated();
+  disposeVoids();
   window.close();
   check(logged.length === 0, `console output during hydration:\n    ${logged.join("\n    ")}`);
   finish(`hydration (dist/${entry})`);

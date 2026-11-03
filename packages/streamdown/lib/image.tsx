@@ -23,13 +23,13 @@ type ImageComponentProps = Omit<JSX.ImgHTMLAttributes<HTMLImageElement>, "onLoad
     showDownloadControl?: boolean;
   };
 
-// The <img> is the root of its own template. Nested in the wrapper's template,
-// a spread element with a ref or event handlers takes a hydration key on the
-// server that the client never looks up, which shifts every later key.
-const ImageElement = (props: JSX.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />;
-
 export const ImageComponent = (props: ImageComponentProps) => {
+  // `children` stays out of the <img> spread: the server ignores children of
+  // a void element, but the client's spread would still create the
+  // renderer's (empty) child components, and creating components the server
+  // did not shifts every later hydration key in this template.
   const [local, rest] = splitProps(props, [
+    "children",
     "node",
     "class",
     "src",
@@ -132,16 +132,14 @@ export const ImageComponent = (props: ImageComponentProps) => {
         fallback={
           <div class={cn("group relative my-4 inline-block")} data-streamdown="image-wrapper">
             {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: image overlay with intentional load/error handling */}
-            <ImageElement
+            <img
               {...rest}
               alt={local.alt}
               class={cn("max-w-full rounded-lg", showFallback() && "hidden", local.class)}
               data-streamdown="image"
               onError={handleError}
               onLoad={handleLoad}
-              ref={(element: HTMLImageElement) => {
-                imgRef = element;
-              }}
+              ref={imgRef}
               src={local.src}
             />
             <Show when={showFallback()}>

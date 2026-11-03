@@ -25,7 +25,7 @@ Done 2026-11-03 (plan 3): `AnimateOptions` lives in `lib/animate.ts`, the animat
 
 ## Every later plan
 
-- **Hydration keys:** a spread element with a `ref` or event handlers, nested inside another element's template, takes a hydration key on the server that the client never looks up. Every later key shifts, and Solid's dev build throws. Make such an element the root of its own component, as `ImageElement` in `lib/image.tsx` does.
+- **Hydration keys:** Solid numbers hydration keys by position within each component's scope. If the client creates a component the server did not, or the reverse, every later key in that scope shifts, and the dev build throws "Hydration Mismatch". The trigger found in plan 2 was spreading props that still held `children` onto a void element (`<img {...rest}>`). The server skips a void element's children; the client's spread still creates them. Split `children` out before spreading onto any element, and never branch the initial render on `isServer` or browser-only state. The renderer drops children of void tags itself (`lib/hast-render.tsx`). The hydration check's dev pass is the detector: add a fixture for every new component.
 - **Empty attributes on the server:** an optional `class` or `style` written as `attr={cond ? x : undefined}` serializes as `attr=""`. Put optional attributes in a spread object instead (`lib/code-block/body.tsx`).
 - **Delegated events:** Solid delegates `onClick`/`onKeyDown` to the document, so `stopPropagation` there does not stop a document-level listener. Use `on:keydown` where a panel must shield the overlay's Escape listener.
 - **Porting tests that check nodes survive an update:** `__tests__/support/render-streamdown.tsx` keeps one `Streamdown` and swaps its props.

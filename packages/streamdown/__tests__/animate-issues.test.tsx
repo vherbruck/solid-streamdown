@@ -13,7 +13,7 @@
  */
 import { render } from "@solidjs/testing-library";
 import { type JSX, onMount } from "solid-js";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Streamdown } from "../index";
 import { MAX_ANIMATION_BACKLOG_MS } from "../lib/animate";
 import { renderStreamdown } from "./support/render-streamdown";
@@ -36,6 +36,16 @@ const parseDelay = (el: Element): number => {
 };
 
 describe("issue #482 — cross-block stagger serialization", () => {
+  // Delays are measured from the timeline's clock. Freezing it keeps these
+  // checks independent of how long the test machine takes between updates
+  // (upstream reads the wall clock and can flake under load).
+  beforeEach(() => {
+    vi.spyOn(performance, "now").mockReturnValue(1000);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("delays a new block's first word past the previous block's cascade", async () => {
     const config = {
       animation: "fadeIn" as const,
