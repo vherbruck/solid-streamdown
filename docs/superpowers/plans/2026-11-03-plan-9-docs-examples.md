@@ -28,7 +28,7 @@
   - It fails on any TS/TSX block in `docs/guide/` without a marker.
   - Shell, CSS, JSON, plain Markdown input and `text` blocks stay inline.
 - **Examples:**
-  - `examples/vite`: Vite 8.3.4, `vite-plugin-solid` 2.11.14, Tailwind 4.3.3 via `@tailwindcss/vite`, every plugin. Each snippet file exports a component; a gallery route renders them all, so the build and the smoke tests cover each one.
+  - `examples/vite`: Vite 7.3.7 (the major Vitest uses, so the workspace resolves one Vite's types), `vite-plugin-solid` 2.11.14, Tailwind 4.3.3 via `@tailwindcss/vite`, every plugin. Each snippet file exports a component; a gallery route renders them all, so the build and the smoke tests cover each one.
   - `examples/solid-start`: SolidStart 1.4.0 (vinxi 0.5.11). Server rendering, hydration, and a streaming demo.
   - Both depend on the workspace packages (`workspace:*`).
 - **Smoke tests:** Playwright 1.64.1, Chromium only, against the production build (`vite preview`, and SolidStart's node server). They cover:

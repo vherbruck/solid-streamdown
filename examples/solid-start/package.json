@@ -1,0 +1,26 @@
+{
+  "name": "@solid-streamdown/example-solid-start",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vinxi build",
+    "dev": "vinxi dev",
+    "start": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@solid-streamdown/code": "workspace:*",
+    "@solid-streamdown/math": "workspace:*",
+    "@solid-streamdown/mermaid": "workspace:*",
+    "@solidjs/router": "1.0.0",
+    "@solidjs/start": "1.4.0",
+    "katex": "^0.16.27",
+    "solid-js": "1.9.17",
+    "solid-streamdown": "workspace:*",
+    "vinxi": "0.5.11"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.8.2"
+  }
+}
