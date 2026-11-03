@@ -6,7 +6,9 @@
   "scripts": {
     "build": "bun run --filter './packages/*' build",
     "typecheck": "bun run --filter './packages/*' typecheck",
-    "test": "bun run --filter './packages/*' test"
+    "test": "bun run --filter './packages/*' test && bun test ./scripts",
+    "docs:check": "node scripts/check-docs.mjs",
+    "docs:sync": "node scripts/check-docs.mjs --write"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",
