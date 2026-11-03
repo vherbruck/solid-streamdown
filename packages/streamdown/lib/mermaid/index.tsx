@@ -45,6 +45,12 @@ const pause = (ms: number, onWake: (wake: () => void) => void) =>
 interface RenderRequest {
   chart: string;
   config?: MermaidConfig;
+  /**
+   * The plugin current when the request was made. A plugin swapped while a
+   * render is in flight applies to the next render (upstream keeps rendering
+   * with the plugin the loop started with).
+   */
+  plugin: DiagramPlugin;
 }
 
 type RenderOutcome =
@@ -52,8 +58,7 @@ type RenderOutcome =
   | { ok: false; error: string };
 
 const renderChart = async (
-  plugin: DiagramPlugin,
-  { chart, config }: RenderRequest,
+  { chart, config, plugin }: RenderRequest,
   fullscreen: boolean,
   fallbackError: string
 ): Promise<RenderOutcome> => {
@@ -162,13 +167,13 @@ export const Mermaid = (props: MermaidProps) => {
       return;
     }
 
-    latestRequest = { chart, config };
+    latestRequest = { chart, config, plugin };
     if (inFlight) {
       // The running loop picks up the latest request when it settles
       return;
     }
 
-    untrack(() => renderLatest(plugin));
+    untrack(() => renderLatest());
   });
 
   const commit = (request: RenderRequest, rendered: RenderOutcome) => {
@@ -184,7 +189,7 @@ export const Mermaid = (props: MermaidProps) => {
     }
   };
 
-  const renderLatest = async (plugin: DiagramPlugin) => {
+  const renderLatest = async () => {
     inFlight = true;
     setError(null);
     setIsLoading(true);
@@ -192,7 +197,7 @@ export const Mermaid = (props: MermaidProps) => {
       let request = latestRequest;
       while (request) {
         const startedAt = performance.now();
-        const rendered = await renderChart(plugin, request, fullscreen(), t.errorMermaid);
+        const rendered = await renderChart(request, fullscreen(), t.errorMermaid);
         if (!mounted) {
           return;
         }
