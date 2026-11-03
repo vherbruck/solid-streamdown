@@ -23,7 +23,7 @@ An outside contributor opened PR #5 attempting a similar port. The owner decided
 
 - Solid 2.0 support (still `2.0.0-rc.15` as of 2026-10-19). Target Solid 1.9.
 - Backwards compatibility with the 1.x API. `<StreamMarkdown>`, `IncompleteMarkdownParser` and `parseIncompleteMarkdown` are removed.
-- A docs website. Upstream's `apps/` (website, playground) and `skills/` are not ported.
+- A docs website. Upstream's `apps/` (website, test app) and `skills/` are not ported as apps. Their documentation content is ported as Markdown (see Decisions, 2026-11-03).
 - Behavior beyond or different from upstream. If an upstream bug blocks a correct Solid port, document the deviation in the package README and keep it minimal.
 - Depending on any UI component library (shadcn, solid-ui, Kobalte, Ark). Built-in controls stay hand-rolled, as upstream's are.
 - Porting upstream's `__benchmarks__`. Optional later.
@@ -56,6 +56,7 @@ An outside contributor opened PR #5 attempting a similar port. The owner decided
 - Separate packages.
 - Tailwind styling, compatible with shadcn tokens, independent of any component library.
 - Build our own implementation; don't merge PR #5; discard anything suspicious.
+- **2026-11-03:** port upstream's documentation (the 25 pages under `apps/website/content/docs`) as Markdown in this repo, rewritten for Solid. Every code sample lives in an `examples/` workspace (a Vite client app and a SolidStart SSR app) that CI typechecks, builds and smoke-tests, so the docs cannot drift from the code. No website framework. This is plan 9, scheduled before the release plan (7).
 
 ### Delegated to me ("whatever you think is best")
 

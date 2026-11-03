@@ -2,6 +2,10 @@
 
 These are the items plan 1 left open for later plans. They come from the execution ledger and its reviews, which were deleted when plan 1 finished. Each later plan should read this list when it's written.
 
+## Plan sequence update (2026-11-03)
+
+The owner added plan 9, **Documentation and examples** (see the spec's Decisions). Plan numbers stay stable, so the order is now 4, 5, 6, 9, 7, 8: documentation lands before the release plan, so the release ships with it.
+
 ## Must land before any release
 
 - ~~**Raw-text element mapping XSS (server-rendered HTML).**~~ Fixed 2026-11-03: an element rendered as `iframe`, `noembed`, `noframes`, `noscript`, `style`, `textarea`, `title` or `xmp` renders only its text content (`lib/hast-render.tsx`). Regression tests in `security.test.tsx` and `security.ssr.test.tsx`.
@@ -76,6 +80,12 @@ Done 2026-11-03 (plan 3): `AnimateOptions` lives in `lib/animate.ts`, the animat
   - The long line in `escape-html.ts`.
   - Root devDependencies aren't alphabetized.
   - The tsup preset probe in `tsup.config.ts`; the hydration check backstops it.
+
+## Plan 9 (documentation and examples)
+
+- Port the 25 pages under `UP/../../apps/website/content/docs` (including `plugins/*`) as Markdown, rewritten for Solid (`class`, accessors, `createMarkdownStream`, Solid components in `components`).
+- Every code sample comes from a file in an `examples/` workspace that CI typechecks and builds: a Vite client app and a SolidStart SSR app, each with a smoke test.
+- Fold in plan 7's README items that are documentation rather than packaging.
 
 ## Plan 8 (Kobalte adapter)
 
