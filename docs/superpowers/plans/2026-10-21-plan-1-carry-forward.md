@@ -40,8 +40,7 @@ Done 2026-11-03 (plan 5): the Mermaid branch, its controls, the deferred-render 
 
 ## Plan 6 (math / CJK)
 
-- Under `<svg>`, Solid's `Dynamic` creates `a`, `title` and `style` as HTML-namespace elements. MathML needs real namespace creation too.
-- The server HTML-escapes an HTML `<style>` inside `foreignObject`/`mi`. That's safe, but it alters CSS containing `&` or `<` until hydration updates it.
+Done 2026-11-03 (plan 6): `@solid-streamdown/math` and `@solid-streamdown/cjk` are ported, core's math and CJK tests run, and the renderer creates SVG and MathML elements in their namespaces (client renders and hydration). Still open, moved to "Deferred minors": the server HTML-escapes an HTML `<style>` inside `foreignObject` or `mi`. That is safe, but it alters CSS containing `&` or `<` until hydration updates it.
 
 ## Plan 7 (release)
 
@@ -65,6 +64,8 @@ Done 2026-11-03 (plan 5): the Mermaid branch, its controls, the deferred-render 
 
 ## Deferred minors (can wait)
 
+- **Server style text in foreign content:** the server HTML-escapes an HTML `<style>` inside `foreignObject` or a MathML text integration point. It is safe, but CSS containing `&` or `<` reads differently until hydration (plan 6).
+
 - **Tests:**
   - `security.test.tsx:92-101` duplicates `inline-code-guard`.
   - One `disable-autolink` skip passes vacuously.
@@ -85,6 +86,8 @@ Done 2026-11-03 (plan 5): the Mermaid branch, its controls, the deferred-render 
   - The tsup preset probe in `tsup.config.ts`; the hydration check backstops it.
 
 ## Plan 9 (documentation and examples)
+
+- KaTeX's stylesheet is the consumer's import (`katex/dist/katex.min.css`), as upstream documents. Say so in the math page and the examples.
 
 - **Real-browser security check:** Mermaid charts whose labels hold HTML stall Mermaid's text measurement under jsdom, so label sanitization under `securityLevel: "strict"` (Mermaid's own DOMPurify step) is untested here. The examples' smoke tests should render a label such as `A["<img src=x onerror=…>"]` in a real browser and assert that no handler attribute reaches the DOM.
 
