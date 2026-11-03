@@ -90,9 +90,14 @@ export const createPinnedScroll = (
   });
 
   createEffect(() => {
-    contentKey();
     const el = element();
-    if (!(el && enabled() && isActive() && pinned) || frame !== null) {
+    // The content key is read (and so tracked) only while pinning can act,
+    // so computing it costs nothing for static or unconstrained content.
+    if (!(el && enabled() && isActive())) {
+      return;
+    }
+    contentKey();
+    if (!pinned || frame !== null) {
       return;
     }
     frame = requestAnimationFrame(() => {

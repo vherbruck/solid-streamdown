@@ -1,6 +1,6 @@
 import { fireEvent, render } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Streamdown } from "../index";
 
 const header = "| Name | Value |\n|------|-------|\n";
@@ -69,5 +69,36 @@ describe("table component under Streamdown", () => {
       <Streamdown controls={{ table: false }} mode="static">{`${header}| a | 1 |\n`}</Streamdown>
     ));
     expect(container.querySelector('[data-streamdown="table-wrapper"] button')).toBeNull();
+  });
+});
+
+describe("table scroll pinning key", () => {
+  it("still pins as rows and the last cell grow while streaming", () => {
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    const [text, setText] = createSignal(`${header}| a | 1 |\n`);
+    const { container } = render(() => <Streamdown isAnimating tableMaxHeight={100}>{text()}</Streamdown>);
+    const scroller = container.querySelector('[data-streamdown="table-wrapper"] > div:last-child') as HTMLElement;
+    const scrollTo = vi.fn();
+    scroller.scrollTo = scrollTo as never;
+    const flush = () => {
+      for (const cb of frames.splice(0)) {
+        cb(0);
+      }
+    };
+    flush();
+    scrollTo.mockClear();
+
+    setText(`${header}| a | 1 |\n| b | 2 |\n`);
+    flush();
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+
+    setText(`${header}| a | 1 |\n| b | 22 |\n`);
+    flush();
+    expect(scrollTo).toHaveBeenCalledTimes(2);
+    raf.mockRestore();
   });
 });

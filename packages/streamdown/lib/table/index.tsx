@@ -3,7 +3,7 @@
  * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
  * Modified for SolidJS by the solid-streamdown authors.
  */
-import type { Element } from "hast";
+import type { Element, ElementContent } from "hast";
 import { type JSX, Show, splitProps, useContext } from "solid-js";
 import { hastTextContent } from "../hast-render";
 import { useCn } from "../prefix-context";
@@ -23,6 +23,29 @@ type TableProps = JSX.HTMLAttributes<HTMLTableElement> & {
   showFullscreen?: boolean;
 };
 
+const isElement = (node: ElementContent): node is Element => node.type === "element";
+
+/**
+ * Changes whenever a streamed table grows: rows are appended, or the last
+ * row's text extends. Costs O(last row) instead of the whole table's text.
+ */
+const tableGrowthKey = (table: Element): string => {
+  let rows = 0;
+  let lastRow: Element | undefined;
+  for (const section of table.children) {
+    if (!isElement(section)) {
+      continue;
+    }
+    for (const row of section.children) {
+      if (isElement(row) && row.tagName === "tr") {
+        rows += 1;
+        lastRow = row;
+      }
+    }
+  }
+  return `${rows}:${lastRow ? hastTextContent(lastRow.children) : ""}`;
+};
+
 export const Table = (props: TableProps) => {
   const [local, rest] = splitProps(props, [
     "children",
@@ -40,7 +63,7 @@ export const Table = (props: TableProps) => {
   const scrollRef = createPinnedScroll(
     () => context.isAnimating,
     () => Boolean(maxHeightStyle()),
-    () => (local.node ? hastTextContent(local.node.children) : undefined)
+    () => (local.node ? tableGrowthKey(local.node) : undefined)
   );
 
   const hasCopy = () => Boolean(local.showControls && (local.showCopy ?? true));

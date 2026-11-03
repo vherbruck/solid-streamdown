@@ -91,3 +91,24 @@ describe("createPinnedScroll", () => {
     expect(scrollTo).toHaveBeenCalled();
   });
 });
+
+describe("createPinnedScroll content key", () => {
+  it("does not read the content key while inactive or disabled", () => {
+    let reads = 0;
+    const [active, setActive] = createSignal(false);
+    const [enabled, setEnabled] = createSignal(true);
+    render(() => {
+      const ref = createPinnedScroll(active, enabled, () => {
+        reads += 1;
+        return 0;
+      });
+      return <div ref={ref} />;
+    });
+    expect(reads).toBe(0);
+    setEnabled(false);
+    setActive(true);
+    expect(reads).toBe(0);
+    setEnabled(true);
+    expect(reads).toBeGreaterThan(0);
+  });
+});
