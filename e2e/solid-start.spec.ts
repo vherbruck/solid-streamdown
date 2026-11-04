@@ -23,6 +23,27 @@ test.describe("SolidStart example (server rendering and hydration)", () => {
     expect(errors.filter((error) => !error.includes("Failed to load resource"))).toEqual([]);
   });
 
+  test("hydrates the Kobalte controls", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto("/kobalte");
+    await expect(page.locator("h1")).toHaveText("Kobalte controls");
+
+    await page.locator('button[data-streamdown="link"]').click();
+    await expect(page.getByRole("dialog", { name: "Open external link?" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    await page.locator('button[title="Download table"]').focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menuitem", { name: "CSV", exact: true })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toBeHidden();
+
+    const text = (await page.locator("main").textContent()) ?? "";
+    expect(text.split("const answer = 42;").length - 1).toBe(1);
+    expect(text.split("Alice").length - 1).toBe(1);
+    expect(errors).toEqual([]);
+  });
+
   test("streams a reply after hydration, once", async ({ page }) => {
     const errors = watchErrors(page);
     await page.goto("/stream");

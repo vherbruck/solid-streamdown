@@ -8,8 +8,10 @@
     "preview": "vite preview --port 4173 --strictPort"
   },
   "dependencies": {
+    "@kobalte/core": "0.13.14",
     "@solid-streamdown/cjk": "workspace:*",
     "@solid-streamdown/code": "workspace:*",
+    "@solid-streamdown/kobalte": "workspace:*",
     "@solid-streamdown/math": "workspace:*",
     "@solid-streamdown/mermaid": "workspace:*",
     "katex": "^0.16.27",

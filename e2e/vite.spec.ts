@@ -50,6 +50,46 @@ test.describe("Vite example (client rendering)", () => {
     await expect(section.locator('[data-streamdown="table-wrapper"] button[title="Copy table"]')).toBeVisible();
   });
 
+  test("drives the Kobalte controls from the keyboard", async ({ context, page }) => {
+    const errors = watchErrors(page);
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.goto("/#fixtures/kobalte");
+    const section = page.locator('[data-example="fixtures/kobalte"]');
+    await section.scrollIntoViewIfNeeded();
+
+    // A menu opened from the keyboard focuses its first item; the arrow keys
+    // move through the items and Enter runs one.
+    await section.locator('button[title="Copy table"]').focus();
+    await page.keyboard.press("Enter");
+    const menu = page.getByRole("menu");
+    await expect(menu).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Markdown", exact: true })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(menu.getByRole("menuitem", { name: "CSV", exact: true })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(menu).toBeHidden();
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("Name,Age\nAlice,30\nBob,25");
+
+    // The link prompt is a named dialog that keeps focus inside it.
+    await section.locator('button[data-streamdown="link"]').click();
+    const dialog = page.getByRole("dialog", { name: "Open external link?" });
+    await expect(dialog).toBeVisible();
+    for (let step = 0; step < 6; step++) {
+      await page.keyboard.press("Tab");
+      expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+    }
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+
+    // Fullscreen opens as a dialog and gives the page its scrolling back.
+    await section.locator('button[title="View fullscreen"]').click();
+    await expect(page.locator('[data-streamdown="table-fullscreen"]')).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator('[data-streamdown="table-fullscreen"]')).toBeHidden();
+    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).not.toBe("hidden");
+    expect(errors).toEqual([]);
+  });
+
   test("streams a reply and settles its animation", async ({ page }) => {
     await page.goto("/#fixtures/streaming");
     const section = page.locator('[data-example="fixtures/streaming"]');

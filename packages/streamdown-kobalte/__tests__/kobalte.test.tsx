@@ -126,5 +126,11 @@ describe("overlays", () => {
       return element as HTMLElement;
     });
     expect(dialog.querySelector('[data-streamdown="link-safety-modal"]')).not.toBeNull();
+
+    // Focus is trapped inside the panel, which stops keydown from bubbling.
+    const close = dialog.querySelector('button[title="Close"]') as HTMLElement;
+    close.focus();
+    fireEvent.keyDown(close, { key: "Escape" });
+    await waitFor(() => expect(document.querySelector('[data-streamdown="link-safety-modal"]')).toBeNull());
   });
 });

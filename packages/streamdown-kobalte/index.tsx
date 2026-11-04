@@ -70,8 +70,22 @@ const Overlay: Component<UiOverlayProps> = (props) => {
     >
       <KDialog.Portal mount={portal()}>
         {/* The control's own full-screen container is the visible dialog;
-            this element adds the role, name and focus trap around it. */}
-        <KDialog.Content aria-label={props.label} style={{ display: "contents" }}>
+            this element adds the role, name and focus trap around it. The
+            link-safety panel stops keydown from bubbling (upstream's markup),
+            which would hide Escape from Kobalte's document listener once focus
+            is trapped inside, so Escape is caught on the way down instead. */}
+        <KDialog.Content
+          aria-label={props.label}
+          // Kobalte's prop types omit Solid's namespaced event attributes.
+          {...{
+            "oncapture:keydown": (event: KeyboardEvent) => {
+              if (event.key === "Escape") {
+                props.onClose();
+              }
+            },
+          }}
+          style={{ display: "contents" }}
+        >
           {props.children}
         </KDialog.Content>
       </KDialog.Portal>
