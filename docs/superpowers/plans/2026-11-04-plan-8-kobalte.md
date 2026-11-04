@@ -91,7 +91,7 @@ Exports `kobalteUi: UiPrimitives`.
 
 1. **Primitive shapes (core, no public change yet).**
    - `Menu`'s trigger props, `positionClass`/`panelClass`, `MenuItem` and `Overlay`'s `label`.
-   - Update the five menu and three overlay call sites.
+   - Update the three menu call sites (table copy, table download, Mermaid download) and the three overlays (table and Mermaid fullscreen, link safety).
    - Tests:
      - every existing test passes unchanged, since the default DOM is identical;
      - `ui-context.test.tsx` covers `MenuItem` and the trigger props.

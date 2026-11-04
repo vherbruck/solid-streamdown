@@ -9,7 +9,7 @@ import {
   useUi,
 } from "../lib/ui-context";
 
-const { Menu, Overlay } = defaultUiPrimitives;
+const { Menu, MenuItem, Overlay } = defaultUiPrimitives;
 
 afterEach(() => {
   document.body.style.overflow = "";
@@ -23,8 +23,8 @@ describe("Menu", () => {
         <span data-testid="outside">outside</span>
         <Menu
           panelClass="panel"
-          trigger={({ open, toggle }) => (
-            <button data-open={open()} data-testid="trigger" onClick={toggle} type="button">
+          trigger={({ open, props }) => (
+            <button {...props} data-open={open()} data-testid="trigger" type="button">
               t
             </button>
           )}
@@ -83,6 +83,68 @@ describe("Menu", () => {
     ));
     expect(wrapper?.className).toBe("relative");
   });
+
+  it("puts the position classes before the panel classes", () => {
+    const { getByTestId } = render(() => (
+      <Menu
+        panelClass="look"
+        positionClass="place"
+        trigger={({ props }) => (
+          <button {...props} data-testid="trigger" type="button">
+            t
+          </button>
+        )}
+      >
+        {() => <span data-testid="item">i</span>}
+      </Menu>
+    ));
+    fireEvent.click(getByTestId("trigger"));
+    expect(getByTestId("item").parentElement?.className).toBe("place look");
+  });
+
+  it("gives the trigger only a click handler, so its DOM is the caller's", () => {
+    let triggerProps: Record<string, unknown> | undefined;
+    render(() => (
+      <Menu
+        trigger={({ props }) => {
+          triggerProps = props as Record<string, unknown>;
+          return <button type="button">t</button>;
+        }}
+      >
+        {() => null}
+      </Menu>
+    ));
+    expect(Object.keys(triggerProps ?? {})).toEqual(["onClick"]);
+  });
+});
+
+describe("MenuItem", () => {
+  it("renders a type=button element that runs onSelect", () => {
+    const onSelect = vi.fn();
+    const { getByRole } = render(() => (
+      <MenuItem aria-label="pick" class="item" onSelect={onSelect} title="Pick">
+        Pick
+      </MenuItem>
+    ));
+    const item = getByRole("button", { name: "pick" });
+    expect(item.getAttribute("type")).toBe("button");
+    expect(item.className).toBe("item");
+    expect(item.getAttribute("title")).toBe("Pick");
+    fireEvent.click(item);
+    expect(onSelect).toHaveBeenCalledOnce();
+  });
+
+  it("renders through the current Button", () => {
+    const CustomButton: Component<ButtonProps> = (props) => (
+      <button data-custom="" type="button" {...props} />
+    );
+    const { container } = render(() => (
+      <UiContext.Provider value={{ ...defaultUiPrimitives, Button: CustomButton }}>
+        <MenuItem onSelect={() => undefined}>Pick</MenuItem>
+      </UiContext.Provider>
+    ));
+    expect(container.querySelector("button[data-custom]")?.textContent).toBe("Pick");
+  });
 });
 
 describe("Overlay", () => {
@@ -104,6 +166,21 @@ describe("Overlay", () => {
     setOpen(false);
     expect(target.querySelector("[data-testid='content']")).toBeNull();
     expect(document.body.style.overflow).toBe("");
+    target.remove();
+  });
+
+  it("ignores its label, since the content names itself", () => {
+    const target = document.createElement("div");
+    document.body.append(target);
+    render(() => (
+      <StreamdownContext.Provider value={{ ...defaultStreamdownContext, portal: target }}>
+        <Overlay label="Name" onClose={() => undefined} open>
+          <div data-testid="content">c</div>
+        </Overlay>
+      </StreamdownContext.Provider>
+    ));
+    expect(target.querySelector("[data-testid='content']")).not.toBeNull();
+    expect(target.querySelector("[aria-label], [role]")).toBeNull();
     target.remove();
   });
 

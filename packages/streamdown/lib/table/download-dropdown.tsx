@@ -147,19 +147,20 @@ export const TableDownloadDropdown = (props: TableDownloadDropdownProps) => {
   return (
     <ui.Menu
       panelClass={cn(
-        "absolute end-0 top-full z-20 mt-1 min-w-[120px] overflow-hidden rounded-md border border-border bg-background shadow-lg"
+        "min-w-[120px] overflow-hidden rounded-md border border-border bg-background shadow-lg"
       )}
+      positionClass={cn("absolute end-0 top-full z-20 mt-1")}
       ref={(element) => {
         dropdown = element;
       }}
-      trigger={({ toggle }) => (
+      trigger={({ props: trigger }) => (
         <ui.Button
+          {...trigger}
           class={cn(
             "cursor-pointer p-1 text-muted-foreground transition-all hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
             props.class
           )}
           disabled={context.isAnimating}
-          onClick={toggle}
           title={t.downloadTable}
           type="button"
         >
@@ -169,22 +170,20 @@ export const TableDownloadDropdown = (props: TableDownloadDropdownProps) => {
     >
       {(close) => (
         <>
-          <ui.Button
+          <ui.MenuItem
             class={itemClass()}
-            onClick={() => downloadTableData("csv", close)}
+            onSelect={() => downloadTableData("csv", close)}
             title={t.downloadTableAsCsv}
-            type="button"
           >
             {t.tableFormatCsv}
-          </ui.Button>
-          <ui.Button
+          </ui.MenuItem>
+          <ui.MenuItem
             class={itemClass()}
-            onClick={() => downloadTableData("markdown", close)}
+            onSelect={() => downloadTableData("markdown", close)}
             title={t.downloadTableAsMarkdown}
-            type="button"
           >
             {t.tableFormatMarkdown}
-          </ui.Button>
+          </ui.MenuItem>
         </>
       )}
     </ui.Menu>

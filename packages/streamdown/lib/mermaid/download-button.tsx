@@ -95,17 +95,18 @@ export const MermaidDownloadDropdown = (props: MermaidDownloadDropdownProps) => 
   return (
     <ui.Menu
       panelClass={cn(
-        "absolute end-0 top-full z-10 mt-1 min-w-[120px] overflow-hidden rounded-md border border-border bg-background shadow-lg"
+        "min-w-[120px] overflow-hidden rounded-md border border-border bg-background shadow-lg"
       )}
-      trigger={({ toggle }) => (
+      positionClass={cn("absolute end-0 top-full z-10 mt-1")}
+      trigger={({ props: trigger }) => (
         <ui.Button
+          {...trigger}
           aria-label={t.downloadDiagram}
           class={cn(
             "cursor-pointer p-1 text-muted-foreground transition-all hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
             props.class
           )}
           disabled={context.isAnimating}
-          onClick={toggle}
           title={t.downloadDiagram}
           type="button"
         >
@@ -115,33 +116,30 @@ export const MermaidDownloadDropdown = (props: MermaidDownloadDropdownProps) => 
     >
       {(close) => (
         <>
-          <ui.Button
+          <ui.MenuItem
             aria-label={t.downloadDiagramAsSvg}
             class={itemClass()}
-            onClick={() => downloadMermaid("svg", close)}
+            onSelect={() => downloadMermaid("svg", close)}
             title={t.downloadDiagramAsSvg}
-            type="button"
           >
             {t.mermaidFormatSvg}
-          </ui.Button>
-          <ui.Button
+          </ui.MenuItem>
+          <ui.MenuItem
             aria-label={t.downloadDiagramAsPng}
             class={itemClass()}
-            onClick={() => downloadMermaid("png", close)}
+            onSelect={() => downloadMermaid("png", close)}
             title={t.downloadDiagramAsPng}
-            type="button"
           >
             {t.mermaidFormatPng}
-          </ui.Button>
-          <ui.Button
+          </ui.MenuItem>
+          <ui.MenuItem
             aria-label={t.downloadDiagramAsMmd}
             class={itemClass()}
-            onClick={() => downloadMermaid("mmd", close)}
+            onSelect={() => downloadMermaid("mmd", close)}
             title={t.downloadDiagramAsMmd}
-            type="button"
           >
             {t.mermaidFormatMmd}
-          </ui.Button>
+          </ui.MenuItem>
         </>
       )}
     </ui.Menu>

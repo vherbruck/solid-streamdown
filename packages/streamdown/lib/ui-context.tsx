@@ -7,6 +7,7 @@ import {
   onCleanup,
   onMount,
   Show,
+  splitProps,
   useContext,
 } from "solid-js";
 import { isServer, Portal } from "solid-js/web";
@@ -25,30 +26,63 @@ import { StreamdownContext } from "./streamdown-context";
 
 export type ButtonProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
+/**
+ * Props for the element that opens a menu. The trigger spreads them onto its
+ * `Button`, before its own attributes.
+ */
+export type MenuTriggerProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+
 export interface MenuProps {
-  /** Classes for the panel that holds the items. */
+  /**
+   * Classes that place the panel in flow, under the trigger. A menu that
+   * positions its panel itself (in a portal, say) ignores them.
+   */
+  positionClass?: string;
+  /** Classes for the panel's appearance. */
   panelClass?: string;
-  /** Receives the wrapper element, which stays in place next to the trigger. */
+  /** Receives an element that stays in place next to the trigger. */
   ref?: (element: HTMLElement) => void;
   /** Renders the button that opens and closes the menu. */
-  trigger: (state: { open: Accessor<boolean>; toggle: () => void }) => JSX.Element;
+  trigger: (state: { open: Accessor<boolean>; props: MenuTriggerProps }) => JSX.Element;
   /** Renders the items. Call `close` after an item has done its work. */
   children: (close: () => void) => JSX.Element;
 }
 
+export interface MenuItemProps {
+  /** Runs when the item is chosen. */
+  onSelect: () => void;
+  class?: string;
+  title?: string;
+  "aria-label"?: string;
+  disabled?: boolean;
+  children?: JSX.Element;
+}
+
 export interface OverlayProps {
   open: boolean;
+  /** Dismisses the overlay. It may be called more than once per dismissal. */
   onClose: () => void;
+  /** The overlay's accessible name. */
+  label?: string;
   children: JSX.Element;
 }
 
 export interface UiPrimitives {
   Button: Component<ButtonProps>;
   Menu: Component<MenuProps>;
+  MenuItem: Component<MenuItemProps>;
   Overlay: Component<OverlayProps>;
 }
 
 const DefaultButton: Component<ButtonProps> = (props) => <button type="button" {...props} />;
+
+// Renders through the current Button, so replacing only Button restyles the
+// menu items too.
+const DefaultMenuItem: Component<MenuItemProps> = (props) => {
+  const ui = useUi();
+  const [local, rest] = splitProps(props, ["onSelect"]);
+  return <ui.Button type="button" {...rest} onClick={() => local.onSelect()} />;
+};
 
 const DefaultMenu: Component<MenuProps> = (props) => {
   const cn = useCn();
@@ -76,9 +110,11 @@ const DefaultMenu: Component<MenuProps> = (props) => {
         props.ref?.(element);
       }}
     >
-      {props.trigger({ open, toggle })}
+      {props.trigger({ open, props: { onClick: toggle } })}
       <Show when={open()}>
-        <div class={props.panelClass}>{props.children(close)}</div>
+        <div class={[props.positionClass, props.panelClass].filter(Boolean).join(" ")}>
+          {props.children(close)}
+        </div>
       </Show>
     </div>
   );
@@ -111,6 +147,7 @@ const DefaultOverlay: Component<OverlayProps> = (props) => (
 export const defaultUiPrimitives: UiPrimitives = {
   Button: DefaultButton,
   Menu: DefaultMenu,
+  MenuItem: DefaultMenuItem,
   Overlay: DefaultOverlay,
 };
 

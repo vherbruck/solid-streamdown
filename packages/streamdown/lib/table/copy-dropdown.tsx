@@ -87,19 +87,20 @@ export const TableCopyDropdown = (props: TableCopyDropdownProps) => {
   return (
     <ui.Menu
       panelClass={cn(
-        "absolute end-0 top-full z-20 mt-1 min-w-[120px] overflow-hidden rounded-md border border-border bg-background shadow-lg"
+        "min-w-[120px] overflow-hidden rounded-md border border-border bg-background shadow-lg"
       )}
+      positionClass={cn("absolute end-0 top-full z-20 mt-1")}
       ref={(element) => {
         dropdown = element;
       }}
-      trigger={({ toggle }) => (
+      trigger={({ props: trigger }) => (
         <ui.Button
+          {...trigger}
           class={cn(
             "cursor-pointer p-1 text-muted-foreground transition-all hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
             props.class
           )}
           disabled={context.isAnimating}
-          onClick={toggle}
           title={t.copyTable}
           type="button"
         >
@@ -115,30 +116,27 @@ export const TableCopyDropdown = (props: TableCopyDropdownProps) => {
     >
       {(close) => (
         <>
-          <ui.Button
+          <ui.MenuItem
             class={itemClass()}
-            onClick={() => copyTableData("md", close)}
+            onSelect={() => copyTableData("md", close)}
             title={t.copyTableAsMarkdown}
-            type="button"
           >
             {t.tableFormatMarkdown}
-          </ui.Button>
-          <ui.Button
+          </ui.MenuItem>
+          <ui.MenuItem
             class={itemClass()}
-            onClick={() => copyTableData("csv", close)}
+            onSelect={() => copyTableData("csv", close)}
             title={t.copyTableAsCsv}
-            type="button"
           >
             {t.tableFormatCsv}
-          </ui.Button>
-          <ui.Button
+          </ui.MenuItem>
+          <ui.MenuItem
             class={itemClass()}
-            onClick={() => copyTableData("tsv", close)}
+            onSelect={() => copyTableData("tsv", close)}
             title={t.copyTableAsTsv}
-            type="button"
           >
             {t.tableFormatTsv}
-          </ui.Button>
+          </ui.MenuItem>
         </>
       )}
     </ui.Menu>

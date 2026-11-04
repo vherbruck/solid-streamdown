@@ -36,7 +36,7 @@ export const LinkSafetyModal = (props: LinkSafetyModalProps) => {
   };
 
   return (
-    <ui.Overlay onClose={() => props.onClose()} open={props.isOpen}>
+    <ui.Overlay label={t.openExternalLink} onClose={() => props.onClose()} open={props.isOpen}>
       {/* biome-ignore lint/a11y/useSemanticElements: "div is used as a backdrop overlay" */}
       <div
         class={cn(

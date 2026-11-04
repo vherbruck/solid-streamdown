@@ -82,7 +82,11 @@ export const MermaidFullscreenButton = (props: MermaidFullscreenButtonProps) => 
         <Dynamic aria-hidden="true" component={icons.Maximize2Icon} size={14} />
       </ui.Button>
 
-      <ui.Overlay onClose={() => setIsFullscreen(false)} open={isFullscreen()}>
+      <ui.Overlay
+        label={t.viewFullscreen}
+        onClose={() => setIsFullscreen(false)}
+        open={isFullscreen()}
+      >
         {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: "div is used as a backdrop overlay, not a button" */}
         <div
           aria-label={t.viewFullscreen}

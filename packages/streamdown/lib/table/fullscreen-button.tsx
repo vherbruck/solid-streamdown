@@ -55,7 +55,7 @@ export const TableFullscreenButton = (props: TableFullscreenButtonProps) => {
         <Dynamic component={icons.Maximize2Icon} size={14} />
       </ui.Button>
 
-      <ui.Overlay onClose={handleClose} open={isFullscreen()}>
+      <ui.Overlay label={t.viewFullscreen} onClose={handleClose} open={isFullscreen()}>
         {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: "dialog overlay needs click-to-dismiss" */}
         <div
           aria-label={t.viewFullscreen}
