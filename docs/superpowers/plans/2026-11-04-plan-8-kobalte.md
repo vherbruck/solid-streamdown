@@ -2,7 +2,16 @@
 
 > **For agentic workers:** execute task by task. Each task ends green (`bun run typecheck && bun run build && bun run test && bun run docs:check && bun run --filter solid-streamdown test:hydration`, plus `bun run test:e2e` for tasks that touch the examples) and with one commit, made only after those pass.
 
-**Status:** Planned 2026-11-04.
+**Status:** Done 2026-11-04.
+
+**Changes made during execution:**
+- **`ui` is read once,** when `Streamdown` is created. As a live value, it made every reactive scope that had rendered a control depend on `ui`, so a change recreated some controls and not others.
+- **`MenuItem`'s default renders through the current `Button`,** so replacing only `Button` still restyles the menu items.
+- **`usePortalTarget` lives in `lib/ui-context.tsx`.** `StreamdownContext` was already exported, as upstream exports it.
+- **Panel stacking:** the Kobalte menu panel sets `z-index: 50` inline instead of using a class, so the package needs no Tailwind `@source` line.
+- **Escape in the adapter:** the adapter's dialog catches Escape in the capture phase. The link-safety panel stops `keydown` from bubbling (upstream's markup), and once Kobalte traps focus inside it, Escape never reached Kobalte's document listener. The Playwright test found this.
+- **Changesets config:** `onlyUpdatePeerDependentsWhenOutOfRange`, so a core release no longer forces a major release of the adapter, which has core as a peer dependency.
+- **Versioning:** the adapter joins the 2.0 beta at `0.1.0-beta.0`, and the `ui` prop is folded into the 2.0 changelog. Nothing had been published yet, so merging still publishes directly.
 
 **Goal:**
 - Make the primitives every built-in control renders through public. Apps can then give Streamdown's buttons, menus and dialogs their own design system's behavior.

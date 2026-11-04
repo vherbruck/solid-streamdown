@@ -99,4 +99,13 @@ Done 2026-11-03 (plan 9): all 25 pages are in `docs/guide`, every sample is in `
 
 ## Plan 8 (Kobalte adapter)
 
-- Controls render through `Button`, `Menu` and `Overlay` from `lib/ui-context.tsx` (`UiContext`), which is not exported yet. Plan 8 decides its public shape.
+Done 2026-11-04 (plan 8):
+- The `ui` prop replaces the `Button`, `Menu`, `MenuItem` and `Overlay` primitives.
+- `@solid-streamdown/kobalte` implements them with Kobalte 0.13.
+- `docs/guide/ui-primitives.md` documents both.
+
+Notes for later:
+
+- **Escape with the default overlay:** after Tab moves focus into the link-safety panel, Escape does not close it. The panel stops `keydown` from bubbling, as upstream's does, so upstream behaves the same. The Kobalte adapter works around this (plan 8, Changes).
+- **Kobalte 2.0:** revisit when it is stable. 0.13 ships only client builds plus `solid` JSX, so plain Node cannot server-render the adapter; 2.0 may change that.
+- **Publishing the adapter:** the `NPM_TOKEN` grant for `@solid-streamdown` (plan 7, Owner steps) covers it.
