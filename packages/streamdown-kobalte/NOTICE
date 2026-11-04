@@ -1,0 +1,7 @@
+@solid-streamdown/kobalte
+Copyright 2026 the solid-streamdown authors
+
+This product has no upstream counterpart. It renders the controls of
+solid-streamdown, a SolidJS port of Vercel's Streamdown (Copyright 2023
+Vercel, Inc., Apache License 2.0, https://github.com/vercel/streamdown),
+with Kobalte (https://kobalte.dev, MIT License).

@@ -6,11 +6,13 @@
     "@solid-streamdown/cjk": "1.0.3",
     "@solid-streamdown/code": "1.0.0",
     "@solid-streamdown/math": "1.0.2",
-    "@solid-streamdown/mermaid": "1.0.2"
+    "@solid-streamdown/mermaid": "1.0.2",
+    "@solid-streamdown/kobalte": "0.0.0"
   },
   "changesets": [
     "solid-streamdown-cjk",
     "solid-streamdown-code",
+    "solid-streamdown-kobalte",
     "solid-streamdown-math",
     "solid-streamdown-mermaid",
     "streamdown-2-0"
