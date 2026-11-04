@@ -44,15 +44,22 @@ Done 2026-11-03 (plan 6): `@solid-streamdown/math` and `@solid-streamdown/cjk` a
 
 ## Plan 7 (release)
 
-Done in plan 9 (2026-11-03): the README is Apache-2.0 and carries the security notes (R9/R10: removing rehype-sanitize exposes `srcdoc`, `iframe`, `object`, `embed` and SVG-animate vectors, as with React; R25: components rendering raw-text elements own their escaping). Every package has a README in its `files`. CI pins Bun 1.4.3. The SolidStart example compiles the package's `solid`-condition JSX in SSR and DOM modes and is smoke-tested in Chromium, which covers the JSX-build smoke test. It caught a hydration bug the built-output check missed.
+Done 2026-11-04 (plan 7), apart from the owner steps below. Done earlier in plan 9 (2026-11-03): the README is Apache-2.0 and carries the security notes (R9/R10: removing rehype-sanitize exposes `srcdoc`, `iframe`, `object`, `embed` and SVG-animate vectors, as with React; R25: components rendering raw-text elements own their escaping). Every package has a README in its `files`. CI pins Bun 1.4.3. The SolidStart example compiles the package's `solid`-condition JSX in SSR and DOM modes and is smoke-tested in Chromium, which covers the JSX-build smoke test. It caught a hydration bug the built-output check missed.
 
 Still open:
 
 - **Dropped React-only tests:** the plan 2 port dropped upstream tests that build React element trees by hand. These are three footnote describes in `coverage-final.test.tsx`, listed in that file, and the React-element children case. They need no Solid port.
-- **Packaging:**
-  - Rewrite `release.yml` for multi-package Changesets publishing. It still publishes from the private root and runs a script that does not exist.
-  - The `@solid-streamdown` npm org must exist, with the release token granted (spec, Constraints).
-  - The plugin builds warn that the `"use client"` directive was ignored. Upstream's do too; drop the directive if the warning is unwanted.
+- ~~**Packaging**~~ (done in plan 7):
+  - The release is a job in `ci.yml` (Changesets action, after every check), and `release.yml` is gone.
+  - The packages are versioned for the 2.0 beta, and the `"use client"` directive stays verbatim.
+  - **Owner steps still open:**
+    - create the `@solid-streamdown` npm org;
+    - grant `NPM_TOKEN` that scope;
+    - allow Actions to create PRs;
+    - merge to `main`. The merge publishes the beta.
+- **Leaving the beta:**
+  - Run `bunx changeset pre exit`, add a changeset, and merge the resulting Version Packages PR. That publishes 2.0.0 as `latest`.
+  - Remove the `@beta` install notes from `README.md`, `packages/*/README.md`, and the getting-started, usage and migrate guide pages.
 - ~~**Hydration harness**~~ (done in plan 7):
   - R4: the hydration check runs it (Vitest cannot load both builds); the skip is gone.
   - R19: accepted as is (plan 7, Decisions).

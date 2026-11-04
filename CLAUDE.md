@@ -61,6 +61,7 @@ Run from the repo root:
 - `bun run docs:check` — every TS/TSX sample in `docs/guide` matches its file in `examples/vite/src/snippets` (`bun run docs:sync` copies the files into the pages)
 - `bun run test:e2e` — Playwright smoke tests of both example apps (after `bun run build`)
 - `bun run --filter solid-streamdown test:hydration` — server render and hydrate the built package
+- `bun run changeset` — add a changeset for any change to a published package. Releases run from CI: merging to `main` opens or updates the Version Packages PR, and merging that PR publishes. The packages are in Changesets pre mode (`beta`) until 2.0 is final.
 
 ## Documentation
 

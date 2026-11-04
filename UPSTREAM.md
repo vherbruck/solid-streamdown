@@ -13,6 +13,11 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | @solid-streamdown/math | @streamdown/math 1.0.3 | c5e44d8 |
 | @solid-streamdown/cjk | @streamdown/cjk 1.0.4 | c5e44d8 |
 
+**Versions.**
+- Each plugin's first release takes its upstream version (the 2.0 beta publishes them as `-beta.N` prereleases). From then on, versions follow our own changesets.
+- The core is `solid-streamdown` 2.x, matching Streamdown's major version. Its minor and patch numbers are independent of upstream's.
+- **Syncing:** when you sync to a new upstream release, record the upstream version in the table above. Do not copy upstream's version into `package.json`.
+
 ## Deviations
 
 | Area | Upstream | solid-streamdown |

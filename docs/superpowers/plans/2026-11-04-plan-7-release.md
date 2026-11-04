@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task. Each task ends green (`bun run typecheck && bun run build && bun run test && bun run docs:check && bun run --filter solid-streamdown test:hydration`) and with one commit, made only after those pass.
 
-**Status:** In progress, 2026-11-04.
+**Status:** Done 2026-11-04, apart from the owner steps below; publishing happens when this branch merges to `main`.
 
 **Goal:** make the five packages publishable from CI with Changesets, and get the first release (a 2.0 beta) ready to publish when this branch merges to `main`.
 
@@ -80,5 +80,5 @@
 
 - `bun run typecheck && bun run build && bun run test && bun run docs:check && bun run test:e2e && bun run --filter solid-streamdown test:hydration` exit 0.
 - `npm pack --dry-run` in each package lists only `dist`, the license files, the README (and `styles.css` for core), at the beta version.
-- `bunx changeset status` reports no unreleased changesets.
+- Every changeset is consumed by pre mode (`.changeset/pre.json`), so the release job publishes rather than opening a Version Packages PR. `changeset status` cannot show this: it reports packages changed since `main` with no unconsumed changeset.
 - `actionlint` (or a YAML parse) accepts `ci.yml`.
