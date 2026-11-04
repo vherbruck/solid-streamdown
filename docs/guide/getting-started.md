@@ -21,6 +21,8 @@ bun add solid-streamdown
 npm i solid-streamdown
 ```
 
+> **2.0 is in beta.** Until it is final, add `@beta` to every package you install (`bun add solid-streamdown@beta @solid-streamdown/code@beta`). Without it, npm installs solid-streamdown 1.x, which this guide does not cover.
+
 Syntax highlighting, math, Mermaid diagrams and CJK support are separate packages; see [Usage](./usage.md#with-plugins) and [Plugins](./plugins/index.md).
 
 ## Tailwind CSS Configuration

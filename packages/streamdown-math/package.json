@@ -1,6 +1,6 @@
 {
   "name": "@solid-streamdown/math",
-  "version": "0.0.0",
+  "version": "1.0.3-beta.0",
   "description": "Math (KaTeX) plugin for solid-streamdown, a port of @streamdown/math",
   "type": "module",
   "license": "Apache-2.0",
@@ -10,8 +10,20 @@
     "url": "https://github.com/vherbruck/solid-streamdown",
     "directory": "packages/streamdown-math"
   },
-  "keywords": ["solid", "solidjs", "streamdown", "katex", "math", "latex"],
-  "files": ["dist", "LICENSE", "NOTICE", "README.md"],
+  "keywords": [
+    "solid",
+    "solidjs",
+    "streamdown",
+    "katex",
+    "math",
+    "latex"
+  ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

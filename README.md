@@ -23,9 +23,11 @@ Install only the plugins you use. None of them pulls in React; `solid-js` (≥ 1
 
 ## Quick start
 
+2.0 is in beta. Until it is final, install it and its plugins with the `@beta` tag; without the tag, npm installs solid-streamdown 1.x.
+
 ```bash
-bun add solid-streamdown
-# or: npm i solid-streamdown
+bun add solid-streamdown@beta
+# or: npm i solid-streamdown@beta
 ```
 
 With Tailwind v4, point Tailwind at the package's classes (path relative to your CSS file):

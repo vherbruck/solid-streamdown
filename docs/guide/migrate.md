@@ -55,6 +55,8 @@ bun add solid-streamdown
 npm i solid-streamdown
 ```
 
+> **2.0 is in beta.** Until it is final, add `@beta` to every package you install (`bun add solid-streamdown@beta @solid-streamdown/code@beta`). Without it, npm installs solid-streamdown 1.x, which this guide does not cover.
+
 ### 2. Update imports
 
 Replace the old renderer's import (for example `import ReactMarkdown from "react-markdown"`) with solid-streamdown:

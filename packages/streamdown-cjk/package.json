@@ -1,6 +1,6 @@
 {
   "name": "@solid-streamdown/cjk",
-  "version": "0.0.0",
+  "version": "1.0.4-beta.0",
   "description": "CJK text plugin for solid-streamdown, a port of @streamdown/cjk",
   "type": "module",
   "license": "Apache-2.0",
@@ -10,8 +10,21 @@
     "url": "https://github.com/vherbruck/solid-streamdown",
     "directory": "packages/streamdown-cjk"
   },
-  "keywords": ["solid", "solidjs", "streamdown", "cjk", "chinese", "japanese", "korean"],
-  "files": ["dist", "LICENSE", "NOTICE", "README.md"],
+  "keywords": [
+    "solid",
+    "solidjs",
+    "streamdown",
+    "cjk",
+    "chinese",
+    "japanese",
+    "korean"
+  ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

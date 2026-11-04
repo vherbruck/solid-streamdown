@@ -64,7 +64,7 @@
     },
     "packages/streamdown": {
       "name": "solid-streamdown",
-      "version": "1.0.1",
+      "version": "2.0.0-beta.0",
       "dependencies": {
         "clsx": "^2.1.1",
         "comma-separated-tokens": "^2.0.3",
@@ -102,7 +102,7 @@
     },
     "packages/streamdown-cjk": {
       "name": "@solid-streamdown/cjk",
-      "version": "0.0.0",
+      "version": "1.0.4-beta.0",
       "dependencies": {
         "mdast-util-gfm-autolink-literal": "^2.0.1",
         "remark-cjk-friendly": "^2.3.1",
@@ -120,14 +120,14 @@
     },
     "packages/streamdown-code": {
       "name": "@solid-streamdown/code",
-      "version": "0.0.0",
+      "version": "2.0.0-beta.0",
       "dependencies": {
         "shiki": "^4.4.3",
       },
     },
     "packages/streamdown-math": {
       "name": "@solid-streamdown/math",
-      "version": "0.0.0",
+      "version": "1.0.3-beta.0",
       "dependencies": {
         "katex": "^0.16.27",
         "rehype-katex": "^7.0.1",
@@ -139,7 +139,7 @@
     },
     "packages/streamdown-mermaid": {
       "name": "@solid-streamdown/mermaid",
-      "version": "0.0.0",
+      "version": "1.0.3-beta.0",
       "dependencies": {
         "mermaid": "^11.16.1",
       },

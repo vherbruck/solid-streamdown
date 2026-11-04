@@ -2,9 +2,11 @@
 
 Chinese, Japanese and Korean text handling for [solid-streamdown](https://github.com/vherbruck/solid-streamdown), a SolidJS port of [`@streamdown/cjk`](https://github.com/vercel/streamdown).
 
+While solid-streamdown 2.0 is in beta, install this package and `solid-streamdown` with the `@beta` tag:
+
 ```bash
-bun add @solid-streamdown/cjk
-# or: npm i @solid-streamdown/cjk
+bun add solid-streamdown@beta @solid-streamdown/cjk@beta
+# or: npm i solid-streamdown@beta @solid-streamdown/cjk@beta
 ```
 
 ```tsx

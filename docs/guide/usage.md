@@ -32,6 +32,8 @@ bun add @solid-streamdown/code @solid-streamdown/mermaid @solid-streamdown/math 
 npm i @solid-streamdown/code @solid-streamdown/mermaid @solid-streamdown/math @solid-streamdown/cjk
 ```
 
+> **2.0 is in beta.** Until it is final, add `@beta` to every package you install (`bun add solid-streamdown@beta @solid-streamdown/code@beta`). Without it, npm installs solid-streamdown 1.x, which this guide does not cover.
+
 Then import the plugins:
 
 <!-- example: examples/vite/src/snippets/usage/with-plugins.tsx -->

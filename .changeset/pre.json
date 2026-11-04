@@ -1,0 +1,18 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "solid-streamdown": "1.0.1",
+    "@solid-streamdown/cjk": "1.0.3",
+    "@solid-streamdown/code": "1.0.0",
+    "@solid-streamdown/math": "1.0.2",
+    "@solid-streamdown/mermaid": "1.0.2"
+  },
+  "changesets": [
+    "solid-streamdown-cjk",
+    "solid-streamdown-code",
+    "solid-streamdown-math",
+    "solid-streamdown-mermaid",
+    "streamdown-2-0"
+  ]
+}
