@@ -36,6 +36,7 @@ import type { Root } from "hast";
 import { hastTextContent, MappedElement, resolveTarget } from "./lib/hast-render";
 import { detectTextDirection } from "./lib/detect-direction";
 import { type IconMap, IconProvider } from "./lib/icon-context";
+import { type UiPrimitives, UiProvider } from "./lib/ui-context";
 import { hasIncompleteCodeFence, hasTable } from "./lib/incomplete-code-utils";
 import {
   type Components,
@@ -145,6 +146,15 @@ export {
   tableDataToTSV,
 } from "./lib/table/utils";
 export type { IconMap } from "./lib/icon-context";
+export type {
+  UiButtonProps,
+  UiMenuItemProps,
+  UiMenuProps,
+  UiMenuTriggerProps,
+  UiOverlayProps,
+  UiPrimitives,
+} from "./lib/ui-context";
+export { defaultUiPrimitives, usePortalTarget } from "./lib/ui-context";
 export type { StreamdownTranslations } from "./lib/translations-context";
 export { defaultTranslations } from "./lib/translations-context";
 
@@ -333,6 +343,13 @@ export type StreamdownProps = Options & {
   translations?: Partial<StreamdownTranslations>;
   /** Custom icons to override the default icons used in controls */
   icons?: Partial<IconMap>;
+  /**
+   * The button, menu, menu item and overlay that every control renders
+   * through. Entries left out keep the defaults, which produce upstream
+   * Streamdown's markup. Read once, when Streamdown is created. Not in
+   * upstream.
+   */
+  ui?: Partial<UiPrimitives>;
   /** Tailwind CSS prefix to prepend to all utility classes (e.g. `"tw"` produces `tw:flex` instead of `flex`). Enables Tailwind v4's `prefix()` support. Note: user-supplied `class` values are also prefixed. */
   prefix?: string;
   /** Show line numbers in code blocks. @default true */
@@ -574,6 +591,7 @@ const STREAMDOWN_PROP_NAMES = [
   "disableAutolinkProtocols",
   "translations",
   "icons",
+  "ui",
   "prefix",
   "onAnimationStart",
   "onAnimationEnd",
@@ -1016,6 +1034,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
         <StreamdownContext.Provider value={contextValue}>
           <PrefixContext.Provider value={cn}>
             <IconProvider icons={props.icons}>
+            <UiProvider ui={props.ui}>
             <div
               {...rootAttributes()}
               class={cn(
@@ -1089,6 +1108,7 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
                 </Markdown>
               </Show>
             </div>
+            </UiProvider>
             </IconProvider>
           </PrefixContext.Provider>
         </StreamdownContext.Provider>

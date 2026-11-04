@@ -3,7 +3,7 @@ import { type Component, createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
 import {
-  type ButtonProps,
+  type UiButtonProps,
   defaultUiPrimitives,
   UiContext,
   useUi,
@@ -135,7 +135,7 @@ describe("MenuItem", () => {
   });
 
   it("renders through the current Button", () => {
-    const CustomButton: Component<ButtonProps> = (props) => (
+    const CustomButton: Component<UiButtonProps> = (props) => (
       <button data-custom="" type="button" {...props} />
     );
     const { container } = render(() => (
@@ -231,7 +231,7 @@ describe("Overlay", () => {
 
 describe("UiContext", () => {
   it("lets a provider replace a primitive", () => {
-    const CustomButton: Component<ButtonProps> = (props) => (
+    const CustomButton: Component<UiButtonProps> = (props) => (
       <button data-custom="" type="button" {...props} />
     );
     const Consumer = () => {

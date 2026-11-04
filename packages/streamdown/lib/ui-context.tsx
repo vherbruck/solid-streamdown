@@ -8,6 +8,7 @@ import {
   onMount,
   Show,
   splitProps,
+  untrack,
   useContext,
 } from "solid-js";
 import { isServer, Portal } from "solid-js/web";
@@ -18,21 +19,21 @@ import { StreamdownContext } from "./streamdown-context";
 
 /**
  * The building blocks every built-in control renders through: a button, a
- * dropdown menu and a full-screen overlay. The defaults produce upstream
- * Streamdown's DOM. They live in a context so an adapter for a component
- * library (Kobalte, …) can replace them in one place. Not exported yet: the
- * public shape is decided with that adapter.
+ * dropdown menu and its items, and a full-screen overlay. The defaults produce
+ * upstream Streamdown's DOM. Streamdown's `ui` prop replaces any of them, so a
+ * component library (see `@solid-streamdown/kobalte`) or a design system can
+ * supply its own behavior and markup in one place.
  */
 
-export type ButtonProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+export type UiButtonProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
  * Props for the element that opens a menu. The trigger spreads them onto its
  * `Button`, before its own attributes.
  */
-export type MenuTriggerProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+export type UiMenuTriggerProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export interface MenuProps {
+export interface UiMenuProps {
   /**
    * Classes that place the panel in flow, under the trigger. A menu that
    * positions its panel itself (in a portal, say) ignores them.
@@ -43,12 +44,12 @@ export interface MenuProps {
   /** Receives an element that stays in place next to the trigger. */
   ref?: (element: HTMLElement) => void;
   /** Renders the button that opens and closes the menu. */
-  trigger: (state: { open: Accessor<boolean>; props: MenuTriggerProps }) => JSX.Element;
+  trigger: (state: { open: Accessor<boolean>; props: UiMenuTriggerProps }) => JSX.Element;
   /** Renders the items. Call `close` after an item has done its work. */
   children: (close: () => void) => JSX.Element;
 }
 
-export interface MenuItemProps {
+export interface UiMenuItemProps {
   /** Runs when the item is chosen. */
   onSelect: () => void;
   class?: string;
@@ -58,7 +59,7 @@ export interface MenuItemProps {
   children?: JSX.Element;
 }
 
-export interface OverlayProps {
+export interface UiOverlayProps {
   open: boolean;
   /** Dismisses the overlay. It may be called more than once per dismissal. */
   onClose: () => void;
@@ -68,23 +69,23 @@ export interface OverlayProps {
 }
 
 export interface UiPrimitives {
-  Button: Component<ButtonProps>;
-  Menu: Component<MenuProps>;
-  MenuItem: Component<MenuItemProps>;
-  Overlay: Component<OverlayProps>;
+  Button: Component<UiButtonProps>;
+  Menu: Component<UiMenuProps>;
+  MenuItem: Component<UiMenuItemProps>;
+  Overlay: Component<UiOverlayProps>;
 }
 
-const DefaultButton: Component<ButtonProps> = (props) => <button type="button" {...props} />;
+const DefaultButton: Component<UiButtonProps> = (props) => <button type="button" {...props} />;
 
 // Renders through the current Button, so replacing only Button restyles the
 // menu items too.
-const DefaultMenuItem: Component<MenuItemProps> = (props) => {
+const DefaultMenuItem: Component<UiMenuItemProps> = (props) => {
   const ui = useUi();
   const [local, rest] = splitProps(props, ["onSelect"]);
   return <ui.Button type="button" {...rest} onClick={() => local.onSelect()} />;
 };
 
-const DefaultMenu: Component<MenuProps> = (props) => {
+const DefaultMenu: Component<UiMenuProps> = (props) => {
   const cn = useCn();
   const [open, setOpen] = createSignal(false);
   let wrapper: HTMLDivElement | undefined;
@@ -122,7 +123,7 @@ const DefaultMenu: Component<MenuProps> = (props) => {
 
 // Mounted only while open, so the lock and listener live exactly as long as
 // the overlay is shown. Escape reaches every open overlay, as upstream.
-const OpenOverlay: Component<Omit<OverlayProps, "open">> = (props) => {
+const OpenOverlay: Component<Omit<UiOverlayProps, "open">> = (props) => {
   const context = useContext(StreamdownContext);
   lockBodyScroll();
   const handleEsc = (event: KeyboardEvent) => {
@@ -138,7 +139,7 @@ const OpenOverlay: Component<Omit<OverlayProps, "open">> = (props) => {
   return <Portal mount={resolvePortalTarget(context.portal)}>{props.children}</Portal>;
 };
 
-const DefaultOverlay: Component<OverlayProps> = (props) => (
+const DefaultOverlay: Component<UiOverlayProps> = (props) => (
   <Show when={!isServer && props.open}>
     <OpenOverlay onClose={() => props.onClose()}>{props.children}</OpenOverlay>
   </Show>
@@ -154,3 +155,32 @@ export const defaultUiPrimitives: UiPrimitives = {
 export const UiContext = createContext<UiPrimitives>(defaultUiPrimitives);
 
 export const useUi = (): UiPrimitives => useContext(UiContext);
+
+/**
+ * Supplies the primitives below it: `ui`'s entries, else the defaults. They
+ * are read once, when the provider is created. Controls look a primitive up
+ * as they render, often inside reactive scopes, so a live value would make
+ * each scope that rendered a control depend on `ui`, and a change would
+ * recreate some controls and not others.
+ */
+export const UiProvider = (props: { ui?: Partial<UiPrimitives>; children: JSX.Element }) => {
+  const ui = untrack(() => props.ui);
+  const value: UiPrimitives = { ...defaultUiPrimitives };
+  for (const key of Object.keys(defaultUiPrimitives) as (keyof UiPrimitives)[]) {
+    const primitive = ui?.[key];
+    if (primitive) {
+      (value as unknown as Record<string, unknown>)[key] = primitive;
+    }
+  }
+  return <UiContext.Provider value={value}>{props.children}</UiContext.Provider>;
+};
+
+/**
+ * The element Streamdown's `portal` prop names (default `document.body`), for
+ * primitives that portal their content. Call it in a component under
+ * Streamdown; read the accessor on the client only.
+ */
+export const usePortalTarget = (): (() => HTMLElement) => {
+  const context = useContext(StreamdownContext);
+  return () => resolvePortalTarget(context.portal);
+};
