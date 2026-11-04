@@ -107,6 +107,7 @@ Math rendering and CJK support require installing separate plugins. See [Math](.
 | `portal` | `HTMLElement \| null \| (() => HTMLElement \| null)` | `document.body` | DOM node (or getter) used as the portal target for built-in overlays. Useful for micro-frontends and scoped or prefixed CSS. |
 | `plugins` | `PluginConfig` | | Plugin configuration for math, Mermaid, code highlighting, and CJK support. See [Plugins](./plugins/index.md). |
 | `icons` | `Partial<IconMap>` | | Custom icons to override the defaults used in controls. See the `IconMap` interface for available keys. |
+| `ui` | `Partial<UiPrimitives>` | | The `Button`, `Menu`, `MenuItem` and `Overlay` every control renders through. Read once, when `Streamdown` is created. Not in Streamdown. See [UI Primitives](./ui-primitives.md). |
 | `translations` | `Partial<StreamdownTranslations>` | | Override default English labels for controls and modals. See [Internationalization](./internationalization.md). |
 | `caret` | `"block" \| "circle"` | | Show a caret indicator at the end of streaming content. See [Carets](./carets.md). |
 | `onAnimationStart` | `() => void` | | Called when `isAnimating` transitions from `false` to `true`. Suppressed in static mode. See [Animation](./animation.md). |
@@ -324,9 +325,9 @@ export default function Page() {
 ## Differences from Streamdown
 
 - **`className` → `class`**, and `components`, `BlockComponent`, `fallbackComponent` and `mermaid.errorComponent` take Solid components (see "Class prop" in [UPSTREAM.md](../../UPSTREAM.md)).
-- **`portal`:** upstream's example uses `useRef`; this page uses a signal accessor as the getter. Upstream's note that `portal`, `urlTransform` and `allowElement` are initializing props does not apply: every prop is reactive.
+- **`portal`:** upstream's example uses `useRef`; this page uses a signal accessor as the getter. Upstream's note that `portal`, `urlTransform` and `allowElement` are initializing props does not apply: every prop is reactive, except `ui`, which is ours.
 - **`onAnimationStart` / `onAnimationEnd`:** upstream's advice to memoize them with `useCallback` is dropped; Solid components don't re-render.
 - **`BlockComponent`:** receives reactive props and stays mounted per block index.
 - **Render guard:** the note under the default rehype plugins is ours; it describes the "Element safety" deviation.
-- **Added rows:** `remarkRehypeOptions`, the `data-*`/`aria-*` note, the image entry of `controls`, and the `singleTilde` and `inlineKatex` remend options. Upstream accepts all of them but this page didn't list them.
+- **Added rows:** `ui` (ours, read once), `remarkRehypeOptions`, the `data-*`/`aria-*` note, the image entry of `controls`, and the `singleTilde` and `inlineKatex` remend options. Upstream accepts all of them but this page didn't list them.
 - **"Drop-in replacement":** upstream says the element filtering props make Streamdown a drop-in replacement for react-markdown; solid-streamdown follows that API in Solid form (see [Migrate](./migrate.md)).

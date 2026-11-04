@@ -18,6 +18,7 @@ A SolidJS port of Vercel's [Streamdown](https://streamdown.ai/): a Markdown rend
 | [`@solid-streamdown/math`](https://github.com/vherbruck/solid-streamdown/tree/main/packages/streamdown-math) | Math (KaTeX) |
 | [`@solid-streamdown/mermaid`](https://github.com/vherbruck/solid-streamdown/tree/main/packages/streamdown-mermaid) | Mermaid diagrams |
 | [`@solid-streamdown/cjk`](https://github.com/vherbruck/solid-streamdown/tree/main/packages/streamdown-cjk) | Chinese, Japanese and Korean text handling |
+| [`@solid-streamdown/kobalte`](https://github.com/vherbruck/solid-streamdown/tree/main/packages/streamdown-kobalte) | Kobalte buttons, menus and dialogs for the controls |
 
 Install only the plugins you use. None of them pulls in React; `solid-js` (≥ 1.9) is a peer dependency of the core.
 

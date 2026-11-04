@@ -46,7 +46,7 @@ Mutable module state such as caches (`Map`s) is camelCase; `SCREAMING_SNAKE_CASE
 
 ## Layout
 
-Bun-workspace monorepo. The main package is `packages/streamdown` (`solid-streamdown`):
+Bun-workspace monorepo. The plugin packages are `packages/streamdown-{code,math,mermaid,cjk}` (ports) and `packages/streamdown-kobalte` (ours: Kobalte implementations of the `ui` primitives). The main package is `packages/streamdown` (`solid-streamdown`):
 `index.tsx`, `lib/…` and `__tests__/…` mirror upstream's paths. Upstream tracking and
 deviations are in `UPSTREAM.md`. Licensed Apache-2.0 (see `LICENSE`, `NOTICE`).
 

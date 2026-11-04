@@ -31,6 +31,7 @@ A SolidJS port of [Streamdown](https://streamdown.ai/): a streaming Markdown ren
 - [Interactivity](./interactivity.md): copy, download and fullscreen controls.
 - [Link Safety](./link-safety.md): the confirmation prompt for external links.
 - [Internationalization](./internationalization.md): UI labels and text direction.
+- [UI Primitives](./ui-primitives.md): your design system's, or Kobalte's, buttons, menus and dialogs in the controls.
 
 ## Security
 

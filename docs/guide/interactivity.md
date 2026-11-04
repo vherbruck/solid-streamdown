@@ -222,5 +222,5 @@ Solid's `<Portal>` puts each overlay inside a container `<div>` in the target, r
 - The copy-callback examples write to a signal instead of calling a `toast` library.
 - Streamdown's page says pan and zoom are enabled with the `panZoom` option. They are on by default, in Streamdown and here; the example shows `panZoom: false` instead.
 - Added: the `controls` summary table, the image control options, the table fullscreen button, the CSV note linking the known upstream risk, and the portal section.
-- `controls`, `portal` and every other `Streamdown` prop take effect when they change. In Streamdown they are left out of its memo comparator, so changing one alone does not re-render. See [UPSTREAM.md](../../UPSTREAM.md).
-- Overlays render through internal `Button`, `Menu` and `Overlay` primitives and Solid's `<Portal>`, which wraps them in a container `<div>`; the default DOM inside matches Streamdown's. See [UPSTREAM.md](../../UPSTREAM.md).
+- `controls`, `portal` and every other `Streamdown` prop except `ui` take effect when they change. In Streamdown they are left out of its memo comparator, so changing one alone does not re-render. See [UPSTREAM.md](../../UPSTREAM.md).
+- Controls render through `Button`, `Menu`, `MenuItem` and `Overlay` primitives that the `ui` prop replaces (see [UI Primitives](./ui-primitives.md)). Overlays use Solid's `<Portal>`, which wraps them in a container `<div>`; the default DOM inside matches Streamdown's. See [UPSTREAM.md](../../UPSTREAM.md).
