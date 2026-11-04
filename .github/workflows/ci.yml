@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,3 +49,49 @@ jobs:
           name: playwright-traces
           path: test-results
           retention-days: 7
+
+  # Runs only after every check above passed on a push to main. With unreleased
+  # changesets it opens or updates the "Version Packages" PR; otherwise it
+  # publishes every package whose version is not on npm yet. In Changesets pre
+  # mode (.changeset/pre.json) that publish goes to the pre tag, not `latest`.
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      # npm provenance
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+
+      # `changeset publish` runs npm. No registry-url here: the Changesets
+      # action writes ~/.npmrc from NPM_TOKEN.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run build
+
+      # changesets/action v1.9.0 (the line for Changesets CLI 2.x), pinned
+      # because this job holds the npm token.
+      - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d
+        with:
+          version: bun run version-packages
+          publish: bun run release
+          commit: "chore: version packages"
+          title: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

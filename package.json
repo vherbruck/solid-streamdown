@@ -9,7 +9,10 @@
     "test": "bun run --filter './packages/*' test && bun test ./scripts",
     "docs:check": "node scripts/check-docs.mjs",
     "test:e2e": "playwright test",
-    "docs:sync": "node scripts/check-docs.mjs --write"
+    "docs:sync": "node scripts/check-docs.mjs --write",
+    "changeset": "changeset",
+    "version-packages": "changeset version && bun install",
+    "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",

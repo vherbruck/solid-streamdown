@@ -1,5 +1,5 @@
 ---
-"@solid-streamdown/math": minor
+"@solid-streamdown/math": patch
 ---
 
-Initial release: ported from @streamdown/math 1.0.3
+First release: math (KaTeX) for solid-streamdown, a port of @streamdown/math 1.0.3. Its first version matches upstream's.

@@ -1,5 +1,5 @@
 ---
-"@solid-streamdown/mermaid": minor
+"@solid-streamdown/mermaid": patch
 ---
 
-Initial release: Mermaid diagrams for solid-streamdown, ported from @streamdown/mermaid 1.0.3
+First release: Mermaid diagrams for solid-streamdown, a port of @streamdown/mermaid 1.0.3. Its first version matches upstream's.
