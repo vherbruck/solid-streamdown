@@ -53,11 +53,11 @@ Still open:
   - Rewrite `release.yml` for multi-package Changesets publishing. It still publishes from the private root and runs a script that does not exist.
   - The `@solid-streamdown` npm org must exist, with the release token granted (spec, Constraints).
   - The plugin builds warn that the `"use client"` directive was ignored. Upstream's do too; drop the directive if the warning is unwanted.
-- **Hydration harness:**
-  - Un-skip the caret-suppression hydration assertion (R4).
-  - Revisit the one-time replacement of server text nodes at the first post-hydration update (R19).
-  - Make the hydration check append to the trailing block.
-  - Fix its failure labels.
+- ~~**Hydration harness**~~ (done in plan 7):
+  - R4: the hydration check runs it (Vitest cannot load both builds); the skip is gone.
+  - R19: accepted as is (plan 7, Decisions).
+  - The document fixture streams into its trailing block.
+  - Failures name the pass.
 - **Optional:** make `dir="auto"` detection run per block inside `Index`; today every block is re-detected on every token, the same as upstream.
 - **CI time:** the Playwright run takes about 4.5 minutes, mostly the gallery test walking 120 snippets. Split it per section if it becomes a bottleneck.
 

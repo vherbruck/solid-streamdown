@@ -253,15 +253,10 @@ describe("caret suppression", () => {
   });
 
   // The server-markup assertions live in caret-suppression.ssr.test.tsx.
-  describe("on the server", () => {
-    // plan 7: hydration harness. Server-renders the table document, hydrates
-    // it into a container, and checks that hydration reports no mismatch or
-    // recoverable error and that the table is still marked caret-suppressed.
-    // Task 11's hydration script covers the gate for plan 1.
-    it.skip("hydrates without a mismatch when the caret is suppressed", () => {
-      // needs server-render-then-hydrate
-    });
-  });
+  // Upstream's "hydrates without a mismatch when the caret is suppressed" runs
+  // in scripts/hydration-check.mjs ("Caret suppression across hydration"): it
+  // needs the server build and the client build, which one Vitest project
+  // cannot load together.
 
   it("renders a static document once on mount", () => {
     let renders = 0;

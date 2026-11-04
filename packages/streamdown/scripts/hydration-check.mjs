@@ -19,11 +19,12 @@ import { fileURLToPath } from "node:url";
 const SCRIPT = fileURLToPath(import.meta.url);
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
 
-const DOCUMENT = "# Hi\n\nSome **bold** text\n\n- a\n- b";
+// Streams into its trailing block, as a live reply does, then starts a new one.
+const DOCUMENT = "# Hi\n\n- a\n- b\n\nSome **bold** text";
 const DOCUMENT_UPDATES = [
-  "# Hi\n\nSome **bold** text and more\n\n- a\n- b",
-  "# Hi\n\nSome **bold** text and more still\n\n- a\n- b",
-  "# Hi\n\nSome **bold** text and more still\n\n- a\n- b\n\nA new paragraph",
+  "# Hi\n\n- a\n- b\n\nSome **bold** text and more",
+  "# Hi\n\n- a\n- b\n\nSome **bold** text and more still",
+  "# Hi\n\n- a\n- b\n\nSome **bold** text and more still\n\nA new paragraph",
 ];
 const TABLE = "| Name | Age |\n| --- | --- |\n| Alice | 30 |";
 const TABLE_THEN_PROSE = `${TABLE}\n\nText after the table`;
@@ -301,13 +302,14 @@ const runClient = async (dir, entry, solid) => {
   check(serverParagraph?.lastChild === serverTail, "the paragraph's server text node was not adopted");
   matchesFresh(docRoot, { children: DOCUMENT }, "after hydration");
 
-  // The first update after hydration takes over the server's text node; from
-  // then on the paragraph's tail node must stay the same node.
+  // The first update after hydration replaces the server's text node with the
+  // renderer's own (hydratingText in lib/hast-render.tsx: Solid keeps no handle
+  // to an adopted text node); from then on the tail node must stay the same.
   const tails = [];
   for (const [step, next] of DOCUMENT_UPDATES.entries()) {
     setMarkdown(next);
     const paragraph = docRoot.querySelector("p");
-    const expectedText = next.split("\n\n")[1].replaceAll("**", "");
+    const expectedText = next.split("\n\n")[2].replaceAll("**", "");
     check(paragraph === serverParagraph, `update ${step + 1}: the paragraph element was replaced`);
     check(paragraph?.textContent === expectedText, `update ${step + 1}: paragraph reads ${JSON.stringify(paragraph?.textContent)}, expected ${JSON.stringify(expectedText)}`);
     tails.push(paragraph?.lastChild);
@@ -512,10 +514,10 @@ const runClient = async (dir, entry, solid) => {
   finish(`hydration (dist/${entry})`);
 };
 
-const runChild = (args) => {
+const runChild = (label, args) => {
   const result = spawnSync(process.execPath, args, { stdio: "inherit" });
   if (result.status !== 0) {
-    printError(`hydration check failed: ${args.join(" ")} exited with ${result.status ?? result.signal}`);
+    printError(`hydration check failed in the ${label}: exit ${result.status ?? result.signal}`);
   }
   return result.status === 0;
 };
@@ -531,9 +533,16 @@ if (role === "server") {
   let ok;
   try {
     ok =
-      runChild([SCRIPT, "server", work]) &&
+      runChild("server render", [SCRIPT, "server", work]) &&
       CLIENT_PASSES.every(({ conditions, entry, solid }) =>
-        runChild([...conditions.map((c) => `--conditions=${c}`), SCRIPT, "client", work, entry, solid])
+        runChild(`client pass (${conditions.join(" + ")}, dist/${entry})`, [
+          ...conditions.map((c) => `--conditions=${c}`),
+          SCRIPT,
+          "client",
+          work,
+          entry,
+          solid,
+        ])
       );
   } finally {
     await rm(work, { force: true, recursive: true });
