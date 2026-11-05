@@ -10,6 +10,7 @@ export default function Page() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [
           harden,
           {

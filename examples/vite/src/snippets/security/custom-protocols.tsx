@@ -22,6 +22,7 @@ const AppLinks = () => (
     rehypePlugins={[
       defaultRehypePlugins.raw,
       [rehypeSanitize, schema],
+      defaultRehypePlugins.undoubleClobberPrefix,
       [
         harden,
         {

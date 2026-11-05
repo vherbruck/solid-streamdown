@@ -8,6 +8,7 @@ export default function Page() {
       rehypePlugins={[
         // Omit defaultRehypePlugins.raw to disable HTML
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         defaultRehypePlugins.harden,
       ]}
     >

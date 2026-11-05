@@ -177,6 +177,7 @@ export default function SecureChat() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [
           harden,
           {
@@ -239,5 +240,5 @@ const config: LinkSafetyConfig = {
 - `renderModal` returns a Solid `JSX.Element` instead of a `ReactNode`. It runs once per link with a props object of live getters, where Streamdown calls it on each render with fresh values.
 - The custom modal example uses `<Show>` and Solid's `<Portal>`, and calls `onClose` after `onConfirm`. Streamdown's page says `onConfirm` also closes the modal; in both libraries it only opens the link.
 - The built-in prompt renders through an internal overlay primitive and Solid's `<Portal>`, which wraps it in a container `<div>`. See [UPSTREAM.md](../../UPSTREAM.md).
-- The hardening example keeps `defaultRehypePlugins.sanitize` and sets `defaultOrigin`. Streamdown's version leaves out sanitize, which removes XSS protection, and omits `defaultOrigin`, without which `rehype-harden` throws when link prefixes are restricted. It also drops `allowedProtocols: ["https", "mailto"]`: `rehype-harden` always allows those, and matches entries with a trailing colon (`"mailto:"`), so the line changed nothing. See [Security](./security.md#restricting-protocols).
+- The hardening example keeps `defaultRehypePlugins.sanitize` (and `undoubleClobberPrefix` after it) and sets `defaultOrigin`. Streamdown's version leaves out sanitize, which removes XSS protection, and omits `defaultOrigin`, without which `rehype-harden` throws when link prefixes are restricted. It also drops `allowedProtocols: ["https", "mailto"]`: `rehype-harden` always allows those, and matches entries with a trailing colon (`"mailto:"`), so the line changed nothing. See [Security](./security.md#restricting-protocols).
 - The examples use a module-level Markdown string instead of a `content` prop.

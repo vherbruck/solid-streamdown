@@ -148,7 +148,7 @@ export default function CustomizePlugins() {
 }
 ```
 
-To change one default, rebuild the array around it. This keeps `raw` and `sanitize` and passes `rehype-harden` its own options:
+To change one default, rebuild the array around it. This keeps `raw`, `sanitize` and `undoubleClobberPrefix`, and passes `rehype-harden` its own options:
 
 <!-- example: examples/vite/src/snippets/plugins-index/harden-config.tsx -->
 ```tsx
@@ -173,6 +173,7 @@ export default function HardenConfig() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [harden, hardenOptions],
       ]}
     >
@@ -192,6 +193,7 @@ export default function HardenConfig() {
 | `defaultRemarkPlugins` | `codeMeta` | Keeps a code fence's meta string (`metastring`) on the `code` element |
 | `defaultRehypePlugins` | `raw` | `rehypeRaw` |
 | `defaultRehypePlugins` | `sanitize` | `[rehypeSanitize, schema]` |
+| `defaultRehypePlugins` | `undoubleClobberPrefix` | Keeps footnote ids and `#` links in step with the `user-content-` prefix that `sanitize` adds to ids |
 | `defaultRehypePlugins` | `harden` | `[harden, { /* config above */ }]` |
 
 > **Note:** The `allowedTags` prop extends the sanitize schema only while `rehypePlugins` is the default array. With your own array, pass a sanitize schema that allows those tags yourself.
@@ -212,4 +214,5 @@ The plugins are optimized for performance:
 - The default-configuration and customization samples are complete Solid components from `examples/vite` instead of JSX fragments. The custom plugin in the customization sample is a small heading-id plugin, where upstream uses the placeholders `myCustomPlugin` and `anotherPlugin`.
 - The "Accessing defaults" code listing is a table, and lists `codeMeta`, which `defaultRemarkPlugins` contains at upstream's commit but upstream's page leaves out.
 - Upstream says KaTeX CSS "is only loaded when math syntax is used"; neither package loads it, the app imports it, so that line describes the import instead.
+- The "Accessing defaults" table lists `undoubleClobberPrefix`, and the harden sample keeps it.
 - The note on `allowedTags` with custom plugin arrays is new; it describes behaviour shared with upstream.

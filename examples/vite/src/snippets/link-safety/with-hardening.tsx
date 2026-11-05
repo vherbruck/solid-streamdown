@@ -13,6 +13,7 @@ export default function SecureChat() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [
           harden,
           {

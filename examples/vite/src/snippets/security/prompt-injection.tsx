@@ -22,6 +22,7 @@ export function ChatMessage(props: { content: string; isAIGenerated: boolean }) 
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [harden, props.isAIGenerated ? strict : permissive],
       ]}
     >

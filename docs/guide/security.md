@@ -67,6 +67,7 @@ export default function Page() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [
           harden,
           {
@@ -86,6 +87,8 @@ export default function Page() {
 ```
 
 > **Note:** When overriding `rehypePlugins`, always include `defaultRehypePlugins.sanitize` (or your own sanitize step) to preserve XSS protection. The `rehypePlugins` prop **replaces** the entire default array; it does not merge.
+
+> **Note:** Put `defaultRehypePlugins.undoubleClobberPrefix` right after the sanitize step. Sanitizing prefixes every `id` with `user-content-`, so raw HTML ids cannot clobber globals such as `window.details`. This plugin removes the second prefix from footnote ids, which already have one, and points `#` links at the prefixed ids.
 
 This is useful for security-sensitive applications where you want to block schemes such as `tel:` or desktop app protocols. `javascript:` and `data:` links are blocked in every configuration.
 
@@ -112,6 +115,7 @@ const AppLinks = () => (
     rehypePlugins={[
       defaultRehypePlugins.raw,
       [rehypeSanitize, schema],
+      defaultRehypePlugins.undoubleClobberPrefix,
       [
         harden,
         {
@@ -148,6 +152,7 @@ export default function Page() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [
           harden,
           {
@@ -196,6 +201,7 @@ export default function Page() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [
           harden,
           {
@@ -265,6 +271,7 @@ export function ChatMessage(props: { content: string; isAIGenerated: boolean }) 
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [harden, props.isAIGenerated ? strict : permissive],
       ]}
     >
@@ -339,6 +346,7 @@ export default function Page() {
       rehypePlugins={[
         // Omit defaultRehypePlugins.raw to disable HTML
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         defaultRehypePlugins.harden,
       ]}
     >
@@ -454,7 +462,6 @@ solid-streamdown parses or serializes HTML in exactly three places, the same thr
 
 These behave as in Streamdown and will change together with it (see [UPSTREAM.md](../../UPSTREAM.md)):
 
-- The sanitize schema sets `clobberPrefix: ""`, so `id` and `name` attributes are not prefixed, which allows DOM clobbering.
 - CSV export does not escape spreadsheet formulas.
 - Links inside Mermaid diagrams skip the [link safety](./link-safety.md) prompt.
 
@@ -472,5 +479,6 @@ For advanced URL handling beyond what `urlTransform` and `rehype-harden` provide
   - `skipHtml` has no visible effect on Markdown HTML, with or without `rehype-raw`, so the `<Streamdown skipHtml>` example is dropped and the section explains what the prop does.
   - `data:` images are removed by the default sanitize schema, although the harden default allows them.
 - The prompt-injection example passes `content` and `isAIGenerated` as Solid props instead of destructuring them, and its strict config uses `allowedProtocols: []`.
+- The samples that rebuild `rehypePlugins` keep `undoubleClobberPrefix` after the sanitize step, and a note explains it. Streamdown's samples leave it out, which prefixes footnote ids twice and breaks their links.
 - The custom-tags example defines small `NoteBadge` and `UserMention` components and reads `props.note_id` / `props.user_id`.
 - The default `rehype-harden` options and the `defaultOrigin` / `allowDataImages` fragments are a table and `text` blocks instead of TypeScript fragments.

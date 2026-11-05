@@ -19,6 +19,7 @@ export default function HardenConfig() {
       rehypePlugins={[
         defaultRehypePlugins.raw,
         defaultRehypePlugins.sanitize,
+        defaultRehypePlugins.undoubleClobberPrefix,
         [harden, hardenOptions],
       ]}
     >
