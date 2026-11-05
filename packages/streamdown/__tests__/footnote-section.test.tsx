@@ -6,6 +6,7 @@
 import { render } from "@solidjs/testing-library";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import type { JSX } from "solid-js";
 import { describe, expect, it } from "vitest";
 import { components } from "../lib/components";
 import { Markdown } from "../lib/markdown";
@@ -113,5 +114,19 @@ describe("MemoParagraph block code unwrapping (line 864)", () => {
     const container = renderHtml('<p><code data-block="true">console.log("hello");</code></p>');
     expect(container.querySelector("p")).toBeNull();
     expect(container.querySelector("code")?.textContent).toBe('console.log("hello");');
+  });
+});
+
+// Not in upstream: an app can render the section component itself, with no
+// HAST node to filter.
+describe("section without a node", () => {
+  it("renders a footnotes section's children as given", () => {
+    const Section = components.section as (props: Record<string, unknown>) => JSX.Element;
+    const { container } = render(() => (
+      <Section data-footnotes="">
+        <p>Kept</p>
+      </Section>
+    ));
+    expect(container.querySelector("section[data-footnotes] p")?.textContent).toBe("Kept");
   });
 });

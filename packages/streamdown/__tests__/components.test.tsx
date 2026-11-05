@@ -148,6 +148,7 @@ describe("Markdown Components", () => {
       const span = container.querySelector("span");
       expect(span).toBeTruthy();
       expect(span?.className).toContain("font-semibold");
+      expect(span?.getAttribute("data-streamdown")).toBe("strong");
     });
 
     it("should render link with correct attributes and classes", () => {

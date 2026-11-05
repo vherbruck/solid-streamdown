@@ -4,7 +4,7 @@
  * Modified for SolidJS by the solid-streamdown authors.
  */
 import { render } from "@solidjs/testing-library";
-import type { Element } from "hast";
+import type { Element as HastElement } from "hast";
 import type { Component, JSX } from "solid-js";
 import { createSignal } from "solid-js";
 import { describe, expect, it } from "vitest";
@@ -225,7 +225,7 @@ describe("Markdown Component", () => {
     it("should pass node prop to custom components", () => {
       const CustomH1: Component<{
         children?: JSX.Element;
-        node?: Element;
+        node?: HastElement;
       }> = (props) => <h1 data-has-node={!!props.node}>{props.children}</h1>;
 
       const components: Components = {
@@ -703,6 +703,8 @@ code block
 
   describe("Processor cache identity", () => {
     it("different plugins with the same name never share a processor", () => {
+      // Each plugin is made once: a call inside the JSX would make a new one
+      // on every read of the prop.
       const makePlugin = (attribute: string) => {
         const plugin = () => (tree: any) => {
           for (const node of tree.children) {
@@ -715,12 +717,11 @@ code block
         return plugin;
       };
 
-      const first = render(() => (
-        <Markdown children="Hi" rehypePlugins={[makePlugin("data-a")]} />
-      ));
-      const second = render(() => (
-        <Markdown children="Hi" rehypePlugins={[makePlugin("data-b")]} />
-      ));
+      const pluginA = makePlugin("data-a");
+      const pluginB = makePlugin("data-b");
+
+      const first = render(() => <Markdown children="Hi" rehypePlugins={[pluginA]} />);
+      const second = render(() => <Markdown children="Hi" rehypePlugins={[pluginB]} />);
 
       const p1 = first.container.querySelector("p");
       const p2 = second.container.querySelector("p");
@@ -762,6 +763,18 @@ code block
       const cyclic = makeCyclic();
       const other = makeCyclic();
       expect(processorOptions(cyclic, cyclic, other)).toEqual([cyclic, other]);
+    });
+
+    it("keys symbol option values and symbol-keyed options by identity", () => {
+      const first = Symbol("mode");
+      const second = Symbol("mode");
+      expect(processorOptions(first, first, second)).toEqual([first, second]);
+      expect(processorOptions(Symbol.for("shared"), Symbol.for("shared"))).toEqual([
+        Symbol.for("shared"),
+      ]);
+      const withFirst = { [first]: 1 };
+      const withSecond = { [second]: 1 };
+      expect(processorOptions(withFirst, withSecond)).toEqual([withFirst, withSecond]);
     });
 
     it("keys a class-instance option value by identity", () => {
@@ -1083,18 +1096,18 @@ Let me know which you prefer!`;
   describe("defaultUrlTransform", () => {
     it("should pass through URLs unchanged", () => {
       expect(
-        defaultUrlTransform("http://example.com", "href", {} as Element)
+        defaultUrlTransform("http://example.com", "href", {} as HastElement)
       ).toBe("http://example.com");
       expect(
-        defaultUrlTransform("https://example.com", "href", {} as Element)
+        defaultUrlTransform("https://example.com", "href", {} as HastElement)
       ).toBe("https://example.com");
-      expect(defaultUrlTransform("/path/to/page", "href", {} as Element)).toBe(
+      expect(defaultUrlTransform("/path/to/page", "href", {} as HastElement)).toBe(
         "/path/to/page"
       );
-      expect(defaultUrlTransform("#section", "href", {} as Element)).toBe(
+      expect(defaultUrlTransform("#section", "href", {} as HastElement)).toBe(
         "#section"
       );
-      expect(defaultUrlTransform("?query=1", "href", {} as Element)).toBe(
+      expect(defaultUrlTransform("?query=1", "href", {} as HastElement)).toBe(
         "?query=1"
       );
     });

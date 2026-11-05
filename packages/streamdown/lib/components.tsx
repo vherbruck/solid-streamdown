@@ -614,11 +614,12 @@ const Section: Component<ElementProps> = (props) => {
     });
   });
   return (
-    <Show when={footnoteChildren()} fallback={
-      <Show when={!isFootnotes()}>
-        <section {...(rest as JSX.HTMLAttributes<HTMLElement>)}>{local.children}</section>
-      </Show>
-    }>
+    <Show
+      when={footnoteChildren()}
+      // Not footnotes, or rendered without a HAST node (directly, by an app):
+      // the children are rendered as given, unfiltered.
+      fallback={<section {...(rest as JSX.HTMLAttributes<HTMLElement>)}>{local.children}</section>}
+    >
       {(nodes) => (
         <Show when={nodes().length > 0}>
           <section {...(rest as JSX.HTMLAttributes<HTMLElement>)}>

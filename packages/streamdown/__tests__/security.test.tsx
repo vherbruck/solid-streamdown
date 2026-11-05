@@ -3,13 +3,12 @@ import type { Root } from "hast";
 import { createSignal } from "solid-js";
 import { visit } from "unist-util-visit";
 import { afterEach, describe, expect, it } from "vitest";
-import { type Components, defaultRehypePlugins, Streamdown } from "../index";
+import { defaultRehypePlugins, Streamdown } from "../index";
 
 declare global {
   interface Window {
     __sdScript?: number;
     __sdImg?: number;
-    __sdCode?: number;
   }
 }
 
@@ -20,7 +19,6 @@ const hostile =
 afterEach(() => {
   window.__sdScript = undefined;
   window.__sdImg = undefined;
-  window.__sdCode = undefined;
 });
 
 describe("render guard", () => {
@@ -90,16 +88,7 @@ describe("render guard", () => {
     expect(container.textContent).toBe("");
   });
 
-  it("renders nothing for a fenced block whose code is mapped to script under inlineCode", () => {
-    const Kbd: NonNullable<Components["inlineCode"]> = (props) => <kbd>{props.children}</kbd>;
-    const { container } = render(() => (
-      <Streamdown components={{ code: "script", inlineCode: Kbd }} mode="static">
-        {"```js\nwindow.__sdCode = 1\n```"}
-      </Streamdown>
-    ));
-    expect(container.querySelector("script")).toBeNull();
-    expect(window.__sdCode).toBeUndefined();
-  });
+  // A fenced block mapped to script under inlineCode: inline-code-guard.test.tsx.
 });
 
 describe("raw-text elements", () => {

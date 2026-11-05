@@ -9,9 +9,11 @@ import { createHastTree, HastNodes, RenderContext } from "../lib/hast-render";
 const markdown = unified().use(remarkParse).use(remarkRehype);
 const hast = (md: string): Root => markdown.runSync(markdown.parse(md));
 
-// Hydratable SSR adds a data-hk key to each element and a space before ">".
+// Hydratable SSR adds a data-hk key to each element and a space before the
+// ">" that ends a spread element's start tag. Text keeps ">" unescaped, so only
+// a tag's own space is removed.
 const withoutHydrationKeys = (html: string): string =>
-  html.replace(/ data-hk="[^"]*"/g, "").replaceAll(" >", ">");
+  html.replace(/ data-hk="[^"]*"/g, "").replace(/(<[a-zA-Z][^<>]*) >/g, "$1>");
 
 const renderTree = (tree: Root): string =>
   withoutHydrationKeys(

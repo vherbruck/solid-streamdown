@@ -207,11 +207,15 @@ Mixed paragraph: Hello مرحبا World عالم.
     it("uses display:contents on block dir wrapper", () => {
       const { container } = render(() => <Streamdown dir="rtl">{"مرحبا بالعالم"}</Streamdown>);
       const dirDivs = container.querySelectorAll("[dir='rtl']");
+      let wrappers = 0;
       for (const el of dirDivs as NodeListOf<HTMLElement>) {
         if (el.tagName === "DIV" && el.closest("[class]") !== el) {
           expect(el.style.display).toBe("contents");
+          wrappers += 1;
         }
       }
+      // The loop alone passes when no wrapper renders.
+      expect(wrappers).toBeGreaterThan(0);
     });
 
     it("does not add dir wrapper when dir is undefined", () => {

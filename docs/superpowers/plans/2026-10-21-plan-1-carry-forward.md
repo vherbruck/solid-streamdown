@@ -72,24 +72,22 @@ Still open:
 
 - **Server style text in foreign content:** the server HTML-escapes an HTML `<style>` inside `foreignObject` or a MathML text integration point. It is safe, but CSS containing `&` or `<` reads differently until hydration (plan 6).
 
-- **Tests:**
-  - `security.test.tsx:92-101` duplicates `inline-code-guard`.
-  - One `disable-autolink` skip passes vacuously.
-  - The redundant `describe.skip` + `it.skip` in `node-attribute-removed`.
-  - The strong test doesn't assert `data-streamdown`.
-  - Inline `makePlugin()` in the same-name cache test.
-  - `Element` type shadowing in `markdown.test.tsx`.
-  - Empty `it.skip` placeholder in `footnote-section`.
-  - The rtl "display:contents" test can pass vacuously.
-  - The SSR test helper's `replaceAll(" >", ">")`.
-- **Code:**
-  - `if (firstKey)` in the processor LRU.
-  - Symbol option keys can theoretically collide.
-  - `Section` renders nothing without `node`.
-  - Formatting in `index.tsx` and the ported tests.
-  - The long line in `escape-html.ts`.
-  - Root devDependencies aren't alphabetized.
-  - The tsup preset probe in `tsup.config.ts`; the hydration check backstops it.
+- ~~**Tests and code**~~ (done 2026-11-05):
+  - Already done in plan 2, when their skips were removed: the `disable-autolink`, `node-attribute-removed` and `footnote-section` skips.
+  - The duplicate script-mapping test in `security.test.tsx` is gone (`inline-code-guard` covers it).
+  - The strong test asserts `data-streamdown`, and the rtl `display:contents` test fails when no wrapper renders.
+  - The same-name cache test makes each plugin once.
+  - `markdown.test.tsx` imports the HAST `Element` as `HastElement`, so `toBeInstanceOf(Element)` checks the DOM class.
+  - The SSR test helper removes only a tag's own space before `>`. Text keeps `>` unescaped, so the old `replaceAll(" >", ">")` could rewrite it.
+  - Processor cache:
+    - Symbols are keyed by identity, and `Symbol.for` symbols by their key.
+    - An option object with symbol-keyed properties is keyed by identity.
+    - The LRU checks `firstKey !== undefined`.
+  - `Section` rendered without a HAST node shows its children unfiltered (it rendered nothing for a footnotes section).
+  - Both `tsup.config.ts` files read the preset's `platform` instead of probing its `esbuildOptions`; the build output is unchanged.
+  - `index.tsx` and the 12 ported test files with leftover port formatting are formatted in upstream's style (Prettier, 80 columns, ES5 trailing commas).
+  - Already done: the long line in `escape-html.ts` and the root devDependencies order.
+  - Removed `zz-debug.spec.ts`, a debugging spec committed by mistake in plan 9.
 
 ## Plan 9 (documentation and examples)
 

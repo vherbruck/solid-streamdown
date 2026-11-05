@@ -24,9 +24,8 @@ export default defineConfig((config) => {
     // JSX-preserving builds (`.jsx` output) carry no plugin and stay as is.
     if (!tsupOptions.esbuildPlugins?.length) return tsupOptions;
 
-    const probe: { define?: Record<string, string> } = {};
-    tsupOptions.esbuildOptions?.(probe as never, { format: "esm" });
-    const server = probe.define?.["process.env.SSR"] === "true";
+    // The preset builds its server entry for Node and the rest for browsers.
+    const server = tsupOptions.platform === "node";
 
     return {
       ...tsupOptions,

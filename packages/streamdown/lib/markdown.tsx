@@ -76,9 +76,32 @@ const identityKey = (value: object): string => {
   return `#${id}`;
 };
 
+// Symbols are keyed by identity too: two symbols can share a description.
+// Registered symbols (`Symbol.for`) are the same symbol for the same key.
+const symbolIds = new Map<symbol, number>();
+
+const symbolKey = (value: symbol): string => {
+  const registered = Symbol.keyFor(value);
+  if (registered !== undefined) {
+    return `symbol.for:${JSON.stringify(registered)}`;
+  }
+  let id = symbolIds.get(value);
+  if (id === undefined) {
+    nextIdentityId += 1;
+    id = nextIdentityId;
+    symbolIds.set(value, id);
+  }
+  return `symbol#${id}`;
+};
+
+// Symbol-keyed properties are left out of `Object.keys`, so an object that
+// has any is keyed by identity instead.
 const isPlainObject = (value: object): boolean => {
   const proto = Object.getPrototypeOf(value);
-  return proto === Object.prototype || proto === null;
+  return (
+    (proto === Object.prototype || proto === null) &&
+    Object.getOwnPropertySymbols(value).length === 0
+  );
 };
 
 class CyclicValueError extends Error {}
@@ -92,6 +115,9 @@ const structuralKey = (value: unknown, ancestors: object[]): string => {
   }
   if (typeof value === "string") {
     return JSON.stringify(value);
+  }
+  if (typeof value === "symbol") {
+    return symbolKey(value);
   }
   if (typeof value !== "object" || value === null) {
     return `${typeof value}:${String(value)}`;
@@ -199,7 +225,7 @@ class ProcessorCache {
     // Remove oldest entry if cache is full
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      if (firstKey) {
+      if (firstKey !== undefined) {
         this.cache.delete(firstKey);
       }
     }
