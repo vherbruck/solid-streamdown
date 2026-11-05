@@ -353,12 +353,12 @@ export const CodeBlockDownloadButton = (
   const icons = useIcons();
 
   const downloadCode = () => {
-    const language = local.language;
-    // Own keys only: `in` would also match Object.prototype names such as
-    // "constructor" (upstream uses `in`).
+    // Fence languages are matched case-insensitively, like the highlighter does, and only
+    // the map's own keys count, so names like "constructor" fall back to .txt
+    const languageKey = local.language?.toLowerCase();
     const extension =
-      language && Object.hasOwn(LANGUAGE_EXTENSION_MAP, language)
-        ? LANGUAGE_EXTENSION_MAP[language]
+      languageKey && Object.hasOwn(LANGUAGE_EXTENSION_MAP, languageKey)
+        ? LANGUAGE_EXTENSION_MAP[languageKey]
         : "txt";
     const filename = `${getDownloadFilename(context.controls, "code", "file")}.${extension}`;
     const mimeType = "text/plain";
