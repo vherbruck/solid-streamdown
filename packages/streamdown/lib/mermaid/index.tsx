@@ -152,6 +152,9 @@ export const Mermaid = (props: MermaidProps) => {
     const chart = props.chart;
     const config = props.config;
     retryCount();
+    // Closing the fence re-renders the final chart, even when its text is
+    // the same as the last partial one that failed
+    isStreaming();
     const plugin = mermaidPlugin();
 
     // Only render when shouldRender is true
@@ -182,9 +185,12 @@ export const Mermaid = (props: MermaidProps) => {
       setSvgContent(rendered.svg);
       setSvgSize(rendered.size);
       setLastValidSvg(rendered.svg);
-    } else if (request === latestRequest) {
-      // Keep the last valid SVG; the error only shows when there is
-      // nothing to display, and only for the latest chart
+    } else if (request === latestRequest && !untrack(isStreaming)) {
+      // A partial chart fails to parse while its fence streams, and the
+      // rest of the chart is still on its way. Keep showing the loader
+      // instead; the error shows once the fence closes and the final
+      // chart fails. Keep the last valid SVG; the error only shows when
+      // there is nothing to display, and only for the latest chart
       setError(rendered.error);
     }
   };
@@ -266,7 +272,7 @@ export const Mermaid = (props: MermaidProps) => {
       <Match when={!(shouldRender() || displaySvg())}>
         <div class={cn("my-4 min-h-[200px]", props.class)} ref={containerRef} />
       </Match>
-      <Match when={isLoading() && !displaySvg()}>
+      <Match when={(isLoading() || isStreaming()) && !displaySvg()}>
         <div class={cn("my-4 flex justify-center p-4", props.class)} ref={containerRef}>
           <div class={cn("flex items-center space-x-2 text-muted-foreground")}>
             <div class={cn("h-4 w-4 animate-spin rounded-full border-current border-b-2")} />
