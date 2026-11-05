@@ -1,63 +1,33 @@
 {
-  "name": "solid-streamdown",
-  "version": "1.0.1",
-  "description": "Streaming Markdown renderer for SolidJS — port of Vercel's Streamdown",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./styles.css": "./styles.css"
-  },
-  "files": [
-    "dist",
-    "styles.css",
-    "ATTRIBUTION.md"
-  ],
+  "name": "solid-streamdown-monorepo",
+  "private": true,
+  "license": "Apache-2.0",
+  "workspaces": ["packages/*", "examples/*"],
   "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "prepublishOnly": "bun run build"
-  },
-  "peerDependencies": {
-    "solid-js": "^1.8.0"
+    "build": "bun run --filter './packages/*' build && bun run --filter './examples/*' build",
+    "typecheck": "bun run --filter './packages/*' typecheck",
+    "test:types": "bun run --filter './packages/*' test:types",
+    "test": "bun run --filter './packages/*' test && bun test ./scripts",
+    "docs:check": "node scripts/check-docs.mjs",
+    "test:e2e": "playwright test",
+    "docs:sync": "node scripts/check-docs.mjs --write",
+    "changeset": "changeset",
+    "version-packages": "changeset version && bun install",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.0",
+    "@playwright/test": "1.64.1",
+    "@solidjs/testing-library": "^0.8.10",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/node": "^22",
+    "esbuild-plugin-solid": "^0.6.0",
     "jsdom": "^29.0.1",
-    "solid-js": "^1.9.5",
+    "solid-js": "1.9.17",
     "tsup": "^8.4.0",
     "tsup-preset-solid": "^2.2.0",
     "typescript": "^5.8.2",
     "vite-plugin-solid": "^2.11.6",
-    "vitest": "^3.1.1"
-  },
-  "dependencies": {
-    "unified": "^11.0.5",
-    "remark-parse": "^11.0.0",
-    "remark-gfm": "^4.0.0",
-    "remark-rehype": "^11.1.1",
-    "hast-util-to-jsx-runtime": "^2.3.6"
-  },
-  "keywords": [
-    "solid",
-    "solidjs",
-    "markdown",
-    "streaming",
-    "ai",
-    "chat",
-    "llm"
-  ],
-  "license": "MIT",
-  "author": "vherbruck",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vherbruck/solid-streamdown"
+    "vitest": "^4.1.12"
   }
 }

@@ -1,0 +1,59 @@
+/**
+ * Ported from vercel/streamdown packages/streamdown/lib/use-caret-host.ts @ 072ce7e
+ * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
+ * Modified for SolidJS by the solid-streamdown authors.
+ */
+import { type Accessor, createEffect, createSignal, onMount, sharedConfig } from "solid-js";
+import { isServer } from "solid-js/web";
+
+const HIDDEN_ATTRIBUTE = "data-sd-caret-hidden";
+
+interface CaretHost {
+  ref: (el: HTMLDivElement) => void;
+  showCaret: Accessor<boolean>;
+}
+
+/**
+ * Hide the caret by marking the element that ends the document with
+ * `data-sd-caret-hidden`, and report whether the container should keep its
+ * caret classes.
+ */
+export const createCaretHost = (
+  shouldHide: Accessor<boolean>,
+  track: Accessor<unknown>
+): CaretHost => {
+  let container: HTMLDivElement | undefined;
+  let marked: Element | null = null;
+
+  // Only the client can mark the caret's host, so server markup leaves the
+  // caret off the container whenever it should be hidden. Hydration reads the
+  // same flag, so its class matches the server markup; once mounted, the
+  // client switches to the caret classes. Solid keeps the server's attributes
+  // while hydrating and only writes a class whose value changed, so without
+  // the switch the caret would stay off for good. A client-only render starts
+  // hydrated, like upstream's useSyncExternalStore client snapshot.
+  const [hydrated, setHydrated] = createSignal(!(isServer || sharedConfig.context));
+  onMount(() => setHydrated(true));
+
+  // Solid's createEffect runs after the DOM updates, like upstream's
+  // useLayoutEffect. `track` is any accessor whose change means the container
+  // may have a new last element, standing in for upstream's run-on-every-commit
+  // effect.
+  createEffect(() => {
+    track();
+    const host = shouldHide() ? (container?.lastElementChild ?? null) : null;
+    if (marked === host) {
+      return;
+    }
+    marked?.removeAttribute(HIDDEN_ATTRIBUTE);
+    host?.setAttribute(HIDDEN_ATTRIBUTE, "");
+    marked = host;
+  });
+
+  return {
+    ref: (el) => {
+      container = el;
+    },
+    showCaret: () => hydrated() || !shouldHide(),
+  };
+};

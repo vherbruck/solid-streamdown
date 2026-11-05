@@ -1,0 +1,50 @@
+{
+  "name": "@solid-streamdown/math",
+  "version": "1.0.3-beta.0",
+  "description": "Math (KaTeX) plugin for solid-streamdown, a port of @streamdown/math",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "vherbruck",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vherbruck/solid-streamdown",
+    "directory": "packages/streamdown-math"
+  },
+  "keywords": [
+    "solid",
+    "solidjs",
+    "streamdown",
+    "katex",
+    "math",
+    "latex"
+  ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test:types": "tsc --noEmit -p tsconfig.exact-optional.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "katex": "^0.16.27",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "unified": "^11.0.5"
+  }
+}

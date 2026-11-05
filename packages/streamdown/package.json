@@ -1,0 +1,132 @@
+{
+  "name": "solid-streamdown",
+  "version": "2.0.0-beta.0",
+  "description": "Streaming Markdown renderer for SolidJS, a port of Vercel's Streamdown",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "vherbruck",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vherbruck/solid-streamdown",
+    "directory": "packages/streamdown"
+  },
+  "keywords": [
+    "solid",
+    "solidjs",
+    "markdown",
+    "streaming",
+    "ai",
+    "chat",
+    "llm"
+  ],
+  "files": [
+    "dist",
+    "styles.css",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "main": "./dist/server.js",
+  "module": "./dist/server.js",
+  "types": "./dist/index.d.ts",
+  "browser": {
+    "./dist/server.js": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "worker": {
+        "solid": "./dist/server.jsx",
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/server.js"
+        }
+      },
+      "browser": {
+        "solid": {
+          "development": "./dist/dev.jsx",
+          "import": "./dist/index.jsx"
+        },
+        "development": {
+          "import": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/dev.js"
+          }
+        },
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
+        }
+      },
+      "deno": {
+        "solid": "./dist/server.jsx",
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/server.js"
+        }
+      },
+      "node": {
+        "solid": "./dist/server.jsx",
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/server.js"
+        }
+      },
+      "solid": {
+        "development": "./dist/dev.jsx",
+        "import": "./dist/index.jsx"
+      },
+      "development": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/dev.js"
+        }
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./styles.css": "./styles.css"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test:types": "tsc --noEmit -p tsconfig.exact-optional.json",
+    "test": "vitest run",
+    "test:hydration": "node scripts/hydration-check.mjs"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "comma-separated-tokens": "^2.0.3",
+    "html-url-attributes": "^3.0.1",
+    "marked": "^18",
+    "property-information": "^7.2.0",
+    "rehype-harden": "^1.1.8",
+    "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "remend": "1.4.0",
+    "space-separated-tokens": "^2.0.2",
+    "style-to-object": "^2.0.2",
+    "tailwind-merge": "^3",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0",
+    "unist-util-visit-parents": "^6.0.2"
+  },
+  "devDependencies": {
+    "@solid-streamdown/cjk": "workspace:*",
+    "@solid-streamdown/code": "workspace:*",
+    "@solid-streamdown/math": "workspace:*",
+    "@solid-streamdown/mermaid": "workspace:*",
+    "@types/hast": "^3.0.5",
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.3",
+    "rehype-parse": "^9.0.1",
+    "rehype-stringify": "^10.0.1"
+  }
+}

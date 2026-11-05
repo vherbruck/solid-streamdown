@@ -1,130 +1,99 @@
 # solid-streamdown
 
-A SolidJS streaming Markdown renderer for AI chat interfaces. Port of Vercel's [Streamdown](https://github.com/vercel/streamdown), adapted for SolidJS's fine-grained reactivity.
+A SolidJS port of Vercel's [Streamdown](https://streamdown.ai/): a Markdown renderer built for AI chat interfaces, where text arrives token by token.
 
-## Features
+- **Streaming-aware:** unfinished Markdown (an open `**`, a half-typed link, an unclosed code fence) renders sensibly mid-stream, through [remend](https://www.npmjs.com/package/remend).
+- **Stable DOM while streaming:** blocks that have settled never re-render, and the block still streaming keeps its DOM nodes as new tokens arrive, so text selection, copy state and animations survive.
+- **Upstream parity:** the same props, defaults, rendered markup and Tailwind classes as Streamdown 2.7, for the core and all four plugins, with upstream's test suites ported as the oracle.
+- **Interactive blocks:** code blocks with copy and download, tables with copy, download and fullscreen, image downloads, a link-safety prompt, carets and per-word animation.
+- **Safe by default:** sanitized and hardened like upstream, plus an always-on render guard that keeps scripts, event handlers and `javascript:` URLs out of the DOM even if you remove the sanitizer.
+- **Server rendering:** works with SolidStart; server output hydrates without mismatches.
 
-- **Streaming-aware parsing** — fixes unterminated syntax (bold, italic, code fences, links) mid-stream
-- **Block-level incremental rendering** — only the active block re-parses as new tokens arrive
-- **GFM support** — tables, task lists, strikethrough, autolinks via remark-gfm
-- **Caret animation** — blinking cursor during streaming, pure CSS
-- **Custom component overrides** — swap any HTML element with your own SolidJS component
-- **Zero re-render on prior blocks** — previous blocks keep stable identity via SolidJS `<For>`
+## Packages
 
-## Install
+| Package | What it adds |
+|---|---|
+| [`solid-streamdown`](./packages/streamdown) | The `Streamdown` component |
+| [`@solid-streamdown/code`](./packages/streamdown-code) | Syntax highlighting (Shiki) |
+| [`@solid-streamdown/math`](./packages/streamdown-math) | Math (KaTeX) |
+| [`@solid-streamdown/mermaid`](./packages/streamdown-mermaid) | Mermaid diagrams |
+| [`@solid-streamdown/cjk`](./packages/streamdown-cjk) | Chinese, Japanese and Korean text handling |
+| [`@solid-streamdown/kobalte`](./packages/streamdown-kobalte) | Kobalte buttons, menus and dialogs for the controls |
+
+Install only the plugins you use. None of them pulls in React; `solid-js` (≥ 1.9) is a peer dependency of the core.
+
+## Quick start
+
+2.0 is in beta. Until it is final, install it and its plugins with the `@beta` tag; without the tag, npm installs solid-streamdown 1.x.
 
 ```bash
-npm install solid-streamdown solid-js
-# or
-bun add solid-streamdown solid-js
+bun add solid-streamdown@beta
+# or: npm i solid-streamdown@beta
 ```
 
-`solid-js` is a peer dependency.
+With Tailwind v4, point Tailwind at the package's classes (path relative to your CSS file):
 
-## Usage
-
-### Static rendering
-
-```tsx
-import { StreamMarkdown } from "solid-streamdown";
-import "solid-streamdown/styles.css";
-
-<StreamMarkdown content="# Hello **world**" />
+```css
+@source "../node_modules/solid-streamdown/dist/*.js";
 ```
 
-### Streaming rendering
-
 ```tsx
-import { StreamMarkdown, createMarkdownStream } from "solid-streamdown";
-import "solid-streamdown/styles.css";
+import { createMarkdownStream, Streamdown } from "solid-streamdown";
 
 const stream = createMarkdownStream();
+// stream.write(chunk) as tokens arrive, stream.end() when done
 
-// Feed chunks as they arrive (e.g. from SSE)
-onSSEChunk((chunk) => stream.write(chunk));
-onSSEEnd(() => stream.end());
-
-<StreamMarkdown stream={stream} />
+export default function Reply() {
+  return (
+    <Streamdown caret="block" isAnimating={stream.isStreaming()}>
+      {stream.content()}
+    </Streamdown>
+  );
+}
 ```
 
-### Custom components
+The colors come from shadcn-named CSS variables (`--background`, `--muted`, `--border`, …); any design system that defines them works. [Getting Started](./docs/guide/getting-started.md) has the full setup, including the token list and the animation stylesheet (`solid-streamdown/styles.css`).
 
-```tsx
-import { StreamMarkdown } from "solid-streamdown";
+## Documentation
 
-<StreamMarkdown
-  content={markdown}
-  components={{
-    a: (props) => <a {...props} target="_blank" rel="noopener" />,
-    code: (props) => <code {...props} class="my-code-style" />,
-  }}
-/>
+The [guide](./docs/guide/index.md) is Streamdown's documentation ported to Solid: usage, configuration, components, streaming, code blocks, security, plugins and more. Every TypeScript sample in it is a file in [`examples/`](./examples) that CI typechecks, builds and renders in Chromium.
+
+Two example apps show complete setups:
+
+- [`examples/vite`](./examples/vite): a client-rendered Vite app with every plugin.
+- [`examples/solid-start`](./examples/solid-start): a server-rendered SolidStart app, including a reply streamed after hydration.
+
+## Differences from Streamdown
+
+The API is Streamdown's with Solid's conventions: `class` instead of `className`, Solid components wherever upstream takes React components, and accessors where upstream returns plain values (`useIsCodeFenceIncomplete()`). Every intentional difference, and why, is listed in [`UPSTREAM.md`](./UPSTREAM.md), along with the upstream commit each package tracks.
+
+## Migrating from solid-streamdown 1.x
+
+2.0 is a rebuild on Streamdown's API. `<StreamMarkdown>` is now `<Streamdown>`, which takes the Markdown as children and the stream state through `isAnimating`; the built-in parser is replaced by remend; plugins are separate packages; and the license is now Apache-2.0. See [Migrate](./docs/guide/migrate.md#migrating-from-solid-streamdown-1x).
+
+## Security
+
+The default pipeline matches Streamdown's (`rehype-raw`, `rehype-sanitize`, `rehype-harden`), and link safety is on by default. Because Solid creates real DOM elements, where React would not run scripts or string event handlers, solid-streamdown adds a render guard that applies whatever plugins you configure. Two consequences of customizing are worth knowing:
+
+- Removing `rehype-sanitize` lets through markup the guard does not cover, such as `<iframe srcdoc>` and SVG animation vectors, as it does with React.
+- A component of yours that renders raw-text elements (for example `<style>{props.children}</style>`) is responsible for escaping its own content.
+
+See [Security](./docs/guide/security.md) for the details.
+
+## Development
+
+This is a Bun workspace. From the repository root:
+
+```bash
+bun install
+bun run typecheck
+bun run build        # packages, then the example apps
+bun run test         # unit tests (jsdom and SSR) and script tests
+bun run docs:check   # guide samples match their example files
+bun run test:e2e     # Playwright smoke tests of both examples
+bun run --filter solid-streamdown test:hydration
 ```
-
-### Stream reuse
-
-```tsx
-const stream = createMarkdownStream();
-
-// After a response completes, reset for the next one
-stream.reset();
-```
-
-## API
-
-### `<StreamMarkdown>`
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `content` | `string` | — | Static markdown content |
-| `stream` | `MarkdownStream` | — | Streaming markdown source |
-| `components` | `ComponentOverrides` | — | Custom element renderers |
-| `class` | `string` | — | CSS class on wrapper div |
-| `showCaret` | `boolean` | `true` | Show blinking caret while streaming |
-
-### `createMarkdownStream(options?)`
-
-Creates a reactive streaming primitive.
-
-| Method/Property | Type | Description |
-|-----------------|------|-------------|
-| `write(chunk)` | `(string) => void` | Append a chunk of markdown |
-| `end()` | `() => void` | Signal stream completion |
-| `reset()` | `() => void` | Reset for reuse |
-| `content` | `() => string` | Reactive accessor for accumulated content |
-| `isStreaming` | `() => boolean` | Reactive accessor for stream state |
-
-### `parseIncompleteMarkdown(text)`
-
-Fixes unterminated markdown syntax. Useful if you need the pre-processor outside the component.
-
-### `IncompleteMarkdownParser`
-
-Class for custom incomplete-markdown plugins. See `src/utils/parse-incomplete-markdown.ts`.
-
-### `parseMarkdownIntoBlocks(markdown)`
-
-Splits markdown into top-level blocks for incremental rendering.
-
-## Styles
-
-Import the default stylesheet for caret animation and responsive tables:
-
-```ts
-import "solid-streamdown/styles.css";
-```
-
-Or target the CSS classes directly for custom styling:
-
-- `.streamdown` — wrapper element
-- `.streamdown-streaming` — present while stream is active
-- `.streamdown-caret` — present when caret is visible
-- `.streamdown-block` — individual block wrapper
-
-## Attribution
-
-Built on [Streamdown](https://github.com/vercel/streamdown) by Vercel (Apache-2.0) and [svelte-streamdown](https://github.com/beynar/svelte-streamdown) by beynar (MIT). See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
 
 ## License
 
-MIT
+Apache-2.0. solid-streamdown is a port of Vercel's Streamdown (Apache-2.0); see [`NOTICE`](./NOTICE) and [`ATTRIBUTION.md`](./ATTRIBUTION.md).

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // solid-streamdown's types come from its source, as in vitest.config.ts,
+    // so typechecking does not depend on a prior build.
+    "paths": {
+      "solid-streamdown": ["../streamdown/index.tsx"]
+    }
+  },
+  "include": ["index.tsx", "__tests__/**/*", "*.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

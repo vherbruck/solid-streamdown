@@ -4,3 +4,11 @@ dist/
 .DS_Store
 .env
 .env.local
+packages/*/dist
+examples/*/dist
+examples/*/.output
+examples/*/.vinxi
+examples/*/test-results
+examples/*/playwright-report
+test-results
+playwright-report
