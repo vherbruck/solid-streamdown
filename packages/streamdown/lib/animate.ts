@@ -1,5 +1,5 @@
 /**
- * Ported from vercel/streamdown packages/streamdown/lib/animate.ts @ c5e44d8
+ * Ported from vercel/streamdown packages/streamdown/lib/animate.ts @ 072ce7e
  * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
  * Modified for SolidJS by the solid-streamdown authors.
  */
@@ -451,7 +451,7 @@ interface AnimateConfig {
   stagger: number;
   /** Give word spans a React style object instead of a CSS string */
   styleObjects: boolean;
-  timeline?: AnimateTimeline | undefined;
+  timeline?: AnimateTimeline;
 }
 
 interface AnimateRenderState {

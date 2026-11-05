@@ -1,4 +1,4 @@
-<!-- Ported from vercel/streamdown apps/website/content/docs/plugins/mermaid.mdx @ c5e44d8. Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0. Modified for SolidJS by the solid-streamdown authors. -->
+<!-- Ported from vercel/streamdown apps/website/content/docs/plugins/mermaid.mdx @ 072ce7e. Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0. Modified for SolidJS by the solid-streamdown authors. -->
 
 # @solid-streamdown/mermaid
 
@@ -814,7 +814,7 @@ The `language` property indicates which code block language triggers diagram ren
 - [Mermaid Documentation](https://mermaid.js.org/intro/) - Official docs
 - [Mermaid Live Editor](https://mermaid.live/) - Test diagrams online
 - [Syntax Reference](https://mermaid.js.org/intro/syntax-reference.html) - Complete syntax guide
-- [Mermaid Examples](https://mermaid.js.org/ecosystem/integrations.html) - Gallery of examples
+- [Mermaid Examples](https://mermaid.js.org/syntax/all-examples.html) - Gallery of examples
 
 ## Related Features
 

@@ -7,11 +7,14 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 
 | Package | Upstream | Commit |
 |---------|----------|--------|
-| solid-streamdown | streamdown 2.7.1 | c5e44d8 |
-| @solid-streamdown/code | @streamdown/code 2.0.0 | c5e44d8 |
-| @solid-streamdown/mermaid | @streamdown/mermaid 1.0.3 | c5e44d8 |
-| @solid-streamdown/math | @streamdown/math 1.0.3 | c5e44d8 |
-| @solid-streamdown/cjk | @streamdown/cjk 1.0.4 | c5e44d8 |
+| solid-streamdown | streamdown 2.7.1, plus unreleased fixes on `main` | 072ce7e |
+| @solid-streamdown/code | @streamdown/code 2.0.0, plus unreleased fixes on `main` | 072ce7e |
+| @solid-streamdown/mermaid | @streamdown/mermaid 1.0.3, plus unreleased fixes on `main` | 072ce7e |
+| @solid-streamdown/math | @streamdown/math 1.0.3, plus unreleased fixes on `main` | 072ce7e |
+| @solid-streamdown/cjk | @streamdown/cjk 1.0.4, plus unreleased fixes on `main` | 072ce7e |
+
+**Sync history.**
+- 2026-11-05: c5e44d8 → 072ce7e: upstream #668, #693, #695, #702, #704, #705, #707, #712 and #716, plus the link fixes on the Mermaid and Security docs pages from #710. Skipped: dependency bumps for upstream's docs site and changes to upstream's release workflow. `remend` stays at 1.4.0, so its option types (the `remend` prop) gain `| undefined` only when remend publishes #704's change.
 
 **Versions.**
 - Each plugin's first release takes its upstream version (the 2.0 beta publishes them as `-beta.N` prereleases). From then on, versions follow our own changesets.
@@ -31,7 +34,7 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 | `lib/markdown.ts` | `lib/markdown.ts` | Renamed `lib/markdown.tsx` |
 | `use*Plugin()` hooks | Return the plugin or `null` | Return `Accessor<plugin \| null>`; `useCustomRenderer(language: Accessor<string>)` returns `Accessor<CustomRenderer \| undefined>` |
 | `lib/plugin-context.tsx`, `lib/translations-context.tsx` | `.tsx` | Renamed `.ts` (no JSX) |
-| Processor cache | Keyed by plugin name and serialized options | Keys plugin functions by identity (upstream: by name) and options structurally (as upstream) |
+| Processor cache | Plugin functions keyed by identity; options by `JSON.stringify` | Plugin functions keyed by identity too; options by a structural key that keys functions, class instances, symbols and cyclic values by identity, which `JSON.stringify` drops or rejects |
 | Streaming blocks | `memo` comparators on `Block` and `Streamdown`; blocks keyed by index | `<Index>` over the blocks; a custom `BlockComponent` receives reactive props (read `props.content`, don't destructure) |
 | `PluginContext` value inside `Streamdown` | `plugins ?? null` | A getter object over `props.plugins`, so `usePlugins()` is never `null` under `Streamdown`; its fields are `undefined` when no plugins are passed |
 | Raw-HTML attribute named `node` | Rendered on intrinsic elements (only components receive the HAST node) | Dropped on intrinsic elements: `node` is reserved for the HAST node, which only components receive |
@@ -64,6 +67,5 @@ solid-streamdown 2.0 is a SolidJS port of [vercel/streamdown](https://github.com
 
 ## Known upstream risks kept for parity
 
-- `clobberPrefix: ""` in the sanitize schema, which allows DOM clobbering through `id`/`name`.
 - No spreadsheet-formula escaping in CSV export.
 - Links inside Mermaid SVGs skip the link-safety prompt.

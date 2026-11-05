@@ -107,3 +107,13 @@ Notes for later:
 - **Escape with the default overlay:** after Tab moves focus into the link-safety panel, Escape does not close it. The panel stops `keydown` from bubbling, as upstream's does, so upstream behaves the same. The Kobalte adapter works around this (plan 8, Changes).
 - **Kobalte 2.0:** revisit when it is stable. 0.13 ships only client builds plus `solid` JSX, so plain Node cannot server-render the adapter; 2.0 may change that.
 - **Publishing the adapter:** the `NPM_TOKEN` grant for `@solid-streamdown` (plan 7, Owner steps) covers it.
+
+## Plan 10 (upstream sync)
+
+Done 2026-11-05 (plan 10): every package is synced to upstream 072ce7e. See the plan file for what was ported, tested only, or skipped.
+
+Notes for later:
+
+- **remend:** when remend publishes upstream #704's option types (after 1.4.0), bump it and add `remend={{ bold: undefined }}` to `packages/streamdown/type-tests/exact-optional-property-types.tsx`.
+- **Next sync:** compare `072ce7e..origin/main` in vercel/streamdown, then follow plan 10's steps: port each fix with its tests, check `lib/animate.ts` and the plugins' `index.ts` against upstream byte for byte, bump the `@ <commit>` headers, and record the sync in UPSTREAM.md's sync history.
+

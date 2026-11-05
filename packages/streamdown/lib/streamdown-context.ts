@@ -1,5 +1,5 @@
 /**
- * Ported from vercel/streamdown packages/streamdown/index.tsx @ c5e44d8 (StreamdownContext and config types extracted)
+ * Ported from vercel/streamdown packages/streamdown/index.tsx @ 072ce7e (StreamdownContext and config types extracted)
  * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
  * Modified for SolidJS by the solid-streamdown authors.
  */

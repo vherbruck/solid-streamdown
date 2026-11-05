@@ -1,5 +1,5 @@
 /**
- * Ported from vercel/streamdown packages/streamdown/lib/mermaid/pan-zoom.tsx @ c5e44d8
+ * Ported from vercel/streamdown packages/streamdown/lib/mermaid/pan-zoom.tsx @ 072ce7e
  * Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0.
  * Modified for SolidJS by the solid-streamdown authors.
  */

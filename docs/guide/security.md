@@ -1,4 +1,4 @@
-<!-- Ported from vercel/streamdown apps/website/content/docs/security.mdx @ c5e44d8. Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0. Modified for SolidJS by the solid-streamdown authors. -->
+<!-- Ported from vercel/streamdown apps/website/content/docs/security.mdx @ 072ce7e. Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0. Modified for SolidJS by the solid-streamdown authors. -->
 
 # Security
 
@@ -326,7 +326,7 @@ export default function CustomTags() {
 }
 ```
 
-Only attributes explicitly listed in `allowedTags` are preserved; all other attributes are stripped for security. A tag name only selects a component through your `components` map (or `fallbackComponent`); otherwise it renders as a plain element. See the [Styling documentation](./styling.md) for more details.
+Only attributes explicitly listed in `allowedTags` are preserved; all other attributes are stripped for security. A tag name only selects a component through your `components` map (or `fallbackComponent`); otherwise it renders as a plain element. See the [Components documentation](./components.md#custom-html-tags) for more details.
 
 > **Note:** The `allowedTags` prop only works with the default rehype plugins. If you provide custom `rehypePlugins`, you must configure sanitization yourself.
 

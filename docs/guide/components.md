@@ -1,4 +1,4 @@
-<!-- Ported from vercel/streamdown apps/website/content/docs/components.mdx @ c5e44d8. Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0. Modified for SolidJS by the solid-streamdown authors. -->
+<!-- Ported from vercel/streamdown apps/website/content/docs/components.mdx @ 072ce7e. Copyright 2023 Vercel, Inc. Licensed under the Apache License, Version 2.0. Modified for SolidJS by the solid-streamdown authors. -->
 
 # Components
 

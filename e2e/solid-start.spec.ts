@@ -19,7 +19,7 @@ test.describe("SolidStart example (server rendering and hydration)", () => {
     const text = (await page.locator("main").textContent()) ?? "";
     expect(text.split("const answer: number = 42;").length - 1).toBe(1);
     expect(text.split("task done").length - 1).toBe(1);
-    expect(page.locator("main p div")).toHaveCount(0);
+    await expect(page.locator("main p div")).toHaveCount(0);
     expect(errors.filter((error) => !error.includes("Failed to load resource"))).toEqual([]);
   });
 
