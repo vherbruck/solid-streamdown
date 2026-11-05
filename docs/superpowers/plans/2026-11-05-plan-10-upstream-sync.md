@@ -2,7 +2,7 @@
 
 > **For agentic workers:** execute task by task. Each task ends green (`bun run typecheck && bun run build && bun run test:types && bun run test && bun run docs:check && bun run --filter solid-streamdown test:hydration`, plus `bun run test:e2e` at the end) and with one commit, made only after those pass.
 
-**Status:** Done 2026-11-05, on branch `chore/cleanups-and-upstream-sync`, which also clears the deferred minors (see the carry-forward file). It targets `main` after PR #7 has merged and published `2.0.0-beta.0`. Its changesets then become the `2.0.0-beta.1` Version Packages PR.
+**Status:** Done 2026-11-05, on PR #7's branch together with the deferred minors (see the carry-forward file). Nothing had been published, so it ships in `2.0.0-beta.0`: its notes are folded into the existing 2.0 changesets and CHANGELOGs, and merging PR #7 still publishes directly.
 
 **Goal:** bring every package from upstream c5e44d8 to 072ce7e, which is `main` on 2026-11-05, 15 commits after the sync point.
 
@@ -29,4 +29,4 @@
 
 - Every ported file's header names 072ce7e.
 - UPSTREAM.md: the Synced to table, a sync history entry, the processor cache row; the clobbering risk is gone, and so is the download-extension row.
-- `.changeset/upstream-sync-072ce7e.md`: a patch for core and the four plugins. `@solid-streamdown/kobalte` is not bumped; its peer range still matches.
+- Changesets: the 2.0 changeset and CHANGELOG name 072ce7e and gain a bullet on `undoubleClobberPrefix`. The plugin changesets and CHANGELOGs say they include upstream's fixes through 072ce7e. The other fixes are to unreleased code, so they get no entry.
