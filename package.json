@@ -6,6 +6,7 @@
   "scripts": {
     "build": "bun run --filter './packages/*' build && bun run --filter './examples/*' build",
     "typecheck": "bun run --filter './packages/*' typecheck",
+    "test:types": "bun run --filter './packages/*' test:types",
     "test": "bun run --filter './packages/*' test && bun test ./scripts",
     "docs:check": "node scripts/check-docs.mjs",
     "test:e2e": "playwright test",

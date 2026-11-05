@@ -38,7 +38,7 @@ export interface HighlightOptions {
    * Whether the code block is still streaming. Its result is superseded by
    * the next update, so it is not cached.
    */
-  isIncomplete?: boolean;
+  isIncomplete?: boolean | undefined;
   language: BundledLanguage;
   themes: [ThemeInput, ThemeInput];
 }
@@ -80,7 +80,7 @@ export interface CodePluginOptions {
    * Default themes for syntax highlighting [light, dark]
    * @default ["github-light", "github-dark"]
    */
-  themes?: [ThemeInput, ThemeInput];
+  themes?: [ThemeInput, ThemeInput] | undefined;
 }
 
 const languageAliases = Object.fromEntries(

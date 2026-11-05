@@ -57,6 +57,7 @@ Run from the repo root:
 - `bun install` — install deps
 - `bun run build` — build the packages (tsup), then the example apps
 - `bun run typecheck` — type check the packages
+- `bun run test:types` — after `bun run build`: the built declarations type-check with `exactOptionalPropertyTypes` (`type-tests/` in each package that has option types)
 - `bun run test` — package tests (Vitest `dom` and `ssr` projects) and script tests
 - `bun run docs:check` — every TS/TSX sample in `docs/guide` matches its file in `examples/vite/src/snippets` (`bun run docs:sync` copies the files into the pages)
 - `bun run test:e2e` — Playwright smoke tests of both example apps (after `bun run build`)

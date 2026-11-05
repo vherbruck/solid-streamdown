@@ -2,7 +2,7 @@ import { createSignal } from "solid-js";
 
 export interface MarkdownStreamOptions {
   /** Initial content before streaming begins */
-  initialContent?: string;
+  initialContent?: string | undefined;
 }
 
 export interface MarkdownStream {

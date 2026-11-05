@@ -24,12 +24,12 @@ const findTable = (from: Element | null | undefined): HTMLTableElement | undefin
     undefined) as HTMLTableElement | undefined;
 
 export interface TableDownloadButtonProps {
-  children?: JSX.Element;
-  class?: string;
-  filename?: string;
-  format?: "csv" | "markdown";
-  onDownload?: () => void;
-  onError?: (error: Error) => void;
+  children?: JSX.Element | undefined;
+  class?: string | undefined;
+  filename?: string | undefined;
+  format?: "csv" | "markdown" | undefined;
+  onDownload?: (() => void) | undefined;
+  onError?: ((error: Error) => void) | undefined;
 }
 
 export const TableDownloadButton = (props: TableDownloadButtonProps) => {
@@ -102,10 +102,10 @@ export const TableDownloadButton = (props: TableDownloadButtonProps) => {
 };
 
 export interface TableDownloadDropdownProps {
-  children?: JSX.Element;
-  class?: string;
-  onDownload?: (format: "csv" | "markdown") => void;
-  onError?: (error: Error) => void;
+  children?: JSX.Element | undefined;
+  class?: string | undefined;
+  onDownload?: ((format: "csv" | "markdown") => void) | undefined;
+  onError?: ((error: Error) => void) | undefined;
 }
 
 export const TableDownloadDropdown = (props: TableDownloadDropdownProps) => {

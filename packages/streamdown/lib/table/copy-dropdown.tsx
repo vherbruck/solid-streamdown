@@ -19,11 +19,11 @@ import {
 } from "./utils";
 
 export interface TableCopyDropdownProps {
-  children?: JSX.Element;
-  class?: string;
-  onCopy?: (format: "csv" | "tsv" | "md") => void;
-  onError?: (error: Error) => void;
-  timeout?: number;
+  children?: JSX.Element | undefined;
+  class?: string | undefined;
+  onCopy?: ((format: "csv" | "tsv" | "md") => void) | undefined;
+  onError?: ((error: Error) => void) | undefined;
+  timeout?: number | undefined;
 }
 
 export const TableCopyDropdown = (props: TableCopyDropdownProps) => {

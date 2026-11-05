@@ -39,7 +39,7 @@ export interface MermaidPluginOptions {
   /**
    * Default Mermaid configuration
    */
-  config?: MermaidConfig;
+  config?: MermaidConfig | undefined;
 }
 
 const defaultConfig: MermaidConfig = {

@@ -38,11 +38,11 @@ export interface UiMenuProps {
    * Classes that place the panel in flow, under the trigger. A menu that
    * positions its panel itself (in a portal, say) ignores them.
    */
-  positionClass?: string;
+  positionClass?: string | undefined;
   /** Classes for the panel's appearance. */
-  panelClass?: string;
+  panelClass?: string | undefined;
   /** Receives an element that stays in place next to the trigger. */
-  ref?: (element: HTMLElement) => void;
+  ref?: ((element: HTMLElement) => void) | undefined;
   /** Renders the button that opens and closes the menu. */
   trigger: (state: { open: Accessor<boolean>; props: UiMenuTriggerProps }) => JSX.Element;
   /** Renders the items. Call `close` after an item has done its work. */
@@ -52,11 +52,11 @@ export interface UiMenuProps {
 export interface UiMenuItemProps {
   /** Runs when the item is chosen. */
   onSelect: () => void;
-  class?: string;
-  title?: string;
-  "aria-label"?: string;
-  disabled?: boolean;
-  children?: JSX.Element;
+  class?: string | undefined;
+  title?: string | undefined;
+  "aria-label"?: string | undefined;
+  disabled?: boolean | undefined;
+  children?: JSX.Element | undefined;
 }
 
 export interface UiOverlayProps {
@@ -64,7 +64,7 @@ export interface UiOverlayProps {
   /** Dismisses the overlay. It may be called more than once per dismissal. */
   onClose: () => void;
   /** The overlay's accessible name. */
-  label?: string;
+  label?: string | undefined;
   children: JSX.Element;
 }
 

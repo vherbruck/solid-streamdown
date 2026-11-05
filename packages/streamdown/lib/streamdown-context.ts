@@ -12,8 +12,8 @@ export type DownloadControlConfig = boolean | { filename: string };
 export type CopyControlConfig =
   | boolean
   | {
-      onCopy?: () => void;
-      onError?: (error: Error) => void;
+      onCopy?: (() => void) | undefined;
+      onError?: ((error: Error) => void) | undefined;
     };
 
 export type ControlsConfig =
@@ -22,26 +22,29 @@ export type ControlsConfig =
       table?:
         | boolean
         | {
-            copy?: boolean;
-            csvSeparator?: CSVSeparator;
-            download?: DownloadControlConfig;
-            fullscreen?: boolean;
-          };
+            copy?: boolean | undefined;
+            csvSeparator?: CSVSeparator | undefined;
+            download?: DownloadControlConfig | undefined;
+            fullscreen?: boolean | undefined;
+          }
+        | undefined;
       code?:
         | boolean
         | {
-            copy?: CopyControlConfig;
-            download?: DownloadControlConfig;
-          };
+            copy?: CopyControlConfig | undefined;
+            download?: DownloadControlConfig | undefined;
+          }
+        | undefined;
       mermaid?:
         | boolean
         | {
-            download?: DownloadControlConfig;
-            copy?: CopyControlConfig;
-            fullscreen?: boolean;
-            panZoom?: boolean;
-          };
-      image?: boolean | { download?: boolean };
+            download?: DownloadControlConfig | undefined;
+            copy?: CopyControlConfig | undefined;
+            fullscreen?: boolean | undefined;
+            panZoom?: boolean | undefined;
+          }
+        | undefined;
+      image?: boolean | { download?: boolean | undefined } | undefined;
     };
 
 export interface LinkSafetyModalProps {
@@ -53,8 +56,8 @@ export interface LinkSafetyModalProps {
 
 export interface LinkSafetyConfig {
   enabled: boolean;
-  onLinkCheck?: (url: string) => Promise<boolean> | boolean;
-  renderModal?: (props: LinkSafetyModalProps) => JSX.Element;
+  onLinkCheck?: ((url: string) => Promise<boolean> | boolean) | undefined;
+  renderModal?: ((props: LinkSafetyModalProps) => JSX.Element) | undefined;
 }
 
 export interface MermaidErrorComponentProps {
@@ -64,8 +67,8 @@ export interface MermaidErrorComponentProps {
 }
 
 export interface MermaidOptions {
-  config?: MermaidConfig;
-  errorComponent?: Component<MermaidErrorComponentProps>;
+  config?: MermaidConfig | undefined;
+  errorComponent?: Component<MermaidErrorComponentProps> | undefined;
 }
 
 export type AllowedTags = Record<string, string[]>;
@@ -77,15 +80,15 @@ export interface StreamdownContextType {
   /** Max height for fenced code blocks. @default 400 */
   codeBlockMaxHeight: number | string;
   /** Code fence languages rendered verbatim without highlighting. */
-  codeBlockRawLanguages?: string[];
+  codeBlockRawLanguages?: string[] | undefined;
   controls: ControlsConfig;
   isAnimating: boolean;
   /** Show line numbers in code blocks. @default true */
   lineNumbers: boolean;
-  linkSafety?: LinkSafetyConfig;
-  mermaid?: MermaidOptions;
+  linkSafety?: LinkSafetyConfig | undefined;
+  mermaid?: MermaidOptions | undefined;
   mode: "static" | "streaming";
-  portal?: PortalTarget;
+  portal?: PortalTarget | undefined;
   shikiTheme: [ThemeInput, ThemeInput];
   /** Max height for tables. @default 300 */
   tableMaxHeight: number | string;

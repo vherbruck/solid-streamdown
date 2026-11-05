@@ -16,9 +16,9 @@ export type CodeBlockCopyButtonProps = Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "onCopy" | "onError"
 > & {
-  onCopy?: () => void;
-  onError?: (error: Error) => void;
-  timeout?: number;
+  onCopy?: (() => void) | undefined;
+  onError?: ((error: Error) => void) | undefined;
+  timeout?: number | undefined;
 };
 
 export const CodeBlockCopyButton = (props: CodeBlockCopyButtonProps & { code?: string }) => {

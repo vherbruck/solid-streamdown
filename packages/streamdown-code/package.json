@@ -38,6 +38,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "test:types": "tsc --noEmit -p tsconfig.exact-optional.json",
     "test": "vitest run"
   },
   "dependencies": {

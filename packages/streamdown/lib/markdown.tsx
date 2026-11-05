@@ -38,23 +38,23 @@ export type Components = {
     | Component<JSX.IntrinsicElements[Key] & ExtraProps>
     | keyof JSX.IntrinsicElements;
 } & {
-  inlineCode?: Component<JSX.IntrinsicElements["code"] & ExtraProps>;
+  inlineCode?: Component<JSX.IntrinsicElements["code"] & ExtraProps> | undefined;
   // biome-ignore lint/suspicious/noExplicitAny: custom tags receive arbitrary props
   [key: string]: Component<any> | keyof JSX.IntrinsicElements | undefined;
 };
 
 export interface Options {
-  allowElement?: AllowElement;
-  allowedElements?: readonly string[];
-  children?: string;
-  components?: Components;
-  disallowedElements?: readonly string[];
-  rehypePlugins?: PluggableList;
-  remarkPlugins?: PluggableList;
-  remarkRehypeOptions?: Readonly<RemarkRehypeOptions>;
-  skipHtml?: boolean;
-  unwrapDisallowed?: boolean;
-  urlTransform?: UrlTransform;
+  allowElement?: AllowElement | undefined;
+  allowedElements?: readonly string[] | undefined;
+  children?: string | undefined;
+  components?: Components | undefined;
+  disallowedElements?: readonly string[] | undefined;
+  rehypePlugins?: PluggableList | undefined;
+  remarkPlugins?: PluggableList | undefined;
+  remarkRehypeOptions?: Readonly<RemarkRehypeOptions> | undefined;
+  skipHtml?: boolean | undefined;
+  unwrapDisallowed?: boolean | undefined;
+  urlTransform?: UrlTransform | undefined;
 }
 
 // Stable references for common cases

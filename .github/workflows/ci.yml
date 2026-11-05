@@ -31,6 +31,10 @@ jobs:
       # Builds the packages, then the example apps
       - run: bun run build
 
+      # The built declarations accept explicit undefined for optional props
+      # (exactOptionalPropertyTypes)
+      - run: bun run test:types
+
       - run: bun run --filter solid-streamdown test:hydration
 
       - run: bun run test

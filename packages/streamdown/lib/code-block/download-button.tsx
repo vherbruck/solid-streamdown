@@ -18,8 +18,8 @@ export type CodeBlockDownloadButtonProps = Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "onError"
 > & {
-  onDownload?: () => void;
-  onError?: (error: Error) => void;
+  onDownload?: (() => void) | undefined;
+  onError?: ((error: Error) => void) | undefined;
 };
 
 const LANGUAGE_EXTENSION_MAP: Record<string, string> = {
@@ -333,8 +333,8 @@ const LANGUAGE_EXTENSION_MAP: Record<string, string> = {
 
 export const CodeBlockDownloadButton = (
   props: CodeBlockDownloadButtonProps & {
-    code?: string;
-    language?: string;
+    code?: string | undefined;
+    language?: string | undefined;
   }
 ) => {
   const [local, rest] = splitProps(props, [

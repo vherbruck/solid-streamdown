@@ -55,7 +55,7 @@ export const IconContext = createContext<IconMap>(defaultIcons);
  * renders `<Dynamic component={icons.CheckIcon} />` follows the change.
  */
 export const IconProvider = (props: {
-  icons?: Partial<IconMap>;
+  icons?: Partial<IconMap> | undefined;
   children: JSX.Element;
 }) => {
   const value = {} as IconMap;
