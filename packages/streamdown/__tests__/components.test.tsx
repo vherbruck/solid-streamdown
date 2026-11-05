@@ -7,12 +7,14 @@ import { render, waitFor } from "@solidjs/testing-library";
 import type { Component } from "solid-js";
 import { describe, expect, it } from "vitest";
 import { components as importedComponents } from "../lib/components";
-import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
+import {
+  defaultStreamdownContext,
+  StreamdownContext,
+} from "../lib/streamdown-context";
 import { PluginContext } from "../lib/plugin-context";
 
 // Upstream renders these inside a StreamdownContext whose linkSafety is unset.
 const noLinkSafety = { ...defaultStreamdownContext, linkSafety: undefined };
-
 
 // Upstream casts to Required<Options["components"]>; look components up loosely.
 const components = importedComponents as Record<string, Component<any>>;
@@ -24,11 +26,12 @@ describe("Markdown Components", () => {
       if (!OL) {
         throw new Error("OL component not found");
       }
-      const { container } = render(() => <OL node={null as any}>
+      const { container } = render(() => (
+        <OL node={null as any}>
           <li>Item 1</li>
           <li>Item 2</li>
         </OL>
-      );
+      ));
       const ol = container.querySelector("ol");
       expect(ol).toBeTruthy();
       expect(ol?.className).toContain("list-inside");
@@ -41,11 +44,12 @@ describe("Markdown Components", () => {
       if (!UL) {
         throw new Error("UL component not found");
       }
-      const { container } = render(() => <UL node={null as any}>
+      const { container } = render(() => (
+        <UL node={null as any}>
           <li>Item 1</li>
           <li>Item 2</li>
         </UL>
-      );
+      ));
       const ul = container.querySelector("ul");
       expect(ul).toBeTruthy();
       expect(ul?.className).toContain("list-inside");
@@ -58,8 +62,9 @@ describe("Markdown Components", () => {
       if (!LI) {
         throw new Error("LI component not found");
       }
-      const { container } = render(() => <LI node={null as any}>List item content</LI>
-      );
+      const { container } = render(() => (
+        <LI node={null as any}>List item content</LI>
+      ));
       const li = container.querySelector("li");
       expect(li).toBeTruthy();
       expect(li?.className).toContain("py-1");
@@ -143,8 +148,9 @@ describe("Markdown Components", () => {
       if (!Strong) {
         throw new Error("Strong component not found");
       }
-      const { container } = render(() => <Strong node={null as any}>Bold text</Strong>
-      );
+      const { container } = render(() => (
+        <Strong node={null as any}>Bold text</Strong>
+      ));
       const span = container.querySelector("span");
       expect(span).toBeTruthy();
       expect(span?.className).toContain("font-semibold");
@@ -198,12 +204,13 @@ describe("Markdown Components", () => {
       if (!Img) {
         throw new Error("Img component not found");
       }
-      const { container } = render(() => <Img
+      const { container } = render(() => (
+        <Img
           alt="loading"
           node={null as any}
           src="streamdown:incomplete-image"
         />
-      );
+      ));
       const placeholder = container.querySelector(
         '[data-streamdown="image-placeholder"]'
       );
@@ -220,8 +227,9 @@ describe("Markdown Components", () => {
       if (!Blockquote) {
         throw new Error("Blockquote component not found");
       }
-      const { container } = render(() => <Blockquote node={null as any}>Quote text</Blockquote>
-      );
+      const { container } = render(() => (
+        <Blockquote node={null as any}>Quote text</Blockquote>
+      ));
       const blockquote = container.querySelector("blockquote");
       expect(blockquote).toBeTruthy();
       expect(blockquote?.className).toContain("my-4");
@@ -235,10 +243,11 @@ describe("Markdown Components", () => {
       if (!Blockquote) {
         throw new Error("Blockquote component not found");
       }
-      const { container } = render(() => <Blockquote class="border-l-2 pl-8" node={null as any}>
+      const { container } = render(() => (
+        <Blockquote class="border-l-2 pl-8" node={null as any}>
           Quote text
         </Blockquote>
-      );
+      ));
       const classes = container.querySelector("blockquote")?.classList;
       expect(classes?.contains("pl-8")).toBe(true);
       expect(classes?.contains("ps-4")).toBe(false);
@@ -272,10 +281,11 @@ describe("Markdown Components", () => {
         throw new Error("Code component not found");
       }
       // Block code: data-block prop set by the pre component
-      const { container } = render(() => <Code data-block="true" node={null as any}>
+      const { container } = render(() => (
+        <Code data-block="true" node={null as any}>
           code
         </Code>
-      );
+      ));
 
       // Wait for code block to render
       await waitFor(() => {
@@ -330,14 +340,11 @@ describe("Markdown Components", () => {
       if (!Code) {
         throw new Error("Code component not found");
       }
-      const { container } = render(() => <Code
-          class="language-javascript"
-          data-block="true"
-          node={null as any}
-        >
+      const { container } = render(() => (
+        <Code class="language-javascript" data-block="true" node={null as any}>
           const x = 1;
         </Code>
-      );
+      ));
 
       // Wait for code block to render
       await waitFor(() => {
@@ -358,8 +365,9 @@ describe("Markdown Components", () => {
       if (!Pre) {
         throw new Error("Pre component not found");
       }
-      const { container } = render(() => <Pre node={null as any}>plain text code</Pre>
-      );
+      const { container } = render(() => (
+        <Pre node={null as any}>plain text code</Pre>
+      ));
       // The pre component returns its children directly
       expect(container.textContent).toBe("plain text code");
     });
@@ -369,10 +377,11 @@ describe("Markdown Components", () => {
       if (!Code) {
         throw new Error("Code component not found");
       }
-      const { container } = render(() => <Code class="language-mermaid" data-block="true" node={null as any}>
+      const { container } = render(() => (
+        <Code class="language-mermaid" data-block="true" node={null as any}>
           {"graph TD; A-->B;"}
         </Code>
-      );
+      ));
 
       // Wait for code block to render
       await waitFor(() => {
@@ -447,14 +456,15 @@ describe("Markdown Components", () => {
       if (!Table) {
         throw new Error("Table component not found");
       }
-      const { container } = render(() => <Table node={null as any}>
+      const { container } = render(() => (
+        <Table node={null as any}>
           <tbody>
             <tr>
               <td>Cell</td>
             </tr>
           </tbody>
         </Table>
-      );
+      ));
       const wrapper = container.querySelector("div");
       expect(wrapper).toBeTruthy();
       expect(wrapper?.className).toContain("my-4");
@@ -477,12 +487,13 @@ describe("Markdown Components", () => {
       if (!THead) {
         return;
       }
-      const { container } = render(() => <THead node={null as any}>
+      const { container } = render(() => (
+        <THead node={null as any}>
           <tr>
             <th>Header</th>
           </tr>
         </THead>
-      );
+      ));
       const thead = container.querySelector("thead");
       expect(thead).toBeTruthy();
       expect(thead?.className).toContain("bg-muted/80");
@@ -493,12 +504,13 @@ describe("Markdown Components", () => {
       if (!TBody) {
         return;
       }
-      const { container } = render(() => <TBody node={null as any}>
+      const { container } = render(() => (
+        <TBody node={null as any}>
           <tr>
             <td>Cell</td>
           </tr>
         </TBody>
-      );
+      ));
       const tbody = container.querySelector("tbody");
       expect(tbody).toBeTruthy();
       expect(tbody?.className).toContain("divide-y");
@@ -510,10 +522,11 @@ describe("Markdown Components", () => {
       if (!TR) {
         return;
       }
-      const { container } = render(() => <TR node={null as any}>
+      const { container } = render(() => (
+        <TR node={null as any}>
           <td>Cell</td>
         </TR>
-      );
+      ));
       const tr = container.querySelector("tr");
       expect(tr).toBeTruthy();
       expect(tr?.className).toContain("border-b");
@@ -568,7 +581,9 @@ describe("Markdown Components", () => {
       if (!Sup) {
         return;
       }
-      const { container } = render(() => <Sup node={null as any}>superscript</Sup>);
+      const { container } = render(() => (
+        <Sup node={null as any}>superscript</Sup>
+      ));
       const sup = container.querySelector("sup");
       expect(sup).toBeTruthy();
       expect(sup?.className).toContain("text-sm");
@@ -579,7 +594,9 @@ describe("Markdown Components", () => {
       if (!Sub) {
         return;
       }
-      const { container } = render(() => <Sub node={null as any}>subscript</Sub>);
+      const { container } = render(() => (
+        <Sub node={null as any}>subscript</Sub>
+      ));
       const sub = container.querySelector("sub");
       expect(sub).toBeTruthy();
       expect(sub?.className).toContain("text-sm");
@@ -592,10 +609,11 @@ describe("Markdown Components", () => {
       if (!H1) {
         throw new Error("H1 component not found");
       }
-      const { container } = render(() => <H1 class="custom-class" node={null as any}>
+      const { container } = render(() => (
+        <H1 class="custom-class" node={null as any}>
           Heading
         </H1>
-      );
+      ));
       const h1 = container.querySelector("h1");
       expect(h1?.className).toContain("custom-class");
       expect(h1?.className).toContain("mt-6");

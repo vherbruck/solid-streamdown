@@ -6,11 +6,13 @@
 import { render } from "@solidjs/testing-library";
 import { describe, expect, it } from "vitest";
 import { components } from "../lib/components";
-import { defaultStreamdownContext, StreamdownContext } from "../lib/streamdown-context";
+import {
+  defaultStreamdownContext,
+  StreamdownContext,
+} from "../lib/streamdown-context";
 
 // Upstream renders these inside a StreamdownContext whose linkSafety is unset.
 const noLinkSafety = { ...defaultStreamdownContext, linkSafety: undefined };
-
 
 describe("Node Attribute Fix", () => {
   // Create a realistic HAST node object that would be passed by react-markdown
@@ -40,11 +42,12 @@ describe("Node Attribute Fix", () => {
       if (!OL) {
         throw new Error("OL component not found");
       }
-      const { container } = render(() => <OL node={mockHastNode as any}>
+      const { container } = render(() => (
+        <OL node={mockHastNode as any}>
           <li>Item 1</li>
           <li>Item 2</li>
         </OL>
-      );
+      ));
 
       const ol = container.querySelector("ol");
       expect(ol).toBeTruthy();
@@ -63,11 +66,12 @@ describe("Node Attribute Fix", () => {
       if (!UL) {
         throw new Error("UL component not found");
       }
-      const { container } = render(() => <UL node={mockHastNode as any}>
+      const { container } = render(() => (
+        <UL node={mockHastNode as any}>
           <li>Item 1</li>
           <li>Item 2</li>
         </UL>
-      );
+      ));
 
       const ul = container.querySelector("ul");
       expect(ul).toBeTruthy();
@@ -86,8 +90,9 @@ describe("Node Attribute Fix", () => {
       if (!LI) {
         throw new Error("LI component not found");
       }
-      const { container } = render(() => <LI node={mockHastNode as any}>List item content</LI>
-      );
+      const { container } = render(() => (
+        <LI node={mockHastNode as any}>List item content</LI>
+      ));
 
       const li = container.querySelector("li");
       expect(li).toBeTruthy();
@@ -108,8 +113,9 @@ describe("Node Attribute Fix", () => {
       if (!H1) {
         throw new Error("H1 component not found");
       }
-      const { container } = render(() => <H1 node={mockHastNode as any}>Heading 1</H1>
-      );
+      const { container } = render(() => (
+        <H1 node={mockHastNode as any}>Heading 1</H1>
+      ));
 
       const h1 = container.querySelector("h1");
       expect(h1).toBeTruthy();
@@ -128,8 +134,9 @@ describe("Node Attribute Fix", () => {
       if (!H2) {
         throw new Error("H2 component not found");
       }
-      const { container } = render(() => <H2 node={mockHastNode as any}>Heading 2</H2>
-      );
+      const { container } = render(() => (
+        <H2 node={mockHastNode as any}>Heading 2</H2>
+      ));
 
       const h2 = container.querySelector("h2");
       expect(h2).toBeTruthy();
@@ -148,8 +155,9 @@ describe("Node Attribute Fix", () => {
       if (!H3) {
         throw new Error("H3 component not found");
       }
-      const { container } = render(() => <H3 node={mockHastNode as any}>Heading 3</H3>
-      );
+      const { container } = render(() => (
+        <H3 node={mockHastNode as any}>Heading 3</H3>
+      ));
 
       const h3 = container.querySelector("h3");
       expect(h3).toBeTruthy();
@@ -210,7 +218,8 @@ describe("Node Attribute Fix", () => {
       if (!Code) {
         throw new Error("Code component not found");
       }
-      const { container } = render(() => <Code
+      const { container } = render(() => (
+        <Code
           node={
             {
               position: {
@@ -222,7 +231,7 @@ describe("Node Attribute Fix", () => {
         >
           inline code
         </Code>
-      );
+      ));
 
       const code = container.querySelector("code");
       expect(code).toBeTruthy();
@@ -271,7 +280,11 @@ describe("Node Attribute Fix", () => {
       const extra = components as Record<string, any>;
       for (const { name, props, element } of [
         { name: "a", props: { href: "https://example.com" }, element: "a" },
-        { name: "img", props: { src: "test.png", alt: "test" }, element: "img" },
+        {
+          name: "img",
+          props: { src: "test.png", alt: "test" },
+          element: "img",
+        },
       ]) {
         const Component = extra[name];
         const { container } = render(() => (

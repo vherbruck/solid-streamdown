@@ -12,11 +12,12 @@ const rehypePlugins = Object.values(defaultRehypePlugins);
 
 describe("Incomplete streaming links (#551)", () => {
   it("should keep the remend sentinel href through the default sanitize schema", () => {
-    const { container } = render(() => <Markdown
+    const { container } = render(() => (
+      <Markdown
         children="[the docs](streamdown:incomplete-link)"
         rehypePlugins={rehypePlugins}
       />
-    );
+    ));
     const link = container.querySelector("a");
     expect(link).toBeTruthy();
     expect(link?.getAttribute("href")).toBe("streamdown:incomplete-link");
@@ -36,14 +37,17 @@ describe("Incomplete streaming links (#551)", () => {
     ).toBeNull();
     expect(container.textContent).not.toContain("[blocked]");
 
-    const link = container.querySelector('a[href="streamdown:incomplete-link"]');
+    const link = container.querySelector(
+      'a[href="streamdown:incomplete-link"]'
+    );
     expect(link).toBeTruthy();
     expect(link?.textContent).toBe("the docs");
   });
 
   it("should render incomplete markdown links via MarkdownA instead of harden [blocked]", () => {
-    const { container } = render(() => <Streamdown mode="streaming">{"see [the docs"}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see [the docs"}</Streamdown>
+    ));
 
     const blocked = container.querySelector('[title="Blocked URL: undefined"]');
     expect(blocked).toBeNull();
@@ -67,14 +71,17 @@ describe("Incomplete streaming links (#551)", () => {
     ).toBeNull();
     expect(container.textContent).not.toContain("[blocked]");
 
-    const link = container.querySelector('a[href="streamdown:incomplete-link"]');
+    const link = container.querySelector(
+      'a[href="streamdown:incomplete-link"]'
+    );
     expect(link).toBeTruthy();
     expect(link?.textContent).toBe("the docs");
   });
 
   it("should render incomplete URL tails via MarkdownA instead of harden [blocked]", () => {
-    const { container } = render(() => <Streamdown mode="streaming">{"see [the docs](https://exam"}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see [the docs](https://exam"}</Streamdown>
+    ));
 
     expect(
       container.querySelector('[title="Blocked URL: undefined"]')

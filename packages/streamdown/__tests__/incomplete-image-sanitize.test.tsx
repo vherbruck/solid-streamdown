@@ -12,11 +12,12 @@ const rehypePlugins = Object.values(defaultRehypePlugins);
 
 describe("Incomplete streaming images", () => {
   it("should keep the remend sentinel src through the default sanitize schema", () => {
-    const { container } = render(() => <Markdown
+    const { container } = render(() => (
+      <Markdown
         children="![logo](streamdown:incomplete-image)"
         rehypePlugins={rehypePlugins}
       />
-    );
+    ));
 
     // Default Markdown path has no custom img component — assert the src
     // itself survives sanitize + harden (mirrors incomplete-link-sanitize).
@@ -27,10 +28,10 @@ describe("Incomplete streaming images", () => {
     expect(container.textContent).not.toContain("[Image blocked");
   });
 
-
   it("should render incomplete markdown images via ImageComponent instead of harden [blocked]", () => {
-    const { container } = render(() => <Streamdown mode="streaming">{"see ![the diag"}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see ![the diag"}</Streamdown>
+    ));
 
     expect(container.textContent).not.toContain("[Image blocked");
     expect(container.querySelector('[title^="Blocked URL"]')).toBeNull();
@@ -46,10 +47,10 @@ describe("Incomplete streaming images", () => {
     expect(wrapper?.getAttribute("data-incomplete")).toBe("true");
   });
 
-
   it("should render incomplete image URL tails via ImageComponent instead of harden [blocked]", () => {
-    const { container } = render(() => <Streamdown mode="streaming">{"see ![logo](https://exam"}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown mode="streaming">{"see ![logo](https://exam"}</Streamdown>
+    ));
 
     expect(container.textContent).not.toContain("[Image blocked");
     expect(container.querySelector('[title^="Blocked URL"]')).toBeNull();
@@ -74,10 +75,11 @@ describe("Incomplete streaming images", () => {
   });
 
   it("should not treat a normal https image as incomplete", () => {
-    const { container } = render(() => <Streamdown mode="static">
+    const { container } = render(() => (
+      <Streamdown mode="static">
         {"![pixel](https://example.com/a.png)"}
       </Streamdown>
-    );
+    ));
 
     expect(
       container.querySelector('[data-streamdown="image-placeholder"]')

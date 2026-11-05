@@ -19,13 +19,14 @@ describe("link reference definitions", () => {
     const markdown =
       "See [the docs][1] for details.\n\nMore text here.\n\n[1]: https://example.com/docs\n";
 
-    const { container } = render(() => <Streamdown
+    const { container } = render(() => (
+      <Streamdown
         linkSafety={{ enabled: false }}
         parseIncompleteMarkdown={false}
       >
         {markdown}
       </Streamdown>
-    );
+    ));
 
     const link = container.querySelector("a");
     expect(link?.getAttribute("href")).toBe("https://example.com/docs");
@@ -39,13 +40,14 @@ describe("link reference definitions", () => {
     const markdown =
       "See [the docs][1] for details.\n\nMore text here.\n\n[1]: https://example.com/docs\n";
 
-    const { container } = render(() => <Streamdown
+    const { container } = render(() => (
+      <Streamdown
         linkSafety={{ enabled: false }}
         parseIncompleteMarkdown={false}
       >
         {markdown}
       </Streamdown>
-    );
+    ));
 
     const link = container.querySelector('[data-streamdown="link"]');
     expect(link?.getAttribute("href")).toBe("https://example.com/docs");
@@ -59,13 +61,14 @@ describe("link reference definitions", () => {
     const markdown =
       "[docs]: https://example.com/docs\n\nRead [docs][] or [docs].\n";
 
-    const { container } = render(() => <Streamdown
+    const { container } = render(() => (
+      <Streamdown
         linkSafety={{ enabled: false }}
         parseIncompleteMarkdown={false}
       >
         {markdown}
       </Streamdown>
-    );
+    ));
 
     const links = container.querySelectorAll("a");
     expect(links).toHaveLength(2);
@@ -78,13 +81,14 @@ describe("link reference definitions", () => {
     const markdown =
       "[docs]: https://example.com/docs\n\nRead [docs][] or [docs].\n";
 
-    const { container } = render(() => <Streamdown
+    const { container } = render(() => (
+      <Streamdown
         linkSafety={{ enabled: false }}
         parseIncompleteMarkdown={false}
       >
         {markdown}
       </Streamdown>
-    );
+    ));
 
     const links = container.querySelectorAll('[data-streamdown="link"]');
     expect(links).toHaveLength(2);

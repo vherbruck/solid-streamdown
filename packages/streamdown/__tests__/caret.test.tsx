@@ -55,9 +55,11 @@ const caretVar = (container: HTMLElement) =>
 describe("Caret Feature", () => {
   describe("Caret Rendering", () => {
     it("should render block caret when caret='block' and isAnimating=true", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true}>
           Streaming content...
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -80,9 +82,11 @@ describe("Caret Feature", () => {
     });
 
     it("should render circle caret when caret='circle' and isAnimating=true", () => {
-      const { container } = render(() => <Streamdown caret="circle" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="circle" isAnimating={true}>
           Streaming content...
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -105,7 +109,9 @@ describe("Caret Feature", () => {
     });
 
     it("should not render caret when caret is undefined", () => {
-      const { container } = render(() => <Streamdown isAnimating={true}>Streaming content...</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown isAnimating={true}>Streaming content...</Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -128,9 +134,11 @@ describe("Caret Feature", () => {
     });
 
     it("should not render caret when isAnimating=false even with caret set", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={false}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={false}>
           Completed content...
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -141,7 +149,9 @@ describe("Caret Feature", () => {
     });
 
     it("should not render caret when isAnimating is not provided (defaults to false)", () => {
-      const { container } = render(() => <Streamdown caret="block">Content...</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret="block">Content...</Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -155,7 +165,11 @@ describe("Caret Feature", () => {
   describe("Caret State Changes", () => {
     it("should add caret when isAnimating changes from false to true", () => {
       const [animating, setAnimating] = createSignal(false);
-      const { container } = render(() => <Streamdown caret="block" isAnimating={animating()}>Content</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={animating()}>
+          Content
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe("");
 
       setAnimating(true);
@@ -164,7 +178,11 @@ describe("Caret Feature", () => {
 
     it("should remove caret when isAnimating changes from true to false", () => {
       const [animating, setAnimating] = createSignal(true);
-      const { container } = render(() => <Streamdown caret="block" isAnimating={animating()}>Content</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={animating()}>
+          Content
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe('" ▋"');
 
       setAnimating(false);
@@ -174,7 +192,11 @@ describe("Caret Feature", () => {
     it("should change caret style when caret prop changes with content change", () => {
       const [caret, setCaret] = createSignal<"block" | "circle">("block");
       const [text, setText] = createSignal("Content");
-      const { container } = render(() => <Streamdown caret={caret()} isAnimating={true}>{text()}</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret={caret()} isAnimating={true}>
+          {text()}
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe('" ▋"');
 
       // The content changes too, as upstream's test does
@@ -186,7 +208,11 @@ describe("Caret Feature", () => {
     it("should remove caret when caret prop is set to undefined with content change", () => {
       const [caret, setCaret] = createSignal<"block" | undefined>("block");
       const [text, setText] = createSignal("Content");
-      const { container } = render(() => <Streamdown caret={caret()} isAnimating={true}>{text()}</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret={caret()} isAnimating={true}>
+          {text()}
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe('" ▋"');
 
       setCaret(undefined);
@@ -197,9 +223,11 @@ describe("Caret Feature", () => {
 
   describe("Caret with Different Modes", () => {
     it("should render caret in streaming mode", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true} mode="streaming">
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true} mode="streaming">
           Content
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;
@@ -207,9 +235,11 @@ describe("Caret Feature", () => {
     });
 
     it("should not render caret in static mode even when isAnimating=true", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true} mode="static">
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true} mode="static">
           Content
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       // In static mode, the caret classes and styles are not applied
@@ -224,7 +254,11 @@ describe("Caret Feature", () => {
   describe("Caret with Streaming Content", () => {
     it("should maintain caret during content updates", () => {
       const [text, setText] = createSignal("Initial content");
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true}>{text()}</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true}>
+          {text()}
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe('" ▋"');
 
       // Update content as if streaming
@@ -233,9 +267,11 @@ describe("Caret Feature", () => {
     });
 
     it("should work with empty content", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true}>
           {""}
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -245,9 +281,11 @@ describe("Caret Feature", () => {
     });
 
     it("should render placeholder span for caret when content is empty", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true}>
           {""}
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       expect(wrapper).toBeTruthy();
@@ -258,9 +296,11 @@ describe("Caret Feature", () => {
     });
 
     it("should not render placeholder span when not animating", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={false}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={false}>
           {""}
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const placeholder = wrapper?.querySelector("span");
@@ -268,7 +308,9 @@ describe("Caret Feature", () => {
     });
 
     it("should not render placeholder span when caret is not set", () => {
-      const { container } = render(() => <Streamdown isAnimating={true}>{""}</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown isAnimating={true}>{""}</Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const placeholder = wrapper?.querySelector("span");
@@ -276,9 +318,11 @@ describe("Caret Feature", () => {
     });
 
     it("should work with markdown content", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true}>
           {"# Heading\n\nThis is **bold** text"}
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;
@@ -286,11 +330,13 @@ describe("Caret Feature", () => {
     });
 
     it("should work with complete code blocks", () => {
-      const { container } = render(() => <Streamdown caret="circle" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="circle" isAnimating={true}>
           {`\`\`\`javascript
 const x = 1;
 \`\`\``}
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;
@@ -304,10 +350,13 @@ const x = 1;
   // Dropped (React-only): "should not re-render when only caret prop changes due to
   // memoization" asserts a stale caret from React.memo. Solid props are reactive.
   describe("Caret Memoization", () => {
-    
     it("should memoize and update when isAnimating changes", () => {
       const [animating, setAnimating] = createSignal(false);
-      const { container } = render(() => <Streamdown caret="block" isAnimating={animating()}>Content</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={animating()}>
+          Content
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe("");
 
       setAnimating(true);
@@ -321,13 +370,15 @@ const x = 1;
         h1: (props: any) => <h1 class="custom-h1">{props.children}</h1>,
       };
 
-      const { container } = render(() => <Streamdown
+      const { container } = render(() => (
+        <Streamdown
           caret="block"
           components={customComponents}
           isAnimating={true}
         >
           # Custom Heading
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;
@@ -337,9 +388,11 @@ const x = 1;
 
   describe("Caret CSS Classes", () => {
     it("should apply correct CSS classes for caret when enabled", () => {
-      const { container } = render(() => <Streamdown caret="block" isAnimating={true}>
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={true}>
           Content
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const className = wrapper?.className || "";
@@ -357,7 +410,9 @@ const x = 1;
     });
 
     it("should not apply caret CSS classes when caret is disabled", () => {
-      const { container } = render(() => <Streamdown isAnimating={true}>Content</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown isAnimating={true}>Content</Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const className = wrapper?.className || "";
@@ -375,13 +430,15 @@ const x = 1;
     });
 
     it("should preserve other classs when caret is enabled", () => {
-      const { container } = render(() => <Streamdown
+      const { container } = render(() => (
+        <Streamdown
           caret="block"
           class="custom-class another-class"
           isAnimating={true}
         >
           Content
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const className = wrapper?.className || "";
@@ -400,17 +457,21 @@ const x = 1;
   describe("Caret Type Safety", () => {
     it("should accept 'block' as valid caret value", () => {
       expect(() => {
-        render(() => <Streamdown caret="block" isAnimating={true}>
+        render(() => (
+          <Streamdown caret="block" isAnimating={true}>
             Content
-          </Streamdown>);
+          </Streamdown>
+        ));
       }).not.toThrow();
     });
 
     it("should accept 'circle' as valid caret value", () => {
       expect(() => {
-        render(() => <Streamdown caret="circle" isAnimating={true}>
+        render(() => (
+          <Streamdown caret="circle" isAnimating={true}>
             Content
-          </Streamdown>);
+          </Streamdown>
+        ));
       }).not.toThrow();
     });
 
@@ -425,7 +486,11 @@ const x = 1;
     it("should simulate streaming chat message with caret", () => {
       const [text, setText] = createSignal("Hello");
       const [animating, setAnimating] = createSignal(true);
-      const { container } = render(() => <Streamdown caret="block" isAnimating={animating()}>{text()}</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown caret="block" isAnimating={animating()}>
+          {text()}
+        </Streamdown>
+      ));
       expect(caretVar(container)).toBe('" ▋"');
 
       // Simulate streaming more content
@@ -442,12 +507,16 @@ const x = 1;
       const messageRole = "assistant";
       const isLastMessage = true;
 
-      const { container } = render(() => <Streamdown
-          caret={messageRole === "assistant" && isLastMessage ? "block" : undefined}
+      const { container } = render(() => (
+        <Streamdown
+          caret={
+            messageRole === "assistant" && isLastMessage ? "block" : undefined
+          }
           isAnimating={true}
         >
           Assistant response
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;
@@ -458,12 +527,16 @@ const x = 1;
       const messageRole: string = "user";
       const isLastMessage = true;
 
-      const { container } = render(() => <Streamdown
-          caret={messageRole === "assistant" && isLastMessage ? "block" : undefined}
+      const { container } = render(() => (
+        <Streamdown
+          caret={
+            messageRole === "assistant" && isLastMessage ? "block" : undefined
+          }
           isAnimating={true}
         >
           User message
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;
@@ -474,12 +547,16 @@ const x = 1;
       const messageRole: string = "assistant";
       const isLastMessage = false;
 
-      const { container } = render(() => <Streamdown
-          caret={messageRole === "assistant" && isLastMessage ? "circle" : undefined}
+      const { container } = render(() => (
+        <Streamdown
+          caret={
+            messageRole === "assistant" && isLastMessage ? "circle" : undefined
+          }
           isAnimating={true}
         >
           Previous assistant message
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const wrapper = container.firstElementChild;
       const style = (wrapper as HTMLElement)?.style;

@@ -95,25 +95,31 @@ describe("createCn", () => {
 
 describe("Streamdown with prefix", () => {
   it("should render with prefixed classes", () => {
-    const { container } = render(() => <Streamdown mode="static" prefix="tw">
+    const { container } = render(() => (
+      <Streamdown mode="static" prefix="tw">
         **bold text**
-      </Streamdown>);
+      </Streamdown>
+    ));
 
     const wrapper = container.firstElementChild;
     expect(wrapper?.className).toMatch(TW_PREFIX_PATTERN);
   });
 
   it("should render without prefix by default", () => {
-    const { container } = render(() => <Streamdown mode="static">**bold text**</Streamdown>);
+    const { container } = render(() => (
+      <Streamdown mode="static">**bold text**</Streamdown>
+    ));
 
     const wrapper = container.firstElementChild;
     expect(wrapper?.className).not.toMatch(TW_PREFIX_PATTERN);
   });
 
   it("should prefix internal component classes", () => {
-    const { container } = render(() => <Streamdown mode="static" prefix="tw">
+    const { container } = render(() => (
+      <Streamdown mode="static" prefix="tw">
         **bold text**
-      </Streamdown>);
+      </Streamdown>
+    ));
 
     const strong = container.querySelector("[data-streamdown='strong']");
     expect(strong?.className).toMatch(TW_PREFIX_START_PATTERN);

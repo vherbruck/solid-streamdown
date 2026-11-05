@@ -33,7 +33,11 @@ import {
 import { BlockIncompleteContext } from "./lib/block-incomplete-context";
 import { components as builtinComponents } from "./lib/components";
 import type { Root } from "hast";
-import { hastTextContent, MappedElement, resolveTarget } from "./lib/hast-render";
+import {
+  hastTextContent,
+  MappedElement,
+  resolveTarget,
+} from "./lib/hast-render";
 import { detectTextDirection } from "./lib/detect-direction";
 import { type IconMap, IconProvider } from "./lib/icon-context";
 import { type UiPrimitives, UiProvider } from "./lib/ui-context";
@@ -163,8 +167,9 @@ export { defaultTranslations } from "./lib/translations-context";
  * Avoids `Components[K]`, whose string index signature collapses props into a
  * useless intersection (e.g. HTMLHeadingElement & SVGSymbolElement).
  */
-type DefaultElementComponent<K extends keyof JSX.IntrinsicElements> =
-  Component<JSX.IntrinsicElements[K] & ExtraProps>;
+type DefaultElementComponent<K extends keyof JSX.IntrinsicElements> = Component<
+  JSX.IntrinsicElements[K] & ExtraProps
+>;
 
 /**
  * Built-in Streamdown components with known keys required.
@@ -446,7 +451,9 @@ const createAnimateReset =
   (plugin: AnimatePlugin): Pluggable =>
   () =>
   (tree: Root) => {
-    if (hastTextContent(tree.children).length < plugin.getLastRenderCharCount()) {
+    if (
+      hastTextContent(tree.children).length < plugin.getLastRenderCharCount()
+    ) {
       plugin.setPrevContentLength(0);
     }
   };
@@ -521,15 +528,15 @@ export const Block: Component<BlockProps> = (props) => {
 
   return (
     <ParseObserverContext.Provider value={onParsed}>
-    <BlockIncompleteContext.Provider value={() => local.isIncomplete}>
-      <Show when={local.dir} fallback={inner()}>
-        {(dir) => (
-          <div dir={dir()} style={{ display: "contents" }}>
-            {inner()}
-          </div>
-        )}
-      </Show>
-    </BlockIncompleteContext.Provider>
+      <BlockIncompleteContext.Provider value={() => local.isIncomplete}>
+        <Show when={local.dir} fallback={inner()}>
+          {(dir) => (
+            <div dir={dir()} style={{ display: "contents" }}>
+              {inner()}
+            </div>
+          )}
+        </Show>
+      </BlockIncompleteContext.Provider>
     </ParseObserverContext.Provider>
   );
 };
@@ -764,7 +771,9 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     ...props.translations,
   }));
   const translationsValue = {} as StreamdownTranslations;
-  for (const key of Object.keys(defaultTranslations) as (keyof StreamdownTranslations)[]) {
+  for (const key of Object.keys(
+    defaultTranslations
+  ) as (keyof StreamdownTranslations)[]) {
     Object.defineProperty(translationsValue, key, {
       enumerable: true,
       get: () => mergedTranslations()[key],
@@ -951,16 +960,22 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     if (!key) {
       return null;
     }
-    const options = key === "true" ? {} : (untrack(() => props.animated) as AnimateOptions);
+    const options =
+      key === "true" ? {} : (untrack(() => props.animated) as AnimateOptions);
     // maxBacklogMs is consumed by the timeline factory, not the plugin.
     const { maxBacklogMs, ...pluginOptions } = options;
-    const timeline = createPassTimeline(createAnimateTimeline({ maxBacklogMs }));
+    const timeline = createPassTimeline(
+      createAnimateTimeline({ maxBacklogMs })
+    );
     const plugins: AnimatePlugin[] = [];
     const resets: Pluggable[] = [];
     return {
       timeline,
       pluginFor: (index: number): AnimatePlugin => {
-        plugins[index] ??= createRenderAnimatePlugin({ ...pluginOptions, timeline });
+        plugins[index] ??= createRenderAnimatePlugin({
+          ...pluginOptions,
+          timeline,
+        });
         return plugins[index];
       },
       resetFor: (index: number): Pluggable => {
@@ -981,7 +996,9 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
     const plugin = blockAnimatePlugin(index);
     const base = mergedRehypePlugins();
     const current = animation();
-    return plugin && current ? [...base, current.resetFor(index), plugin.rehypePlugin] : base;
+    return plugin && current
+      ? [...base, current.resetFor(index), plugin.rehypePlugin]
+      : base;
   };
 
   // Close the timeline pass once the DOM has updated (upstream: a layout
@@ -1000,7 +1017,9 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
 
   const caretStyle = createMemo(() =>
     props.caret && props.isAnimating
-      ? ({ "--streamdown-caret": `"${CARETS[props.caret]}"` } as JSX.CSSProperties)
+      ? ({
+          "--streamdown-caret": `"${CARETS[props.caret]}"`,
+        } as JSX.CSSProperties)
       : undefined
   );
 
@@ -1022,11 +1041,10 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
 
   // Re-mark whenever the last element may have been replaced: new blocks, or
   // a components / BlockComponent swap that re-renders the same blocks.
-  const { ref: caretHostRef, showCaret } = createCaretHost(shouldHideCaret, () => [
-    blocks(),
-    mergedComponents(),
-    props.BlockComponent,
-  ]);
+  const { ref: caretHostRef, showCaret } = createCaretHost(
+    shouldHideCaret,
+    () => [blocks(), mergedComponents(), props.BlockComponent]
+  );
 
   return (
     <TranslationsContext.Provider value={translationsValue}>
@@ -1034,81 +1052,83 @@ export const Streamdown: Component<StreamdownProps> = (rawProps) => {
         <StreamdownContext.Provider value={contextValue}>
           <PrefixContext.Provider value={cn}>
             <IconProvider icons={props.icons}>
-            <UiProvider ui={props.ui}>
-            <div
-              {...rootAttributes()}
-              class={cn(
-                ROOT_CLASSES,
-                props.mode !== "static" && props.caret && showCaret()
-                  ? CARET_CLASSES
-                  : null,
-                props.class
-              )}
-              dir={
-                props.mode === "static" && props.dir !== "auto"
-                  ? props.dir
-                  : undefined
-              }
-              ref={caretHostRef}
-              {...rootStyle()}
-            >
-              <Show
-                when={props.mode === "static"}
-                fallback={
-                  // Streaming mode: one block per parsed chunk. Index keeps each
-                  // position's block, so a settled block's content never changes.
-                  <>
+              <UiProvider ui={props.ui}>
+                <div
+                  {...rootAttributes()}
+                  class={cn(
+                    ROOT_CLASSES,
+                    props.mode !== "static" && props.caret && showCaret()
+                      ? CARET_CLASSES
+                      : null,
+                    props.class
+                  )}
+                  dir={
+                    props.mode === "static" && props.dir !== "auto"
+                      ? props.dir
+                      : undefined
+                  }
+                  ref={caretHostRef}
+                  {...rootStyle()}
+                >
                   <Show
-                    when={
-                      blocks().length === 0 && props.caret && props.isAnimating
+                    when={props.mode === "static"}
+                    fallback={
+                      // Streaming mode: one block per parsed chunk. Index keeps each
+                      // position's block, so a settled block's content never changes.
+                      <>
+                        <Show
+                          when={
+                            blocks().length === 0 &&
+                            props.caret &&
+                            props.isAnimating
+                          }
+                        >
+                          <span />
+                        </Show>
+                        <Index each={blocks()}>
+                          {(block, index) => (
+                            <Dynamic
+                              component={props.BlockComponent}
+                              components={mergedComponents()}
+                              content={block()}
+                              dir={
+                                blockDirections()?.[index] ??
+                                (props.dir !== "auto" ? props.dir : undefined)
+                              }
+                              index={index}
+                              isIncomplete={
+                                props.isAnimating &&
+                                index === blocks().length - 1 &&
+                                hasIncompleteCodeFence(block())
+                              }
+                              animatePlugin={blockAnimatePlugin(index)}
+                              rehypePlugins={blockRehypePlugins(index)}
+                              remarkPlugins={mergedRemarkPlugins()}
+                              shouldNormalizeHtmlIndentation={
+                                props.normalizeHtmlIndentation
+                              }
+                              shouldParseIncompleteMarkdown={
+                                props.parseIncompleteMarkdown
+                              }
+                              {...rest}
+                            />
+                          )}
+                        </Index>
+                      </>
                     }
                   >
-                    <span />
+                    {/* Static mode: simple rendering without streaming features */}
+                    <Markdown
+                      components={mergedComponents()}
+                      rehypePlugins={mergedRehypePlugins()}
+                      remarkPlugins={mergedRemarkPlugins()}
+                      {...rest}
+                    >
+                      {processedChildren()}
+                    </Markdown>
                   </Show>
-                  <Index each={blocks()}>
-                    {(block, index) => (
-                      <Dynamic
-                        component={props.BlockComponent}
-                        components={mergedComponents()}
-                        content={block()}
-                        dir={
-                          blockDirections()?.[index] ??
-                          (props.dir !== "auto" ? props.dir : undefined)
-                        }
-                        index={index}
-                        isIncomplete={
-                          props.isAnimating &&
-                          index === blocks().length - 1 &&
-                          hasIncompleteCodeFence(block())
-                        }
-                        animatePlugin={blockAnimatePlugin(index)}
-                        rehypePlugins={blockRehypePlugins(index)}
-                        remarkPlugins={mergedRemarkPlugins()}
-                        shouldNormalizeHtmlIndentation={
-                          props.normalizeHtmlIndentation
-                        }
-                        shouldParseIncompleteMarkdown={
-                          props.parseIncompleteMarkdown
-                        }
-                        {...rest}
-                      />
-                    )}
-                  </Index>
-                  </>
-                }
-              >
-                {/* Static mode: simple rendering without streaming features */}
-                <Markdown
-                  components={mergedComponents()}
-                  rehypePlugins={mergedRehypePlugins()}
-                  remarkPlugins={mergedRemarkPlugins()}
-                  {...rest}
-                >
-                  {processedChildren()}
-                </Markdown>
-              </Show>
-            </div>
-            </UiProvider>
+                </div>
+              </UiProvider>
             </IconProvider>
           </PrefixContext.Provider>
         </StreamdownContext.Provider>

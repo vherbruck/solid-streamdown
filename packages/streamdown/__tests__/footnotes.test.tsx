@@ -139,8 +139,9 @@ GFM extends standard Markdown with powerful features[^1]. Here's a comprehensive
 
 [^1]:`;
 
-    const { container } = render(() => <Streamdown isAnimating={true}>{markdown}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown isAnimating={true}>{markdown}</Streamdown>
+    ));
 
     const footnotesSection = container.querySelector("section[data-footnotes]");
 
@@ -188,8 +189,9 @@ GFM extends standard Markdown with powerful features[^1]. Here's a comprehensive
 
 [^1]: This is the content`;
 
-    const { container } = render(() => <Streamdown isAnimating={true}>{markdown}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown isAnimating={true}>{markdown}</Streamdown>
+    ));
 
     const footnotesSection = container.querySelector("section[data-footnotes]");
     expect(footnotesSection).toBeTruthy();

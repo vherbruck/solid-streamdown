@@ -110,7 +110,9 @@ Mixed paragraph: Hello مرحبا World عالم.
   it("renders links with RTL text", () => {
     const rtlLink = "[نص الرابط العربي](https://example.com)";
 
-    const { container } = render(() => <Streamdown linkSafety={{ enabled: false }}>{rtlLink}</Streamdown>);
+    const { container } = render(() => (
+      <Streamdown linkSafety={{ enabled: false }}>{rtlLink}</Streamdown>
+    ));
     const link = container.querySelector('[data-streamdown="link"]');
 
     expect(link?.textContent).toBe("نص الرابط العربي");
@@ -120,9 +122,11 @@ Mixed paragraph: Hello مرحبا World عالم.
   it('works with dir="rtl" CSS style', () => {
     const rtlContent = "هذا نص عربي كامل";
 
-    const { container } = render(() => <div dir="rtl">
+    const { container } = render(() => (
+      <div dir="rtl">
         <Streamdown>{rtlContent}</Streamdown>
-      </div>);
+      </div>
+    ));
 
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.getAttribute("dir")).toBe("rtl");
@@ -140,33 +144,41 @@ Mixed paragraph: Hello مرحبا World عالم.
 
   describe("dir prop", () => {
     it('applies dir="rtl" to wrapper in static mode', () => {
-      const { container } = render(() => <Streamdown dir="rtl" mode="static">
+      const { container } = render(() => (
+        <Streamdown dir="rtl" mode="static">
           Hello world
-        </Streamdown>);
+        </Streamdown>
+      ));
       const wrapper = container.querySelector("[dir]");
       expect(wrapper?.getAttribute("dir")).toBe("rtl");
     });
 
     it('applies dir="ltr" to wrapper in static mode', () => {
-      const { container } = render(() => <Streamdown dir="ltr" mode="static">
+      const { container } = render(() => (
+        <Streamdown dir="ltr" mode="static">
           {"مرحبا بالعالم"}
-        </Streamdown>);
+        </Streamdown>
+      ));
       const wrapper = container.querySelector("[dir]");
       expect(wrapper?.getAttribute("dir")).toBe("ltr");
     });
 
     it("auto-detects RTL in static mode", () => {
-      const { container } = render(() => <Streamdown dir="auto" mode="static">
+      const { container } = render(() => (
+        <Streamdown dir="auto" mode="static">
           {"مرحبا بالعالم"}
-        </Streamdown>);
+        </Streamdown>
+      ));
       const wrapper = container.querySelector("[dir]");
       expect(wrapper?.getAttribute("dir")).toBe("rtl");
     });
 
     it("auto-detects LTR in static mode", () => {
-      const { container } = render(() => <Streamdown dir="auto" mode="static">
+      const { container } = render(() => (
+        <Streamdown dir="auto" mode="static">
           Hello world
-        </Streamdown>);
+        </Streamdown>
+      ));
       const wrapper = container.querySelector("[dir]");
       expect(wrapper?.getAttribute("dir")).toBe("ltr");
     });
@@ -174,9 +186,11 @@ Mixed paragraph: Hello مرحبا World عالم.
     it("applies auto direction per semantic block in static mode", () => {
       const content =
         "# שלום עולם\n\nEnglish paragraph.\n\nReact یک کتابخانه جاوااسکریپت بسیار محبوب است.\n\n```js\nconsole.log('hello');\n```";
-      const { container } = render(() => <Streamdown dir="auto" mode="static">
+      const { container } = render(() => (
+        <Streamdown dir="auto" mode="static">
           {content}
-        </Streamdown>);
+        </Streamdown>
+      ));
 
       const heading = container.querySelector("h1");
       const paragraphs = container.querySelectorAll("p");
@@ -188,24 +202,30 @@ Mixed paragraph: Hello مرحبا World عالم.
     });
 
     it("renders code blocks as ltr under dir=auto in static mode", () => {
-      const { container } = render(() => <Streamdown dir="auto" mode="static">
+      const { container } = render(() => (
+        <Streamdown dir="auto" mode="static">
           {"```js\nconsole.log('hello');\n```"}
-        </Streamdown>);
+        </Streamdown>
+      ));
       const code = container.querySelector('[data-streamdown="code-block"]');
       expect(code?.getAttribute("dir")).toBe("ltr");
     });
 
     it('applies per-block dir in streaming mode with dir="auto"', () => {
       const content = "مرحبا بالعالم\n\nHello world";
-      const { container } = render(() => <Streamdown dir="auto" mode="streaming">
+      const { container } = render(() => (
+        <Streamdown dir="auto" mode="streaming">
           {content}
-        </Streamdown>);
+        </Streamdown>
+      ));
       const dirElements = container.querySelectorAll("[dir]");
       expect(dirElements.length).toBeGreaterThanOrEqual(1);
     });
 
     it("uses display:contents on block dir wrapper", () => {
-      const { container } = render(() => <Streamdown dir="rtl">{"مرحبا بالعالم"}</Streamdown>);
+      const { container } = render(() => (
+        <Streamdown dir="rtl">{"مرحبا بالعالم"}</Streamdown>
+      ));
       const dirDivs = container.querySelectorAll("[dir='rtl']");
       let wrappers = 0;
       for (const el of dirDivs as NodeListOf<HTMLElement>) {

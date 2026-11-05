@@ -12,11 +12,12 @@ const rehypePlugins = Object.values(defaultRehypePlugins);
 
 describe("Tel Links (#373)", () => {
   it("should render tel: links", () => {
-    const { container } = render(() => <Markdown
+    const { container } = render(() => (
+      <Markdown
         children="[call me](tel:01392498505)"
         rehypePlugins={rehypePlugins}
       />
-    );
+    ));
     const link = container.querySelector("a");
     expect(link).toBeTruthy();
     expect(link?.getAttribute("href")).toBe("tel:01392498505");
@@ -26,8 +27,9 @@ describe("Tel Links (#373)", () => {
   it("should render tel: links alongside mailto: and http: links", () => {
     const content =
       "[phone](tel:01392498505) [email](mailto:foo@example.com) [website](http://example.com)";
-    const { container } = render(() => <Markdown children={content} rehypePlugins={rehypePlugins} />
-    );
+    const { container } = render(() => (
+      <Markdown children={content} rehypePlugins={rehypePlugins} />
+    ));
     const links = container.querySelectorAll("a");
     expect(links.length).toBe(3);
     expect(links[0]?.getAttribute("href")).toBe("tel:01392498505");
@@ -36,11 +38,12 @@ describe("Tel Links (#373)", () => {
   });
 
   it("should render tel: links with international format", () => {
-    const { container } = render(() => <Markdown
+    const { container } = render(() => (
+      <Markdown
         children="[call](tel:+44-1392-498505)"
         rehypePlugins={rehypePlugins}
       />
-    );
+    ));
     const link = container.querySelector("a");
     expect(link).toBeTruthy();
     expect(link?.getAttribute("href")).toBe("tel:+44-1392-498505");

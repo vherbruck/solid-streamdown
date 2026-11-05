@@ -158,7 +158,8 @@ describe("useIsCodeFenceIncomplete hook", () => {
       return <code>{props.children}</code>;
     };
 
-    render(() => <Streamdown
+    render(() => (
+      <Streamdown
         components={{
           code: ContextCapture,
         }}
@@ -166,7 +167,7 @@ describe("useIsCodeFenceIncomplete hook", () => {
       >
         {"```javascript\nconst x = 1;"}
       </Streamdown>
-    );
+    ));
 
     expect(capturedValue).toBe(true);
   });
@@ -174,12 +175,15 @@ describe("useIsCodeFenceIncomplete hook", () => {
   it("should return false when code fence is complete", () => {
     let capturedValue: boolean | null = null;
 
-    const ContextCapture = (_props: ExtraProps & { children?: JSX.Element }) => {
+    const ContextCapture = (
+      _props: ExtraProps & { children?: JSX.Element }
+    ) => {
       capturedValue = useIsCodeFenceIncomplete()();
       return null;
     };
 
-    render(() => <Streamdown
+    render(() => (
+      <Streamdown
         components={{
           p: ContextCapture,
         }}
@@ -187,7 +191,7 @@ describe("useIsCodeFenceIncomplete hook", () => {
       >
         {"```javascript\nconst x = 1;\n```\n\nSome text"}
       </Streamdown>
-    );
+    ));
 
     // Last block has no incomplete code fence
     expect(capturedValue).toBe(false);
@@ -201,7 +205,8 @@ describe("useIsCodeFenceIncomplete hook", () => {
       return <code>{props.children}</code>;
     };
 
-    render(() => <Streamdown
+    render(() => (
+      <Streamdown
         components={{
           code: ContextCapture,
         }}
@@ -209,7 +214,7 @@ describe("useIsCodeFenceIncomplete hook", () => {
       >
         {"```javascript\nconst x = 1;"}
       </Streamdown>
-    );
+    ));
 
     expect(capturedValue).toBe(false);
   });
@@ -217,10 +222,11 @@ describe("useIsCodeFenceIncomplete hook", () => {
 
 describe("incomplete code block detection", () => {
   it("should mark code block as incomplete when streaming with unclosed fence", async () => {
-    const { container } = render(() => <Streamdown isAnimating={true}>
+    const { container } = render(() => (
+      <Streamdown isAnimating={true}>
         {"```javascript\nconst x = 1;"}
       </Streamdown>
-    );
+    ));
 
     // Wait for lazy-loaded CodeBlock to render
     await waitFor(() => {
@@ -235,10 +241,11 @@ describe("incomplete code block detection", () => {
   });
 
   it("should not mark code block as incomplete when fence is closed", async () => {
-    const { container } = render(() => <Streamdown isAnimating={true}>
+    const { container } = render(() => (
+      <Streamdown isAnimating={true}>
         {"```javascript\nconst x = 1;\n```"}
       </Streamdown>
-    );
+    ));
 
     // Wait for lazy-loaded CodeBlock to render
     await waitFor(() => {
@@ -254,10 +261,11 @@ describe("incomplete code block detection", () => {
   });
 
   it("should not mark code block as incomplete when not streaming", async () => {
-    const { container } = render(() => <Streamdown isAnimating={false}>
+    const { container } = render(() => (
+      <Streamdown isAnimating={false}>
         {"```javascript\nconst x = 1;"}
       </Streamdown>
-    );
+    ));
 
     // Wait for lazy-loaded CodeBlock to render
     await waitFor(() => {
@@ -272,10 +280,11 @@ describe("incomplete code block detection", () => {
   });
 
   it("should not mark code block as incomplete in static mode", async () => {
-    const { container } = render(() => <Streamdown isAnimating={true} mode="static">
+    const { container } = render(() => (
+      <Streamdown isAnimating={true} mode="static">
         {"```javascript\nconst x = 1;"}
       </Streamdown>
-    );
+    ));
 
     // Wait for lazy-loaded CodeBlock to render
     await waitFor(() => {
@@ -300,8 +309,9 @@ Some text here
 \`\`\`javascript
 const incomplete`;
 
-    const { container } = render(() => <Streamdown isAnimating={true}>{markdown}</Streamdown>
-    );
+    const { container } = render(() => (
+      <Streamdown isAnimating={true}>{markdown}</Streamdown>
+    ));
 
     // Wait for lazy-loaded CodeBlocks to render
     await waitFor(() => {
@@ -337,7 +347,8 @@ describe("custom component access to useIsCodeFenceIncomplete", () => {
       return <code>{props.children}</code>;
     };
 
-    render(() => <Streamdown
+    render(() => (
+      <Streamdown
         components={{
           code: CustomCode,
         }}
@@ -345,7 +356,7 @@ describe("custom component access to useIsCodeFenceIncomplete", () => {
       >
         {"```javascript\nconst x = 1;"}
       </Streamdown>
-    );
+    ));
 
     // Wait for custom component to render
     await waitFor(() => {
@@ -366,7 +377,8 @@ describe("custom component access to useIsCodeFenceIncomplete", () => {
       return <code>{props.children}</code>;
     };
 
-    render(() => <Streamdown
+    render(() => (
+      <Streamdown
         components={{
           code: CustomCode,
         }}
@@ -374,7 +386,7 @@ describe("custom component access to useIsCodeFenceIncomplete", () => {
       >
         {"```javascript\nconst x = 1;\n```"}
       </Streamdown>
-    );
+    ));
 
     // Wait for custom component to render
     await waitFor(() => {
